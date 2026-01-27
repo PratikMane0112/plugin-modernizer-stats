@@ -90,9 +90,11 @@ export const PluginDetail = () => {
                                     <span className="text-slate-600 italic">No PR created</span>
                                 )}
 
-                                <span className="text-slate-500">
-                                    Target: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-slate-300">{migration.jenkinsVersion}</span>
-                                </span>
+                                {migration.jenkinsVersion && (
+                                    <span className="text-slate-500">
+                                        Target: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-slate-300">{migration.jenkinsVersion}</span>
+                                    </span>
+                                )}
                             </div>
                         </div>
                     ))}

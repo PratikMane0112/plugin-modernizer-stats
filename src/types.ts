@@ -1,6 +1,6 @@
 export interface Migration {
     pluginVersion: string;
-    jenkinsVersion: string;
+    jenkinsVersion?: string;
     migrationName: string;
     migrationId: string;
     migrationStatus: 'success' | 'failure' | 'pending'; // Adjust based on actual data
