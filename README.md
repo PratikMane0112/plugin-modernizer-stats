@@ -28,39 +28,41 @@ This project is part of a 4-component ecosystem:
 - Node.js (LTS)
 - npm or yarn
 
-### Data Ingestion
-This project requires local data to run. It includes a script to ingest data from a local clone of the metadata repository.
+### Data Fetching
 
-1.  **Clone the Metadata Repository** alongside this project:
-    ```bash
-    cd ..
-    git clone https://github.com/jenkins-infra/metadata-plugin-modernizer.git
-    ```
+This project fetches data from the [metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) repository.
 
-2.  **Run Ingestion Script**:
-    ```bash
-    cd plugin-modernizer-stats
-    npm run ingest
-    ```
-    *Note: The script expects `metadata-plugin-modernizer` to be a sibling directory.*
 
 ### Development
 
 1.  **Install Dependencies**:
+
     ```bash
     npm install
     ```
+    or
 
-2.  **Run Development Server**:
+    ```bash
+    npm ci 
+    ```
+    if you want clean install (don't want to change lock files unnecessary)
+
+2.  **Fetch Data** :
+
+    ```bash
+    ./fetch-metadata-plugin-modernizer.sh 
+    ```
+    run the script to fetch the data from the [metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) repository.
+
+
+3.  **Run Development Server**:
+
     ```bash
     npm run dev
     ```
-    Open [http://localhost:5173](http://localhost:5173) to view the dashboard.
 
-3.  **Build by Production**:
-    ```bash
-    npm run build
-    ```
+    Open [http://localhost:5173](http://localhost:5173) to view the dashboard locally ...
+
 
 ## 🛠️ Tech Stack
 

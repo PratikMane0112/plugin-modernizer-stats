@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { Package, GitBranch, CheckCircle, XCircle } from 'lucide-react';
-import data from '../data/modernization-stats.json';
-import type { AppData, GlobalSummary, RecipeStats } from '../types';
+import { Package, GitBranch, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useMetadata } from '../hooks/useMetadata';
+import type { GlobalSummary, RecipeStats } from '../types';
 
-const appData = data as AppData;
-
-const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) => (
+const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: React.ComponentType<{ size?: number; className?: string }>, color: string }) => (
     <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800 flex items-center justify-between transition-transform hover:scale-[1.02]">
         <div>
             <p className="text-sm font-medium text-slate-400 mb-1">{title}</p>
@@ -19,45 +17,56 @@ const StatCard = ({ title, value, icon: Icon, color }: { title: string, value: s
 );
 
 export const Dashboard = () => {
-    const summary: GlobalSummary = appData.summary;
-    const successRate = ((summary.successfulMigrations / summary.totalMigrations) * 100).toFixed(1);
+    const { data, loading, error } = useMetadata();
 
-    const migrationStatusOption = useMemo(() => ({
-        title: { text: 'Migration Status', left: 'center', textStyle: { color: '#fff' } },
-        tooltip: { trigger: 'item' },
-        legend: { bottom: '0%', textStyle: { color: '#cbd5e1' } },
-        series: [
-            {
-                name: 'Status',
-                type: 'pie',
-                radius: ['40%', '70%'],
-                avoidLabelOverlap: false,
-                itemStyle: {
-                    borderRadius: 10,
-                    borderColor: '#1e2329',
-                    borderWidth: 2
-                },
-                label: {
-                    show: false,
-                    position: 'center'
-                },
-                emphasis: {
+    // All hooks must be called unconditionally, before any early returns
+    const summary: GlobalSummary | null = data?.summary || null;
+    const successRate = summary
+        ? ((summary.successfulMigrations / summary.totalMigrations) * 100).toFixed(1)
+        : '0';
+
+    const migrationStatusOption = useMemo(() => {
+        if (!summary) return {};
+
+        return {
+            title: { text: 'Migration Status', left: 'center', textStyle: { color: '#fff' } },
+            tooltip: { trigger: 'item' },
+            legend: { bottom: '0%', textStyle: { color: '#cbd5e1' } },
+            series: [
+                {
+                    name: 'Status',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#1e2329',
+                        borderWidth: 2
+                    },
                     label: {
-                        show: true,
-                        fontSize: 20,
-                        fontWeight: 'bold'
-                    }
-                },
-                labelLine: { show: false },
-                data: [
-                    { value: summary.successfulMigrations, name: 'Success', itemStyle: { color: '#22c55e' } },
-                    { value: summary.failedMigrations, name: 'Failed', itemStyle: { color: '#ef4444' } },
-                ]
-            }
-        ]
-    }), [summary]);
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 20,
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labelLine: { show: false },
+                    data: [
+                        { value: summary.successfulMigrations, name: 'Success', itemStyle: { color: '#22c55e' } },
+                        { value: summary.failedMigrations, name: 'Failed', itemStyle: { color: '#ef4444' } },
+                    ]
+                }
+            ]
+        };
+    }, [summary]);
 
     const topRecipesOption = useMemo(() => {
+        if (!summary) return {};
+
         const recipes = Object.values(summary.recipes) as RecipeStats[];
         // Sort by failure count descending
         const sortedRecipes = recipes.sort((a, b) => b.fail - a.fail).slice(0, 10);
@@ -84,6 +93,24 @@ export const Dashboard = () => {
             ]
         };
     }, [summary]);
+
+    // Now safe to do conditional returns after all hooks are called
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+            </div>
+        );
+    }
+
+    if (error || !data || !summary) {
+        return (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
+                <p className="text-red-400 text-lg">Failed to load data. Please try refreshing the page.</p>
+                {error && <p className="text-red-300 text-sm mt-2">{error.message}</p>}
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

@@ -1,19 +1,19 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ChevronRight } from 'lucide-react';
-import data from '../data/modernization-stats.json';
-import type { AppData } from '../types';
-
-const appData = data as AppData;
+import { Search, ChevronRight, Loader2 } from 'lucide-react';
+import { useMetadata } from '../hooks/useMetadata';
 
 type FilterType = 'all' | 'has-failures' | 'fully-modernized';
 
 export const PluginList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<FilterType>('all');
+    const { data, loading, error } = useMetadata();
 
     const filteredPlugins = useMemo(() => {
-        return appData.plugins.filter(plugin => {
+        if (!data) return [];
+
+        return data.plugins.filter(plugin => {
             const matchesSearch = plugin.pluginName.toLowerCase().includes(searchTerm.toLowerCase());
 
             let matchesFilter = true;
@@ -28,7 +28,24 @@ export const PluginList = () => {
 
             return matchesSearch && matchesFilter;
         });
-    }, [searchTerm, filter]);
+    }, [data, searchTerm, filter]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+            </div>
+        );
+    }
+
+    if (error || !data) {
+        return (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
+                <p className="text-red-400 text-lg">Failed to load plugins. Please try refreshing the page.</p>
+                {error && <p className="text-red-300 text-sm mt-2">{error.message}</p>}
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -64,14 +81,20 @@ export const PluginList = () => {
                                 <th className="px-6 py-4">Plugin Name</th>
                                 <th className="px-6 py-4">Total Migrations</th>
                                 <th className="px-6 py-4">Success Rate</th>
+                                <th className="px-6 py-4">Open PRs</th>
+                                <th className="px-6 py-4">Latest Migration</th>
                                 <th className="px-6 py-4">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
                             {filteredPlugins.map((plugin) => {
                                 const total = plugin.migrations ? plugin.migrations.length : 0;
-                                const success = plugin.migrations ? plugin.migrations.filter(m => m.migrationStatus === 'success').length : 0;
+                                const success = plugin.migrations ? plugin.migrations.filter((m) => m.migrationStatus === 'success').length : 0;
                                 const rate = total > 0 ? ((success / total) * 100).toFixed(0) : '0';
+                                const openPRs = plugin.migrations ? plugin.migrations.filter((m) => m.pullRequestStatus === 'open').length : 0;
+                                const latestMigration = plugin.migrations && plugin.migrations.length > 0
+                                    ? plugin.migrations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
+                                    : null;
 
                                 return (
                                     <tr key={plugin.pluginName} className="hover:bg-white/5 transition-colors">
@@ -87,6 +110,22 @@ export const PluginList = () => {
                                                 </div>
                                                 <span className="text-sm text-slate-400">{rate}%</span>
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {openPRs > 0 ? (
+                                                <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded-full border border-green-500/20">
+                                                    {openPRs}
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-600 text-xs">-</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-400 text-sm">
+                                            {latestMigration ? (
+                                                <span>{new Date(latestMigration.timestamp).toLocaleDateString()}</span>
+                                            ) : (
+                                                <span className="text-slate-600">-</span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <Link

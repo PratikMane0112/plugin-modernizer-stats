@@ -1,11 +1,26 @@
 export interface Migration {
     pluginVersion: string;
+    jenkinsBaseline?: string;
+    targetBaseline?: string;
+    effectiveBaseline?: string;
     jenkinsVersion?: string;
     migrationName: string;
+    migrationDescription?: string;
+    tags?: string[];
     migrationId: string;
-    migrationStatus: 'success' | 'failure' | 'pending'; // Adjust based on actual data
+    migrationStatus: 'success' | 'failure' | 'pending';
     pullRequestUrl?: string;
+    pullRequestStatus?: 'open' | 'closed' | 'merged';
+    dryRun?: boolean;
+    additions?: number;
+    deletions?: number;
+    changedFiles?: number;
     key: string;
+    path?: string;
+    checkRuns?: Record<string, string>;
+    checkRunsSummary?: 'success' | 'failure';
+    defaultBranch?: string;
+    defaultBranchLatestCommitSha?: string;
     timestamp: string;
 }
 
