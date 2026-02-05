@@ -64,6 +64,13 @@ This project fetches data from the [metadata-plugin-modernizer](https://github.c
     Open [http://localhost:5173](http://localhost:5173) to view the dashboard locally ...
 
 
+## 🚀 Deployment
+
+This project is deployed on [Netlify](https://netlify.com). Here you can see the [live demo]()
+
+**Note**: The build process automatically fetches the latest metadata from the [metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) repository during deployment.
+
+
 ## 🛠️ Tech Stack
 
 -   **Frontend**: React 19 + TypeScript

@@ -1,0 +1,23 @@
+[build]
+  # Command to run before build
+  command = "chmod +x ./fetch-metadata-plugin-modernizer.sh && ./fetch-metadata-plugin-modernizer.sh && npm run build"
+  
+  # Directory with the built files
+  publish = "dist"
+
+# Redirect rules for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for better caching
+[[headers]]
+  for = "/metadata/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
