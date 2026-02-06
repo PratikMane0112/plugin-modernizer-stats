@@ -66,7 +66,7 @@ This project fetches data from the [metadata-plugin-modernizer](https://github.c
 
 ## 🚀 Deployment
 
-This project is deployed on [Netlify](https://netlify.com). Here you can see the [live demo]()
+This project is deployed on [Netlify](https://netlify.com). Here you can see the [live demo](https://plugin-modernizer-stats.netlify.app/)
 
 **Note**: The build process automatically fetches the latest metadata from the [metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) repository during deployment.
 
