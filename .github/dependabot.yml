@@ -2,7 +2,20 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 10
-    # Allow updates for both dependencies and devDependencies (default behavior)
+
+    open-pull-requests-limit: 5
+
+    # Group updates to avoid peer dependency conflicts
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
+    # Ignore breaking (major) updates
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
