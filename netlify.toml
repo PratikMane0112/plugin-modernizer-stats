@@ -1,6 +1,6 @@
 [build]
   # Command to run before build
-  command = "chmod +x ./fetch-metadata-plugin-modernizer.sh && ./fetch-metadata-plugin-modernizer.sh && npm run build"
+  command = "chmod +x ./fetch-metadata-plugin-modernizer.sh && ./fetch-metadata-plugin-modernizer.sh && npx tsx scripts/consolidate.ts && npm run build"
   
   # Directory with the built files
   publish = "dist"
