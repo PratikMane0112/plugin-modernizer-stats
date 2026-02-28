@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, List } from 'lucide-react';
+import { LayoutDashboard, List, Beaker } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -9,6 +9,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     const navItems = [
         { label: 'Dashboard', path: '/', icon: LayoutDashboard },
         { label: 'Plugins', path: '/plugins', icon: List },
+        { label: 'Recipes', path: '/recipes', icon: Beaker },
     ];
 
     return (
