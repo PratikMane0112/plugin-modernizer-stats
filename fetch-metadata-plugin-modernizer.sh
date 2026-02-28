@@ -13,6 +13,7 @@ METADATA_LOCATION="${METADATA_LOCATION:-public/metadata}"
 
 curl --silent --fail --output metadata-plugin-modernizer-main.zip --location "https://github.com/jenkins-infra/metadata-plugin-modernizer/archive/refs/heads/main.zip"
 unzip -q -o metadata-plugin-modernizer-main.zip
+rm -rf "${METADATA_LOCATION}"
 mv metadata-plugin-modernizer-main "${METADATA_LOCATION}"
 rm metadata-plugin-modernizer-main.zip
 

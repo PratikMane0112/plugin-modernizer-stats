@@ -5,12 +5,6 @@
   # Directory with the built files
   publish = "dist"
 
-# Serve metadata files directly (must come before SPA catch-all)
-[[redirects]]
-  from = "/metadata/*"
-  to = "/metadata/:splat"
-  status = 200
-
 # Redirect rules for SPA routing
 [[redirects]]
   from = "/*"
