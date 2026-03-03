@@ -5,101 +5,118 @@
 [![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-A modern, static visualization dashboard for tracking the modernization progress of the Jenkins plugin ecosystem. This project consumes data produced by the [Plugin Modernizer Tool](https://github.com/jenkins-infra/plugin-modernizer-tool) and stored in the [Metadata Repository](https://github.com/jenkins-infra/metadata-plugin-modernizer).
+A static visualization site prototype for tracking the modernization & migration progress of the [Jenkins Plugin Modernizer Tool](https://github.com/jenkins-infra/plugin-modernizer-tool). This project consumes data stored in the [Metadata Repository](https://github.com/jenkins-infra/metadata-plugin-modernizer) during migration and modernization of a plugin (w.r.t applied recipe & scheduled github action workflows) by plugin modernizer tool.
 
-## 🎯 Project Goal
+## Project Goal
 
-As part of the Jenkins GSoC initiative, this tool provides transparency into technical debt reduction across 2000+ Jenkins plugins. It visualizes:
-- **Global Migration Status**: Success, failure, and pending rates of OpenRewrite recipe applications across 424 plugins.
-- **Recipe Performance**: Which modernization recipes are failing most frequently, with per-recipe drill-down.
-- **Per-Plugin Reports**: Detailed migration history including baselines, code changes, PR status, CI check runs, and tags.
-- **Timeline & Tags**: Monthly migration trends and tag-based categorization.
+This project will make the exploration of `metadata-plugin-modernizer` data smooth and with the additional power of UI components (such as dashboard, charts, graphs, etc) will make end to end stats analysis for each plugin & recipe in a more efficient way. 
 
-## 🏗️ Architecture
-
-This project is part of a 4-component ecosystem:
-
-1. **[Plugin Modernizer Tool](https://github.com/jenkins-infra/plugin-modernizer-tool)**: CLI that runs OpenRewrite recipes on plugins and generates raw reports.
-2. **[Metadata Repository](https://github.com/jenkins-infra/metadata-plugin-modernizer)**: GitHub repository hosting the raw JSON/CSV data.
-3. **[Infra Statistics](https://github.com/jenkins-infra/infra-statistics)**: General Jenkins usage stats (installations, versions).
-4. **Plugin Modernizer Stats (This Project)**: The frontend dashboard deployed at [reports.jenkins.io/plugin-modernizer](https://reports.jenkins.io/plugin-modernizer/).
-
-### Data Pipeline
-
-```
-metadata-plugin-modernizer (GitHub)
-  → fetch-metadata-plugin-modernizer.sh (download & extract)
-    → scripts/consolidate.ts (process raw data → site-data/*.json)
-      → npm run build (Vite → dist/)
-        → publishReports (Jenkins → reports.jenkins.io)
-```
+- **Global Migration Status** — Success, failure, and pending rates across 400+ plugins.
+- **Recipe Performance** — Which modernization recipes are failing most frequently, with per-recipe drill-down.
+- **Per-Plugin Reports** — Detailed migration history including baselines, code changes, PR status, CI check runs & tags.
+- **Timeline & Tags** — Monthly migration trends and tag-based categorization.
 
 ### Pages
 
-| Route | Page | Description |
-|-------|------|-------------|
-| `/` | Dashboard | Summary stats, migration status charts, PR stats, recipe performance, timeline, tags distribution, top-failing plugins |
-| `/plugins` | Plugin List | Sortable, filterable, paginated list of all 424 plugins with success rates and PR counts |
-| `/plugins/:name` | Plugin Detail | Full migration history with all 21 fields: baselines, code changes, check runs, PR links, tags |
-| `/recipes` | Recipe List | All 17 recipes with expandable plugin application details |
-| `/recipes/:id` | Recipe Detail | Per-recipe deep-dive with status chart, timeline, and plugin applications table |
+| Route           | Page          | Description                                                                                        |
+|-----------------|---------------|----------------------------------------------------------------------------------------------------|
+| `/`             | Dashboard     | Summary stats, migration/PR status charts, recipe performance, timeline, tags, top-failing recipes |
+| `/plugins`      | Plugin List   | Virtualized, searchable list of all plugins with GitHub links                                      |
+| `/plugins/:name`| Plugin Detail | Full migration history — status, PRs, timestamps, failed migrations CSV                            |
+| `/recipes`      | Recipe List   | All recipes with success rate badges and debounced search                                          |
+| `/recipes/:id`  | Recipe Detail | Per-recipe status chart, plugin application table                                                  |
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js (LTS)
-- npm
 
-### Development
+- **Node.js** ≥ 22 (LTS)
+- **npm** ≥ 10
+- **bash** (for the fetch script)
 
-1. **Install dependencies**:
-    ```bash
-    npm ci
-    ```
-
-2. **Fetch upstream data**:
-    ```bash
-    ./fetch-metadata-plugin-modernizer.sh
-    ```
-
-3. **Consolidate data** (generates `site-data/*.json` for the UI):
-    ```bash
-    npx tsx scripts/consolidate.ts
-    ```
-
-4. **Start dev server**:
-    ```bash
-    npm run dev
-    ```
-    Open [http://localhost:5173](http://localhost:5173) to view the dashboard.
-
-### Production Build
+### 1. Clone the repository
 
 ```bash
-npm run build    # outputs to dist/
-npm run preview  # preview the production build
+git clone https://github.com/PratikMane0112/plugin-modernizer-stats.git
+cd plugin-modernizer-stats
 ```
 
-## 🚀 Deployment
+### 2. Install dependencies
 
-- **Netlify**: [Live demo](https://plugin-modernizer-stats.netlify.app/)
-- **Jenkins Infra**: Deployed via `Jenkinsfile` pipeline to `reports.jenkins.io/plugin-modernizer/` using `publishReports`.
+```bash
+npm ci
+```
 
-The pipeline runs: `npm ci` → `lint` → `fetch metadata` → `consolidate` → `build` → `deploy`.
+### 3. Fetch upstream data
 
-## 🛠️ Tech Stack
+Downloads the latest data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) into `.tmp/`:
 
-- **Frontend**: React 19 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: TailwindCSS (Dark Mode)
-- **Visualization**: Apache ECharts for React
-- **Routing**: React Router DOM
-- **Icons**: Lucide React
-- **Data Processing**: Node.js + tsx (build-time consolidation)
+```bash
+npm run fetch
+```
 
-## 📖 Implementation Details
+### 4. Consolidate data
 
-See [IMPLEMENTATION.md](IMPLEMENTATION.md) for the detailed implementation plan, per-file change breakdown, blockers/pros/cons, and next steps.
+Transforms raw data into structured JSON files in `public/plugin-modernizer-stats/` and cleans up `.tmp/`:
+
+```bash
+npm run consolidate
+```
+
+### 5. Start the dev server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) to view the dashboard locally ...
+
+
+## Deployment
+
+The protoype is deployed on netlify. Here is a live demo: [plugin-modernizer-stats.netlify.app](https://plugin-modernizer-stats.netlify.app/)
+
+
+## Tech Stack
+
+| Category            | Technology                             |
+|---------------------|----------------------------------------|
+| Frontend            | React 19 + TypeScript (strict mode)    |
+| Build Tool          | Vite                                   |
+| Styling             | Tailwind CSS v4 (dark mode)            |
+| Visualization       | Apache ECharts via `echarts-for-react` |
+| Routing             | React Router DOM v7                    |
+| List Virtualization | `@tanstack/react-virtual`              |
+| Icons               | Lucide React                           |
+| Data Processing     | Node.js + `tsx` (build-time scripts)   |
+
+## � Project Structure
+
+```
+├── scripts/
+│   ├── fetch-metadata-plugin-modernizer.sh   # Downloads upstream data
+│   └── consolidate.ts                        # Transforms raw to structured JSON
+├── src/
+│   ├── lib/dataClient.ts                     # Centralized fetch layer with caching
+│   ├── hooks/useMetadata.ts                  # React hooks for data access
+│   ├── components/
+│   │   ├── Layout.tsx                        # Sidebar nav, mobile responsive
+│   │   ├── Skeleton.tsx                      # Loading skeletons
+│   │   └── ErrorBanner.tsx                   # Error display with retry
+│   ├── pages/
+│   │   ├── Dashboard.tsx                     # KPI cards, 5 charts
+│   │   ├── PluginList.tsx                    # Virtualized plugin list
+│   │   ├── PluginDetail.tsx                  # Plugin migration details
+│   │   ├── RecipeList.tsx                    # Virtualized recipe list
+│   │   └── RecipeDetail.tsx                  # Recipe drill-down
+│   ├── types.ts                              # All TypeScript interfaces
+│   ├── App.tsx                               # Router + lazy loading
+│   └── main.tsx                              # Entry point
+├── public/                                   # Static assets (favicon, icons)
+├── netlify.toml                              # Netlify build config
+└── package.json
+```
 
 ## 📄 License
+
 MIT

@@ -1,27 +1,28 @@
-
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Dashboard } from './pages/Dashboard';
-import { PluginList } from './pages/PluginList';
-import { PluginDetail } from './pages/PluginDetail';
-import { RecipeList } from './pages/RecipeList';
-import { RecipeDetail } from './pages/RecipeDetail';
+import { SkeletonPage, SkeletonTable, SkeletonDetail } from './components/Skeleton';
+
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const RecipeList = lazy(() => import('./pages/RecipeList').then(m => ({ default: m.RecipeList })));
+const RecipeDetail = lazy(() => import('./pages/RecipeDetail').then(m => ({ default: m.RecipeDetail })));
+const PluginList = lazy(() => import('./pages/PluginList').then(m => ({ default: m.PluginList })));
+const PluginDetail = lazy(() => import('./pages/PluginDetail').then(m => ({ default: m.PluginDetail })));
 
 function App() {
-  return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/plugins" element={<PluginList />} />
-          <Route path="/plugins/:name" element={<PluginDetail />} />
-          <Route path="/recipes" element={<RecipeList />} />
-          <Route path="/recipes/:id" element={<RecipeDetail />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </Router>
-  );
+    return (
+        <BrowserRouter>
+            <Layout>
+                <Routes>
+                    <Route path="/" element={<Suspense fallback={<SkeletonPage />}><Dashboard /></Suspense>} />
+                    <Route path="/plugins" element={<Suspense fallback={<SkeletonTable />}><PluginList /></Suspense>} />
+                    <Route path="/plugins/:name" element={<Suspense fallback={<SkeletonDetail />}><PluginDetail /></Suspense>} />
+                    <Route path="/recipes" element={<Suspense fallback={<SkeletonTable />}><RecipeList /></Suspense>} />
+                    <Route path="/recipes/:id" element={<Suspense fallback={<SkeletonDetail />}><RecipeDetail /></Suspense>} />
+                </Routes>
+            </Layout>
+        </BrowserRouter>
+    );
 }
 
 export default App;

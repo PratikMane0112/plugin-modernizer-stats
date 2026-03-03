@@ -1,20 +1,18 @@
 import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
-import { ArrowLeft, Loader2, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { useMetadata } from '../hooks/useMetadata';
+import { ArrowLeft, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react';
+import { useRecipeData } from '../hooks/useMetadata';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 export const RecipeDetail = () => {
     const { id } = useParams<{ id: string }>();
-    const { data, loading, error } = useMetadata();
-
-    const recipe = useMemo(() => {
-        if (!data?.recipes || !id) return null;
-        return data.recipes.find(r => r.recipeId === decodeURIComponent(id)) || null;
-    }, [data, id]);
+    const recipeName = decodeURIComponent(id ?? '');
+    const { recipe, loading, error } = useRecipeData(recipeName);
 
     const statusChartOption = useMemo(() => {
         if (!recipe) return {};
+        const pendingCount = recipe.totalApplications - recipe.successCount - recipe.failureCount;
         return {
             tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
             legend: { bottom: '0%', textStyle: { color: '#cbd5e1' } },
@@ -27,8 +25,8 @@ export const RecipeDetail = () => {
                 data: [
                     { value: recipe.successCount, name: 'Success', itemStyle: { color: '#22c55e' } },
                     { value: recipe.failureCount, name: 'Failed', itemStyle: { color: '#ef4444' } },
-                    ...(recipe.totalApplications - recipe.successCount - recipe.failureCount > 0
-                        ? [{ value: recipe.totalApplications - recipe.successCount - recipe.failureCount, name: 'Pending', itemStyle: { color: '#f59e0b' } }]
+                    ...(pendingCount > 0
+                        ? [{ value: pendingCount, name: 'Pending', itemStyle: { color: '#f59e0b' } }]
                         : []),
                 ]
             }]
@@ -72,14 +70,26 @@ export const RecipeDetail = () => {
         );
     }
 
-    if (error || !data || !recipe) {
+    if (error) {
+        const is404 = error.message.includes('404');
         return (
-            <div className="p-8 text-center">
-                <h2 className="text-2xl font-bold text-slate-200">Recipe Not Found</h2>
-                <Link to="/recipes" className="text-blue-400 hover:underline mt-4 inline-block">Back to Recipes</Link>
+            <div className="space-y-4">
+                <Link to="/recipes" className="inline-flex items-center text-slate-400 hover:text-slate-200">
+                    <ArrowLeft size={16} className="mr-1" /> Back to Recipes
+                </Link>
+                {is404 ? (
+                    <div className="bg-[#1e2329] rounded-xl border border-slate-800 p-12 text-center">
+                        <p className="text-slate-500 text-lg mb-2">Recipe not found</p>
+                        <p className="text-slate-600 text-sm font-mono">{recipeName}</p>
+                    </div>
+                ) : (
+                    <ErrorBanner message={error.message} onRetry={() => window.location.reload()} />
+                )}
             </div>
         );
     }
+
+    if (!recipe) return null;
 
     const shortName = recipe.recipeId.split('.').pop() || recipe.recipeId;
     const pendingCount = recipe.totalApplications - recipe.successCount - recipe.failureCount;
@@ -140,7 +150,7 @@ export const RecipeDetail = () => {
                     <h2 className="font-bold text-slate-200">Plugin Applications ({recipe.plugins.length})</h2>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left" role="table">
                         <thead>
                             <tr className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
                                 <th className="px-6 py-3">Plugin</th>

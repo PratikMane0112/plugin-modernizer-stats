@@ -23,4 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-public/metadata/
+# Fetched upstream data (transient — cleaned up by consolidate.ts)
+.tmp/
+
+# Consolidated stats output (generated at build time)
+public/plugin-modernizer-stats/

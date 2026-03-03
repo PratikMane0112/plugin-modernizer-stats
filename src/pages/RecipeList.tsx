@@ -2,19 +2,24 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Loader2, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { useMetadata } from '../hooks/useMetadata';
+import { ErrorBanner } from '../components/ErrorBanner';
 import type { RecipeReport } from '../types';
 
 export const RecipeList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedRecipe, setExpandedRecipe] = useState<string | null>(null);
-    const { data, loading, error } = useMetadata();
+    const { recipes, loading, error } = useMetadata();
 
     const filteredRecipes = useMemo(() => {
-        if (!data?.recipes) return [];
-        return data.recipes.filter(recipe =>
+        if (!recipes) return [];
+        return recipes.filter((recipe: RecipeReport) =>
             recipe.recipeId.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [data, searchTerm]);
+    }, [recipes, searchTerm]);
+
+    const toggleExpand = (recipeId: string) => {
+        setExpandedRecipe(expandedRecipe === recipeId ? null : recipeId);
+    };
 
     if (loading) {
         return (
@@ -24,21 +29,13 @@ export const RecipeList = () => {
         );
     }
 
-    if (error || !data) {
-        return (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
-                <p className="text-red-400 text-lg">Failed to load recipes. Please try refreshing the page.</p>
-                {error && <p className="text-red-300 text-sm mt-2">{error.message}</p>}
-            </div>
-        );
+    if (error) {
+        return <ErrorBanner message={error.message} onRetry={() => window.location.reload()} />;
     }
-
-    const toggleExpand = (recipeId: string) => {
-        setExpandedRecipe(expandedRecipe === recipeId ? null : recipeId);
-    };
 
     return (
         <div className="space-y-6">
+            {/* Search bar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e2329] p-4 rounded-xl border border-slate-800">
                 <div className="relative flex-1 w-full sm:max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
@@ -48,11 +45,13 @@ export const RecipeList = () => {
                         className="w-full pl-10 pr-4 py-2 bg-[#15171a] border border-slate-700 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        aria-label="Search recipes"
                     />
                 </div>
                 <span className="text-sm text-slate-400">{filteredRecipes.length} recipes</span>
             </div>
 
+            {/* Recipe cards */}
             <div className="space-y-4">
                 {filteredRecipes.map((recipe: RecipeReport) => {
                     const isExpanded = expandedRecipe === recipe.recipeId;
@@ -112,8 +111,8 @@ export const RecipeList = () => {
                                                 <span className="text-slate-200">{plugin.pluginName}</span>
                                                 <span className={
                                                     plugin.status === 'success' ? 'text-green-400' :
-                                                        plugin.status === 'fail' || plugin.status === 'failure' ? 'text-red-400' :
-                                                            'text-slate-500'
+                                                    plugin.status === 'fail' || plugin.status === 'failure' ? 'text-red-400' :
+                                                    'text-slate-500'
                                                 }>
                                                     {plugin.status || 'unknown'}
                                                 </span>

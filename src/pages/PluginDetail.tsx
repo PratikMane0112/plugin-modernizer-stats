@@ -6,6 +6,7 @@ import {
     Loader2, Clock, GitCommit, AlertTriangle
 } from 'lucide-react';
 import { usePluginData } from '../hooks/useMetadata';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 export const PluginDetail = () => {
     const { name } = useParams<{ name: string }>();
@@ -14,11 +15,10 @@ export const PluginDetail = () => {
     const timelineOption = useMemo(() => {
         if (!plugin?.migrations || plugin.migrations.length === 0) return null;
 
-        // Group by month
         const monthMap = new Map<string, { success: number; fail: number }>();
         for (const m of plugin.migrations) {
             const date = m.timestamp?.split('T')[0] || '';
-            const month = date.substring(0, 7); // "YYYY-MM"
+            const month = date.substring(0, 7);
             if (!month) continue;
             const entry = monthMap.get(month) || { success: 0, fail: 0 };
             if (m.migrationStatus === 'success') entry.success++;
@@ -51,11 +51,20 @@ export const PluginDetail = () => {
     }
 
     if (error || !plugin) {
+        const is404 = error?.message.includes('404');
         return (
-            <div className="p-8 text-center">
-                <h2 className="text-2xl font-bold text-slate-200">Plugin Not Found</h2>
-                {error && <p className="text-red-400 mt-2">{error.message}</p>}
-                <Link to="/plugins" className="text-blue-400 hover:underline mt-4 inline-block">Back to Plugins</Link>
+            <div className="space-y-4">
+                <Link to="/plugins" className="inline-flex items-center text-slate-400 hover:text-slate-200">
+                    <ArrowLeft size={16} className="mr-1" /> Back to Plugins
+                </Link>
+                {is404 ? (
+                    <div className="bg-[#1e2329] rounded-xl border border-slate-800 p-12 text-center">
+                        <p className="text-slate-500 text-lg mb-2">Plugin not found</p>
+                        <p className="text-slate-600 text-sm">{name}</p>
+                    </div>
+                ) : (
+                    <ErrorBanner message={error?.message ?? 'Unknown error'} onRetry={() => window.location.reload()} />
+                )}
             </div>
         );
     }
@@ -100,6 +109,10 @@ export const PluginDetail = () => {
                         </div>
                     </div>
                     <div className="flex gap-3 text-center">
+                        <div className="bg-blue-500/10 px-4 py-2 rounded-lg border border-blue-500/20">
+                            <span className="block text-2xl font-bold text-blue-500">{plugin.totalMigrations}</span>
+                            <span className="text-xs text-blue-400 font-medium">Migrations</span>
+                        </div>
                         <div className="bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/20">
                             <span className="block text-2xl font-bold text-green-500">{successCount}</span>
                             <span className="text-xs text-green-400 font-medium">Success</span>
@@ -114,25 +127,18 @@ export const PluginDetail = () => {
                                 <span className="text-xs text-amber-400 font-medium">Pending</span>
                             </div>
                         )}
-                        <div className="bg-blue-500/10 px-4 py-2 rounded-lg border border-blue-500/20">
-                            <span className="block text-2xl font-bold text-blue-500">{plugin.successRate.toFixed(0)}%</span>
-                            <span className="text-xs text-blue-400 font-medium">Rate</span>
-                        </div>
                     </div>
                 </div>
 
-                {/* PR summary bar */}
-                <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400 border-t border-slate-800 pt-4">
-                    <span>Open PRs: <span className="text-green-400 font-bold">{plugin.openPRs}</span></span>
-                    <span>Merged PRs: <span className="text-purple-400 font-bold">{plugin.mergedPRs}</span></span>
-                    <span>Closed PRs: <span className="text-red-400 font-bold">{plugin.closedPRs}</span></span>
-                    {plugin.latestMigration && (
+                {/* Latest migration info */}
+                {plugin.latestMigration && (
+                    <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400 border-t border-slate-800 pt-4">
                         <span className="flex items-center gap-1">
                             <Clock size={12} />
-                            Latest: <span className="text-white">{plugin.latestMigration.split('T')[0]}</span>
+                            Latest migration: <span className="text-white">{plugin.latestMigration.split('T')[0]}</span>
                         </span>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
             {/* Per-plugin Timeline Chart */}
@@ -173,10 +179,11 @@ export const PluginDetail = () => {
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                     {migration.pullRequestStatus && (
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${migration.pullRequestStatus === 'open' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                                migration.pullRequestStatus === 'merged' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                    'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-                                            }`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                            migration.pullRequestStatus === 'open' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                                            migration.pullRequestStatus === 'merged' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                            'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                                        }`}>
                                             PR {migration.pullRequestStatus}
                                         </span>
                                     )}
@@ -248,10 +255,11 @@ export const PluginDetail = () => {
                                 <div className="mb-3 ml-7 p-3 bg-[#15171a] rounded-lg border border-slate-700">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium text-slate-300">CI Check Runs</span>
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${migration.checkRunsSummary === 'success' ? 'bg-green-500/10 text-green-400' :
-                                                migration.checkRunsSummary === 'pending' ? 'bg-amber-500/10 text-amber-400' :
-                                                    'bg-red-500/10 text-red-400'
-                                            }`}>
+                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                            migration.checkRunsSummary === 'success' ? 'bg-green-500/10 text-green-400' :
+                                            migration.checkRunsSummary === 'pending' ? 'bg-amber-500/10 text-amber-400' :
+                                            'bg-red-500/10 text-red-400'
+                                        }`}>
                                             {migration.checkRunsSummary}
                                         </span>
                                     </div>
@@ -262,9 +270,9 @@ export const PluginDetail = () => {
                                                     <span className="text-slate-400 truncate mr-2">{checkName}</span>
                                                     <span className={
                                                         status === 'success' ? 'text-green-400' :
-                                                            status === 'failure' ? 'text-red-400' :
-                                                                status === null ? 'text-slate-600' :
-                                                                    'text-amber-400'
+                                                        status === 'failure' ? 'text-red-400' :
+                                                        status === null ? 'text-slate-600' :
+                                                        'text-amber-400'
                                                     }>
                                                         {status === null ? 'pending' : status}
                                                     </span>

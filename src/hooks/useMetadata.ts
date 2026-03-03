@@ -1,54 +1,92 @@
 import { useState, useEffect } from 'react';
-import type { AppData, PluginReport, SiteSummary, RecipeReport } from '../types';
+import { dataClient } from '../lib/dataClient';
+import type { SummaryJson, PluginRecipesIndex, PluginReport, RecipeReport } from '../types';
+
+// ── Re-export AppData shape for consumers ───────────────────────────────────
+export interface AppData {
+    summary: SummaryJson;
+    plugins: PluginReport[];
+    recipes: RecipeReport[];
+}
 
 /**
- * Hook to fetch the consolidated summary and plugin data.
- * Uses pre-consolidated JSON bundles from reports/site-data/ instead
- * of fetching individual files for each plugin.
+ * Hook to fetch summary + all recipes.
  */
 export const useMetadata = () => {
-    const [data, setData] = useState<AppData | null>(null);
+    const [summary, setSummary] = useState<SummaryJson | null>(null);
+    const [recipes, setRecipes] = useState<RecipeReport[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const fetchMetadata = async () => {
-            try {
-                setLoading(true);
+        let cancelled = false;
 
-                // Fetch pre-consolidated data files in parallel
-                const [summaryRes, pluginsRes, recipesRes] = await Promise.all([
-                    fetch('/metadata/reports/site-data/summary.json'),
-                    fetch('/metadata/reports/site-data/plugins.json'),
-                    fetch('/metadata/reports/site-data/recipes.json'),
-                ]);
+        const load = async () => {
+            setLoading(true);
+            const [summaryResult, recipesResult] = await Promise.all([
+                dataClient.getSummary(),
+                dataClient.getAllRecipes(),
+            ]);
 
-                if (!summaryRes.ok) throw new Error('Failed to load summary data');
-                if (!pluginsRes.ok) throw new Error('Failed to load plugins data');
-                if (!recipesRes.ok) throw new Error('Failed to load recipes data');
+            if (cancelled) return;
 
-                const summary: SiteSummary = await summaryRes.json();
-                const plugins: PluginReport[] = await pluginsRes.json();
-                const recipes: RecipeReport[] = await recipesRes.json();
-
-                setData({ summary, plugins, recipes });
-                setError(null);
-            } catch (err) {
-                console.error('Error fetching metadata:', err);
-                setError(err instanceof Error ? err : new Error('Failed to fetch metadata'));
-            } finally {
+            if (!summaryResult.ok) {
+                setError(new Error(summaryResult.error));
                 setLoading(false);
+                return;
             }
+
+            setSummary(summaryResult.data);
+
+            if (recipesResult.ok) {
+                setRecipes(recipesResult.data);
+            } else {
+                console.warn('[useMetadata] Failed to load recipes:', recipesResult.error);
+                setRecipes([]);
+            }
+
+            setError(null);
+            setLoading(false);
         };
 
-        fetchMetadata();
+        load();
+        return () => { cancelled = true; };
     }, []);
 
-    return { data, loading, error };
+    return { summary, recipes, loading, error };
 };
 
 /**
- * Hook to fetch data for a specific plugin from the consolidated plugins.json
+ * Hook to fetch the plugin-recipes index.
+ */
+export const useIndex = () => {
+    const [index, setIndex] = useState<PluginRecipesIndex | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        const load = async () => {
+            setLoading(true);
+            const result = await dataClient.getIndex();
+            if (cancelled) return;
+            if (result.ok) {
+                setIndex(result.data);
+                setError(null);
+            } else {
+                setError(new Error(result.error));
+            }
+            setLoading(false);
+        };
+        load();
+        return () => { cancelled = true; };
+    }, []);
+
+    return { index, loading, error };
+};
+
+/**
+ * Hook to fetch data for a specific plugin.
  */
 export const usePluginData = (pluginName: string) => {
     const [plugin, setPlugin] = useState<PluginReport | null>(null);
@@ -61,40 +99,163 @@ export const usePluginData = (pluginName: string) => {
             return;
         }
 
-        const fetchPluginData = async () => {
-            try {
-                setLoading(true);
-
-                // Try consolidated data first, fall back to individual file
-                const pluginsRes = await fetch('/metadata/reports/site-data/plugins.json');
-                if (pluginsRes.ok) {
-                    const plugins: PluginReport[] = await pluginsRes.json();
-                    const found = plugins.find(p => p.pluginName === pluginName);
-                    if (found) {
-                        setPlugin(found);
-                        setError(null);
-                        return;
-                    }
-                }
-
-                // Fallback: try individual aggregated_migrations.json
-                const response = await fetch(`/metadata/${pluginName}/reports/aggregated_migrations.json`);
-                if (!response.ok) {
-                    throw new Error(`Plugin not found: ${pluginName}`);
-                }
-                const pluginData: PluginReport = await response.json();
-                setPlugin(pluginData);
+        let cancelled = false;
+        const load = async () => {
+            setLoading(true);
+            const result = await dataClient.getPluginReport(pluginName);
+            if (cancelled) return;
+            if (result.ok) {
+                setPlugin(result.data);
                 setError(null);
-            } catch (err) {
-                console.error(`Error fetching plugin data for ${pluginName}:`, err);
-                setError(err instanceof Error ? err : new Error('Failed to fetch plugin data'));
-            } finally {
-                setLoading(false);
+            } else {
+                setError(new Error(result.error));
             }
+            setLoading(false);
         };
-
-        fetchPluginData();
+        load();
+        return () => { cancelled = true; };
     }, [pluginName]);
 
     return { plugin, loading, error };
+};
+
+/**
+ * Hook to fetch a single recipe by name.
+ */
+export const useRecipeData = (recipeName: string) => {
+    const [recipe, setRecipe] = useState<RecipeReport | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        if (!recipeName) {
+            setLoading(false);
+            return;
+        }
+
+        let cancelled = false;
+        const load = async () => {
+            setLoading(true);
+            const result = await dataClient.getRecipe(recipeName);
+            if (cancelled) return;
+            if (result.ok) {
+                setRecipe(result.data);
+                setError(null);
+            } else {
+                setError(new Error(result.error));
+            }
+            setLoading(false);
+        };
+        load();
+        return () => { cancelled = true; };
+    }, [recipeName]);
+
+    return { recipe, loading, error };
+};
+
+/**
+ * Hook to fetch failed migrations CSV for a plugin.
+ */
+export const useFailedMigrations = (pluginName: string) => {
+    const [csvData, setCsvData] = useState<string[][] | null>(null);
+    const [headers, setHeaders] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!pluginName) return;
+
+        let cancelled = false;
+        const load = async () => {
+            setLoading(true);
+            const result = await dataClient.getPluginFailedMigrations(pluginName);
+            if (cancelled) return;
+            if (result.ok) {
+                const lines = result.data.trim().split('\n');
+                if (lines.length > 0) {
+                    setHeaders(lines[0].split(','));
+                    setCsvData(lines.slice(1).map(line => line.split(',')));
+                }
+            } else {
+                // 404 is normal — many plugins don't have failed migrations
+                setCsvData(null);
+                setHeaders([]);
+            }
+            setLoading(false);
+        };
+        load();
+        return () => { cancelled = true; };
+    }, [pluginName]);
+
+    return { csvData, headers, loading };
+};
+
+/**
+ * Hook to fetch all plugin reports for the plugins list page.
+ */
+export const useAllPlugins = () => {
+    const [plugins, setPlugins] = useState<PluginReport[] | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        const load = async () => {
+            setLoading(true);
+            const result = await dataClient.getAllPlugins();
+            if (cancelled) return;
+            if (result.ok) {
+                setPlugins(result.data);
+                setError(null);
+            } else {
+                setError(new Error(result.error));
+            }
+            setLoading(false);
+        };
+        load();
+        return () => { cancelled = true; };
+    }, []);
+
+    return { plugins, loading, error };
+};
+
+/**
+ * Hook to fetch the full AppData bundle (summary + plugins + recipes).
+ * Used by pages that need access to all three datasets.
+ */
+export const useAppData = () => {
+    const [data, setData] = useState<AppData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        const load = async () => {
+            setLoading(true);
+            const [summaryResult, pluginsResult, recipesResult] = await Promise.all([
+                dataClient.getSummary(),
+                dataClient.getAllPlugins(),
+                dataClient.getAllRecipes(),
+            ]);
+
+            if (cancelled) return;
+
+            if (!summaryResult.ok) {
+                setError(new Error(summaryResult.error));
+                setLoading(false);
+                return;
+            }
+
+            setData({
+                summary: summaryResult.data,
+                plugins: pluginsResult.ok ? pluginsResult.data : [],
+                recipes: recipesResult.ok ? recipesResult.data : [],
+            });
+            setError(null);
+            setLoading(false);
+        };
+        load();
+        return () => { cancelled = true; };
+    }, []);
+
+    return { data, loading, error };
 };

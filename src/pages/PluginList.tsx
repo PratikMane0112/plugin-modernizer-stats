@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ChevronRight, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
-import { useMetadata } from '../hooks/useMetadata';
+import { useAllPlugins } from '../hooks/useMetadata';
 import type { PluginReport } from '../types';
+import { ErrorBanner } from '../components/ErrorBanner';
 
-type FilterType = 'all' | 'has-failures' | 'fully-modernized' | 'has-open-prs' | 'pending';
-type SortField = 'name' | 'totalMigrations' | 'successRate' | 'failCount' | 'openPRs' | 'mergedPRs' | 'latestMigration';
+type FilterType = 'all' | 'has-failures' | 'all-success' | 'has-pending';
+type SortField = 'name' | 'totalMigrations' | 'successCount' | 'failCount' | 'latestMigration';
 type SortDir = 'asc' | 'desc';
 
 const PAGE_SIZE = 50;
@@ -16,7 +17,7 @@ export const PluginList = () => {
     const [sortField, setSortField] = useState<SortField>('name');
     const [sortDir, setSortDir] = useState<SortDir>('asc');
     const [page, setPage] = useState(0);
-    const { data, loading, error } = useMetadata();
+    const { plugins, loading, error } = useAllPlugins();
 
     const toggleSort = (field: SortField) => {
         if (sortField === field) {
@@ -36,16 +37,15 @@ export const PluginList = () => {
     };
 
     const sortedAndFiltered = useMemo(() => {
-        if (!data) return [];
+        if (!plugins) return [];
 
-        const filtered = data.plugins.filter((plugin: PluginReport) => {
+        const filtered = plugins.filter((plugin: PluginReport) => {
             const matchesSearch = plugin.pluginName.toLowerCase().includes(searchTerm.toLowerCase());
             let matchesFilter = true;
             switch (filter) {
                 case 'has-failures': matchesFilter = plugin.failCount > 0; break;
-                case 'fully-modernized': matchesFilter = plugin.failCount === 0 && plugin.totalMigrations > 0; break;
-                case 'has-open-prs': matchesFilter = plugin.openPRs > 0; break;
-                case 'pending': matchesFilter = plugin.totalMigrations > plugin.successCount + plugin.failCount; break;
+                case 'all-success': matchesFilter = plugin.failCount === 0 && plugin.totalMigrations > 0; break;
+                case 'has-pending': matchesFilter = plugin.totalMigrations > plugin.successCount + plugin.failCount; break;
             }
             return matchesSearch && matchesFilter;
         });
@@ -55,10 +55,8 @@ export const PluginList = () => {
             switch (sortField) {
                 case 'name': return dir * a.pluginName.localeCompare(b.pluginName);
                 case 'totalMigrations': return dir * (a.totalMigrations - b.totalMigrations);
-                case 'successRate': return dir * (a.successRate - b.successRate);
+                case 'successCount': return dir * (a.successCount - b.successCount);
                 case 'failCount': return dir * (a.failCount - b.failCount);
-                case 'openPRs': return dir * (a.openPRs - b.openPRs);
-                case 'mergedPRs': return dir * (a.mergedPRs - b.mergedPRs);
                 case 'latestMigration': {
                     const aTs = a.latestMigration || '';
                     const bTs = b.latestMigration || '';
@@ -69,7 +67,7 @@ export const PluginList = () => {
         });
 
         return sorted;
-    }, [data, searchTerm, filter, sortField, sortDir]);
+    }, [plugins, searchTerm, filter, sortField, sortDir]);
 
     const totalPages = Math.ceil(sortedAndFiltered.length / PAGE_SIZE);
     const paged = sortedAndFiltered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -82,17 +80,13 @@ export const PluginList = () => {
         );
     }
 
-    if (error || !data) {
-        return (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
-                <p className="text-red-400 text-lg">Failed to load plugins. Please try refreshing the page.</p>
-                {error && <p className="text-red-300 text-sm mt-2">{error.message}</p>}
-            </div>
-        );
+    if (error) {
+        return <ErrorBanner message={error.message} onRetry={() => window.location.reload()} />;
     }
 
     return (
         <div className="space-y-6">
+            {/* Search + Filter bar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e2329] p-4 rounded-xl border border-slate-800">
                 <div className="relative flex-1 w-full sm:max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
@@ -102,6 +96,7 @@ export const PluginList = () => {
                         className="w-full pl-10 pr-4 py-2 bg-[#15171a] border border-slate-700 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600"
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+                        aria-label="Search plugins"
                     />
                 </div>
                 <div className="flex gap-2 items-center">
@@ -110,19 +105,20 @@ export const PluginList = () => {
                         className="px-4 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#15171a] text-slate-200"
                         value={filter}
                         onChange={(e) => { setFilter(e.target.value as FilterType); setPage(0); }}
+                        aria-label="Filter plugins"
                     >
                         <option value="all">All Plugins</option>
                         <option value="has-failures">Has Failures</option>
-                        <option value="fully-modernized">Fully Modernized</option>
-                        <option value="has-open-prs">Has Open PRs</option>
-                        <option value="pending">Has Pending</option>
+                        <option value="all-success">All Successful</option>
+                        <option value="has-pending">Has Pending</option>
                     </select>
                 </div>
             </div>
 
+            {/* Table */}
             <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left" role="table">
                         <thead>
                             <tr className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
                                 <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('name')}>
@@ -131,17 +127,11 @@ export const PluginList = () => {
                                 <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('totalMigrations')}>
                                     <span className="flex items-center gap-1">Migrations {renderSortIcon('totalMigrations')}</span>
                                 </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('successRate')}>
-                                    <span className="flex items-center gap-1">Success Rate {renderSortIcon('successRate')}</span>
+                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('successCount')}>
+                                    <span className="flex items-center gap-1">Success {renderSortIcon('successCount')}</span>
                                 </th>
                                 <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('failCount')}>
                                     <span className="flex items-center gap-1">Failures {renderSortIcon('failCount')}</span>
-                                </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('openPRs')}>
-                                    <span className="flex items-center gap-1">Open PRs {renderSortIcon('openPRs')}</span>
-                                </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('mergedPRs')}>
-                                    <span className="flex items-center gap-1">Merged PRs {renderSortIcon('mergedPRs')}</span>
                                 </th>
                                 <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('latestMigration')}>
                                     <span className="flex items-center gap-1">Latest {renderSortIcon('latestMigration')}</span>
@@ -150,67 +140,44 @@ export const PluginList = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
-                            {paged.map((plugin) => {
-                                const rate = plugin.successRate.toFixed(0);
-                                return (
-                                    <tr key={plugin.pluginName} className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-200">{plugin.pluginName}</td>
-                                        <td className="px-6 py-4 text-slate-400">{plugin.totalMigrations}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full ${rate === '100' ? 'bg-green-500' : Number(rate) >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-                                                        style={{ width: `${rate}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-sm text-slate-400">{rate}%</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {plugin.failCount > 0 ? (
-                                                <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded-full border border-red-500/20">
-                                                    {plugin.failCount}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-600 text-xs">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {plugin.openPRs > 0 ? (
-                                                <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded-full border border-green-500/20">
-                                                    {plugin.openPRs}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-600 text-xs">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {plugin.mergedPRs > 0 ? (
-                                                <span className="px-2 py-1 bg-purple-500/10 text-purple-400 text-xs rounded-full border border-purple-500/20">
-                                                    {plugin.mergedPRs}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-600 text-xs">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-400 text-sm">
-                                            {plugin.latestMigration
-                                                ? new Date(plugin.latestMigration.replace(/T.*/, '')).toLocaleDateString()
-                                                : <span className="text-slate-600">-</span>
-                                            }
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Link
-                                                to={`/plugins/${plugin.pluginName}`}
-                                                className="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1"
-                                            >
-                                                Details <ChevronRight size={16} />
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                            {paged.map((plugin) => (
+                                <tr key={plugin.pluginName} className="hover:bg-white/5 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-slate-200">{plugin.pluginName}</td>
+                                    <td className="px-6 py-4 text-slate-400">{plugin.totalMigrations}</td>
+                                    <td className="px-6 py-4">
+                                        {plugin.successCount > 0 ? (
+                                            <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded-full border border-green-500/20">
+                                                {plugin.successCount}
+                                            </span>
+                                        ) : (
+                                            <span className="text-slate-600 text-xs">0</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {plugin.failCount > 0 ? (
+                                            <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded-full border border-red-500/20">
+                                                {plugin.failCount}
+                                            </span>
+                                        ) : (
+                                            <span className="text-slate-600 text-xs">0</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-400 text-sm">
+                                        {plugin.latestMigration
+                                            ? new Date(plugin.latestMigration.replace(/T.*/, '')).toLocaleDateString()
+                                            : <span className="text-slate-600">-</span>
+                                        }
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <Link
+                                            to={`/plugins/${plugin.pluginName}`}
+                                            className="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1"
+                                        >
+                                            Details <ChevronRight size={16} />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

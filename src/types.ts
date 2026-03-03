@@ -1,3 +1,9 @@
+// ── Result type for dataClient ──────────────────────────────────────────────
+export type Result<T> =
+    | { ok: true; data: T }
+    | { ok: false; error: string };
+
+// ── Migration (single entry in a plugin's aggregated_migrations.json) ───────
 export interface Migration {
     pluginVersion: string;
     jenkinsBaseline?: string;
@@ -24,20 +30,21 @@ export interface Migration {
     timestamp: string;
 }
 
+// ── Plugin report (aggregated_migrations.json at plugin level) ──────────────
+// Only fields directly from upstream data or reliably derived from migrationStatus.
+// PR counts (open/merged/closed) are NOT included because pullRequestStatus
+// is a stale snapshot — it does not reflect the current state on GitHub.
 export interface PluginReport {
     pluginName: string;
     pluginRepository: string;
     totalMigrations: number;
     successCount: number;
     failCount: number;
-    successRate: number;
-    openPRs: number;
-    mergedPRs: number;
-    closedPRs: number;
     latestMigration: string | null;
     migrations: Migration[];
 }
 
+// ── Recipe stats used in summary ────────────────────────────────────────────
 export interface RecipeStats {
     recipeId: string;
     total: number;
@@ -46,6 +53,7 @@ export interface RecipeStats {
     pending: number;
 }
 
+// ── Recipe report (upstream reports/recipes/<name>.json) ────────────────────
 export interface RecipeReport {
     recipeId: string;
     totalApplications: number;
@@ -59,6 +67,7 @@ export interface RecipeReport {
     }[];
 }
 
+// ── Timeline entry for dashboard chart ──────────────────────────────────────
 export interface TimelineEntry {
     month: string;
     success: number;
@@ -66,12 +75,15 @@ export interface TimelineEntry {
     total: number;
 }
 
+// ── Tag entry for dashboard chart ───────────────────────────────────────────
 export interface TagEntry {
     tag: string;
     count: number;
 }
 
-export interface SiteSummary {
+// ── summary.json — parsed from reports/summary.md ───────────────────────────
+export interface SummaryJson {
+    schemaVersion: string;
     generatedAt: string;
     overview: {
         totalPlugins: number;
@@ -88,13 +100,24 @@ export interface SiteSummary {
         mergedPRs: number;
         mergeRate: number;
     };
+    failuresByRecipe: { recipeId: string; failures: number }[];
+    pluginsWithFailedMigrations: string[];
     recipes: RecipeStats[];
     timeline: TimelineEntry[];
     tags: TagEntry[];
 }
 
+// ── plugin-recipes-index.json ───────────────────────────────────────────────
+export interface PluginRecipesIndex {
+    schemaVersion: string;
+    generatedAt: string;
+    plugins: string[];
+    recipes: string[];
+}
+
+// ── App-level aggregated data (used by useMetadata hook) ────────────────────
 export interface AppData {
-    summary: SiteSummary;
+    summary: SummaryJson;
     plugins: PluginReport[];
     recipes: RecipeReport[];
 }
