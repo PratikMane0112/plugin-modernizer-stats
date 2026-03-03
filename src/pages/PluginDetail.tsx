@@ -44,7 +44,7 @@ export const PluginDetail = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-100">
                 <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
             </div>
         );
@@ -161,11 +161,11 @@ export const PluginDetail = () => {
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex items-center gap-2 flex-1">
                                     {migration.migrationStatus === 'success' ? (
-                                        <CheckCircle className="text-green-500 flex-shrink-0" size={20} />
+                                        <CheckCircle className="text-green-500 shrink-0" size={20} />
                                     ) : migration.migrationStatus === 'fail' || migration.migrationStatus === 'failure' ? (
-                                        <XCircle className="text-red-500 flex-shrink-0" size={20} />
+                                        <XCircle className="text-red-500 shrink-0" size={20} />
                                     ) : (
-                                        <AlertTriangle className="text-amber-500 flex-shrink-0" size={20} />
+                                        <AlertTriangle className="text-amber-500 shrink-0" size={20} />
                                     )}
                                     <div>
                                         <h3 className="font-semibold text-slate-200">{migration.migrationName}</h3>
@@ -177,7 +177,7 @@ export const PluginDetail = () => {
                                         </Link>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex items-center gap-2 shrink-0">
                                     {migration.pullRequestStatus && (
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                             migration.pullRequestStatus === 'open' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :

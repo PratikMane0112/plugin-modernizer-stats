@@ -74,7 +74,7 @@ export const PluginList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-100">
                 <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
             </div>
         );
