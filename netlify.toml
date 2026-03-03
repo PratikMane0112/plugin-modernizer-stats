@@ -3,7 +3,7 @@
   command = "npm run fetch && npm run consolidate && npm run build"
   
   # Directory with the built files
-  publish = "public"
+  publish = "dist"
 
 # Redirect rules for SPA routing
 [[redirects]]
