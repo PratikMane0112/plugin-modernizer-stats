@@ -1,0 +1,29 @@
+[build]
+  # Fetch upstream data, consolidate into static JSON, then build the Vite app
+  command = "npm run fetch && npm run consolidate && npm run build"
+  
+  # Directory with the built files
+  publish = "public"
+
+# Redirect rules for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for consolidated stats data (1 hour cache)
+[[headers]]
+  for = "/plugin-modernizer-stats/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# Legacy metadata path (kept for backward compat)
+[[headers]]
+  for = "/metadata/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
