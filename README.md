@@ -32,6 +32,7 @@ This project will make the exploration of `metadata-plugin-modernizer` data smoo
 
 - **Node.js** ≥ 22 (LTS)
 - **npm** ≥ 10
+- **Python 3** ≥ 3.9 (for the data consolidation script — stdlib only, no pip install needed)
 - **bash** (for the fetch script)
 
 ### 1. Clone the repository
@@ -52,15 +53,16 @@ npm ci
 Downloads the latest data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) into `.tmp/`:
 
 ```bash
-npm run fetch
+./scripts/fetch-metadata-plugin-modernizer.sh
 ```
 
 ### 4. Consolidate data
 
-Transforms raw data into structured JSON files in `public/plugin-modernizer-stats/` and cleans up `.tmp/`:
+Parses `summary.md` and transforms raw data into validated JSON files in `public/plugin-modernizer-stats/`.
+Includes strict type enforcement and cross-field validation
 
 ```bash
-npm run consolidate
+python3 scripts/consolidate.py
 ```
 
 ### 5. Start the dev server
@@ -88,14 +90,14 @@ The protoype is deployed on netlify. Here is a live demo: [plugin-modernizer-sta
 | Routing             | React Router DOM v7                    |
 | List Virtualization | `@tanstack/react-virtual`              |
 | Icons               | Lucide React                           |
-| Data Processing     | Node.js + `tsx` (build-time scripts)   |
+| Data Processing     | Python 3 (stdlib only, build-time)     |
 
 ## � Project Structure
 
 ```
 ├── scripts/
 │   ├── fetch-metadata-plugin-modernizer.sh   # Downloads upstream data
-│   └── consolidate.ts                        # Transforms raw to structured JSON
+│   └── consolidate.py                        # Transforms raw MD → validated JSON (Python 3)
 ├── src/
 │   ├── lib/dataClient.ts                     # Centralized fetch layer with caching
 │   ├── hooks/useMetadata.ts                  # React hooks for data access

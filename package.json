@@ -8,7 +8,7 @@
   },
   "scripts": {
     "fetch": "bash scripts/fetch-metadata-plugin-modernizer.sh",
-    "consolidate": "npx tsx scripts/consolidate.ts",
+    "consolidate": "python3 scripts/consolidate.py",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
