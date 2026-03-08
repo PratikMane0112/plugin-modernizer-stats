@@ -115,6 +115,16 @@ export interface PluginRecipesIndex {
     recipes: string[];
 }
 
+// ── Plugin status — derived client-side from migrations ─────────────────────
+export type PluginStatus = 'success' | 'partial' | 'failed' | 'pending';
+
+// ── Failed migration row (from failed_migrations.csv) ───────────────────────
+// Actual CSV columns: migrationId,migrationStatus
+export interface FailedMigration {
+    migrationId: string;
+    migrationStatus: string;
+}
+
 // ── App-level aggregated data (used by useMetadata hook) ────────────────────
 export interface AppData {
     summary: SummaryJson;

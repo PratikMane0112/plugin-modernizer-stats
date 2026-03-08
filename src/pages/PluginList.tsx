@@ -1,32 +1,28 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ChevronRight, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
-import { useAllPlugins } from '../hooks/useMetadata';
-import type { PluginReport } from '../types';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useIndex } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
 
-type FilterType = 'all' | 'has-failures' | 'all-success' | 'has-pending';
-type SortField = 'name' | 'totalMigrations' | 'successCount' | 'failCount' | 'latestMigration';
+type SortField = 'name';
 type SortDir = 'asc' | 'desc';
-
-const PAGE_SIZE = 50;
 
 export const PluginList = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filter, setFilter] = useState<FilterType>('all');
+    const [recipeFilter, setRecipeFilter] = useState('all');
     const [sortField, setSortField] = useState<SortField>('name');
     const [sortDir, setSortDir] = useState<SortDir>('asc');
-    const [page, setPage] = useState(0);
-    const { plugins, loading, error } = useAllPlugins();
+    const { index, loading, error } = useIndex();
+    const parentRef = useRef<HTMLDivElement>(null);
 
     const toggleSort = (field: SortField) => {
         if (sortField === field) {
             setSortDir(d => d === 'asc' ? 'desc' : 'asc');
         } else {
             setSortField(field);
-            setSortDir(field === 'name' ? 'asc' : 'desc');
+            setSortDir('asc');
         }
-        setPage(0);
     };
 
     const renderSortIcon = (field: SortField) => {
@@ -36,41 +32,30 @@ export const PluginList = () => {
             : <ChevronDown size={14} className="text-blue-400" />;
     };
 
-    const sortedAndFiltered = useMemo(() => {
-        if (!plugins) return [];
+    // All plugins from the index — lightweight, no per-plugin fetches
+    const plugins = index?.plugins ?? [];
+    const recipes = index?.recipes ?? [];
 
-        const filtered = plugins.filter((plugin: PluginReport) => {
-            const matchesSearch = plugin.pluginName.toLowerCase().includes(searchTerm.toLowerCase());
-            let matchesFilter = true;
-            switch (filter) {
-                case 'has-failures': matchesFilter = plugin.failCount > 0; break;
-                case 'all-success': matchesFilter = plugin.failCount === 0 && plugin.totalMigrations > 0; break;
-                case 'has-pending': matchesFilter = plugin.totalMigrations > plugin.successCount + plugin.failCount; break;
-            }
-            return matchesSearch && matchesFilter;
-        });
+    const filtered = useMemo(() => {
+        const q = searchTerm.toLowerCase();
+        const list = plugins
+            .filter(name => name.toLowerCase().includes(q));
 
-        const sorted = [...filtered].sort((a, b) => {
+        const sorted = [...list].sort((a, b) => {
             const dir = sortDir === 'asc' ? 1 : -1;
-            switch (sortField) {
-                case 'name': return dir * a.pluginName.localeCompare(b.pluginName);
-                case 'totalMigrations': return dir * (a.totalMigrations - b.totalMigrations);
-                case 'successCount': return dir * (a.successCount - b.successCount);
-                case 'failCount': return dir * (a.failCount - b.failCount);
-                case 'latestMigration': {
-                    const aTs = a.latestMigration || '';
-                    const bTs = b.latestMigration || '';
-                    return dir * aTs.localeCompare(bTs);
-                }
-                default: return 0;
-            }
+            return dir * a.localeCompare(b);
         });
 
         return sorted;
-    }, [plugins, searchTerm, filter, sortField, sortDir]);
+    }, [plugins, searchTerm, sortDir, sortField]);
 
-    const totalPages = Math.ceil(sortedAndFiltered.length / PAGE_SIZE);
-    const paged = sortedAndFiltered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    // Virtualizer — only render visible rows
+    const virtualizer = useVirtualizer({
+        count: filtered.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 56,
+        overscan: 10,
+    });
 
     if (loading) {
         return (
@@ -86,6 +71,16 @@ export const PluginList = () => {
 
     return (
         <div className="space-y-6">
+            {/* Header stats */}
+            <div className="flex items-center gap-3 text-sm text-slate-400">
+                <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 font-medium">
+                    {plugins.length} plugins
+                </span>
+                <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full border border-purple-500/20 font-medium">
+                    {recipes.length} recipes
+                </span>
+            </div>
+
             {/* Search + Filter bar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e2329] p-4 rounded-xl border border-slate-800">
                 <div className="relative flex-1 w-full sm:max-w-md">
@@ -95,130 +90,97 @@ export const PluginList = () => {
                         placeholder="Search plugins..."
                         className="w-full pl-10 pr-4 py-2 bg-[#15171a] border border-slate-700 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600"
                         value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         aria-label="Search plugins"
                     />
                 </div>
                 <div className="flex gap-2 items-center">
-                    <span className="text-sm text-slate-400">{sortedAndFiltered.length} plugins</span>
+                    <span className="text-sm text-slate-400">{filtered.length} results</span>
                     <select
                         className="px-4 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#15171a] text-slate-200"
-                        value={filter}
-                        onChange={(e) => { setFilter(e.target.value as FilterType); setPage(0); }}
-                        aria-label="Filter plugins"
+                        value={recipeFilter}
+                        onChange={(e) => setRecipeFilter(e.target.value)}
+                        aria-label="Filter by recipe"
                     >
-                        <option value="all">All Plugins</option>
-                        <option value="has-failures">Has Failures</option>
-                        <option value="all-success">All Successful</option>
-                        <option value="has-pending">Has Pending</option>
+                        <option value="all">All Recipes</option>
+                        {recipes.map(r => {
+                            const shortName = r.split('.').pop() ?? r;
+                            return (
+                                <option key={r} value={r}>{shortName}</option>
+                            );
+                        })}
                     </select>
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Virtualized Table */}
             <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left" role="table">
-                        <thead>
-                            <tr className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('name')}>
-                                    <span className="flex items-center gap-1">Plugin Name {renderSortIcon('name')}</span>
-                                </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('totalMigrations')}>
-                                    <span className="flex items-center gap-1">Migrations {renderSortIcon('totalMigrations')}</span>
-                                </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('successCount')}>
-                                    <span className="flex items-center gap-1">Success {renderSortIcon('successCount')}</span>
-                                </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('failCount')}>
-                                    <span className="flex items-center gap-1">Failures {renderSortIcon('failCount')}</span>
-                                </th>
-                                <th className="px-6 py-4 cursor-pointer select-none hover:text-slate-200" onClick={() => toggleSort('latestMigration')}>
-                                    <span className="flex items-center gap-1">Latest {renderSortIcon('latestMigration')}</span>
-                                </th>
-                                <th className="px-6 py-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
-                            {paged.map((plugin) => (
-                                <tr key={plugin.pluginName} className="hover:bg-white/5 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-slate-200">{plugin.pluginName}</td>
-                                    <td className="px-6 py-4 text-slate-400">{plugin.totalMigrations}</td>
-                                    <td className="px-6 py-4">
-                                        {plugin.successCount > 0 ? (
-                                            <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded-full border border-green-500/20">
-                                                {plugin.successCount}
-                                            </span>
-                                        ) : (
-                                            <span className="text-slate-600 text-xs">0</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {plugin.failCount > 0 ? (
-                                            <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded-full border border-red-500/20">
-                                                {plugin.failCount}
-                                            </span>
-                                        ) : (
-                                            <span className="text-slate-600 text-xs">0</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 text-slate-400 text-sm">
-                                        {plugin.latestMigration
-                                            ? new Date(plugin.latestMigration.replace(/T.*/, '')).toLocaleDateString()
-                                            : <span className="text-slate-600">-</span>
-                                        }
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <Link
-                                            to={`/plugins/${plugin.pluginName}`}
-                                            className="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1"
-                                        >
-                                            Details <ChevronRight size={16} />
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                {/* Table header */}
+                <div className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
+                    <div className="flex items-center">
+                        <div
+                            className="flex-1 px-6 py-4 cursor-pointer select-none hover:text-slate-200"
+                            onClick={() => toggleSort('name')}
+                        >
+                            <span className="flex items-center gap-1">
+                                Plugin Name {renderSortIcon('name')}
+                            </span>
+                        </div>
+                        <div className="w-24 px-6 py-4 text-right">
+                            Actions
+                        </div>
+                    </div>
                 </div>
 
-                {paged.length === 0 && (
+                {/* Virtual scroll container */}
+                <div
+                    ref={parentRef}
+                    style={{ height: '70vh', overflowY: 'auto' }}
+                >
+                    <div
+                        style={{
+                            height: virtualizer.getTotalSize(),
+                            position: 'relative',
+                        }}
+                    >
+                        {virtualizer.getVirtualItems().map((virtualRow) => {
+                            const pluginName = filtered[virtualRow.index];
+                            return (
+                                <div
+                                    key={pluginName}
+                                    data-index={virtualRow.index}
+                                    ref={virtualizer.measureElement}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        transform: `translateY(${virtualRow.start}px)`,
+                                        width: '100%',
+                                    }}
+                                >
+                                    <Link
+                                        to={`/plugins/${pluginName}`}
+                                        className="flex items-center hover:bg-white/5 transition-colors border-b border-slate-800/50"
+                                    >
+                                        <div className="flex-1 px-6 py-4">
+                                            <span className="font-medium text-slate-200">
+                                                {pluginName}
+                                            </span>
+                                        </div>
+                                        <div className="w-24 px-6 py-4 text-right">
+                                            <span className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1">
+                                                Details <ChevronRight size={16} />
+                                            </span>
+                                        </div>
+                                    </Link>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {filtered.length === 0 && (
                     <div className="p-8 text-center text-slate-500">
                         No plugins found matching your criteria.
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-3 bg-[#15171a] border-t border-slate-800">
-                        <span className="text-sm text-slate-500">
-                            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sortedAndFiltered.length)} of {sortedAndFiltered.length}
-                        </span>
-                        <div className="flex gap-1">
-                            <button
-                                onClick={() => setPage(p => Math.max(0, p - 1))}
-                                disabled={page === 0}
-                                className="px-3 py-1 text-sm rounded border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                                Prev
-                            </button>
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setPage(i)}
-                                    className={`px-3 py-1 text-sm rounded border ${page === i ? 'border-blue-500 text-blue-400 bg-blue-500/10' : 'border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'}`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
-                            <button
-                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                                disabled={page === totalPages - 1}
-                                className="px-3 py-1 text-sm rounded border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                                Next
-                            </button>
-                        </div>
                     </div>
                 )}
             </div>

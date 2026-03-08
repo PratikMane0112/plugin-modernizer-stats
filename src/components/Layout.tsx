@@ -66,7 +66,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                         </div>
                     </Link>
                     <p className="text-sm text-slate-400">
-                        A visualization dashboard for tracking the modernization progress of the Jenkins plugin ecosystem.
+                        A visualization dashboard for tracking the modernization progress of the Jenkins plugin modernizer tool.
                     </p>
                 </div>
 

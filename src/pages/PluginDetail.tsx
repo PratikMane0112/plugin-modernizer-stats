@@ -3,14 +3,83 @@ import { useParams, Link } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
 import {
     ArrowLeft, ExternalLink, CheckCircle, XCircle, GitBranch,
-    Loader2, Clock, GitCommit, AlertTriangle
+    Loader2, Clock, GitCommit, AlertTriangle, FileText, Download
 } from 'lucide-react';
-import { usePluginData } from '../hooks/useMetadata';
+import { usePluginData, useFailedMigrations } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
+import { StatusBadge, deriveStatus } from '../components/StatusBadge';
+import type { Migration } from '../types';
+
+const BASE = '/plugin-modernizer-stats';
+
+// ── PR Status Badge ─────────────────────────────────────────────────────────
+function PRStatusBadge({ status }: { status: string }) {
+    const config: Record<string, string> = {
+        open: 'bg-green-500/10 text-green-400 border-green-500/20',
+        merged: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+        closed: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+    };
+    return (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${config[status] ?? config.closed}`}>
+            {status}
+        </span>
+    );
+}
+
+// ── Recipe row for breakdown table ──────────────────────────────────────────
+interface RecipeBreakdownRow {
+    recipeId: string;
+    recipeName: string;
+    applied: number;
+    success: number;
+    failed: number;
+}
+
+function buildRecipeBreakdown(migrations: Migration[]): RecipeBreakdownRow[] {
+    const map = new Map<string, RecipeBreakdownRow>();
+    for (const m of migrations) {
+        const id = m.migrationId;
+        const existing = map.get(id) || {
+            recipeId: id,
+            recipeName: m.migrationName || id,
+            applied: 0,
+            success: 0,
+            failed: 0,
+        };
+        existing.applied++;
+        if (m.migrationStatus === 'success') existing.success++;
+        if (m.migrationStatus === 'fail' || m.migrationStatus === 'failure') existing.failed++;
+        map.set(id, existing);
+    }
+    return [...map.values()].sort((a, b) => b.applied - a.applied);
+}
+
+// ── PR history rows ─────────────────────────────────────────────────────────
+interface PRHistoryRow {
+    url: string;
+    recipeId: string;
+    status: string;
+    date: string;
+    key: string;
+}
+
+function buildPRHistory(migrations: Migration[]): PRHistoryRow[] {
+    return migrations
+        .filter(m => m.pullRequestUrl)
+        .map(m => ({
+            url: m.pullRequestUrl!,
+            recipeId: m.migrationId,
+            status: m.pullRequestStatus || 'unknown',
+            date: m.timestamp?.split('T')[0] || 'N/A',
+            key: m.key,
+        }))
+        .sort((a, b) => b.date.localeCompare(a.date));
+}
 
 export const PluginDetail = () => {
     const { name } = useParams<{ name: string }>();
     const { plugin, loading, error } = usePluginData(name || '');
+    const { csvData, headers, loading: csvLoading } = useFailedMigrations(name || '');
 
     const timelineOption = useMemo(() => {
         if (!plugin?.migrations || plugin.migrations.length === 0) return null;
@@ -42,6 +111,16 @@ export const PluginDetail = () => {
         };
     }, [plugin]);
 
+    const recipeBreakdown = useMemo(() => {
+        if (!plugin?.migrations) return [];
+        return buildRecipeBreakdown(plugin.migrations);
+    }, [plugin]);
+
+    const prHistory = useMemo(() => {
+        if (!plugin?.migrations) return [];
+        return buildPRHistory(plugin.migrations);
+    }, [plugin]);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-100">
@@ -69,9 +148,15 @@ export const PluginDetail = () => {
         );
     }
 
+    const status = deriveStatus(plugin.migrations);
     const successCount = plugin.migrations.filter(m => m.migrationStatus === 'success').length;
     const failCount = plugin.migrations.filter(m => m.migrationStatus === 'fail' || m.migrationStatus === 'failure').length;
     const pendingCount = plugin.totalMigrations - successCount - failCount;
+
+    // PR counts
+    const openPRs = plugin.migrations.filter(m => m.pullRequestStatus === 'open').length;
+    const mergedPRs = plugin.migrations.filter(m => m.pullRequestStatus === 'merged').length;
+    const closedPRs = plugin.migrations.filter(m => m.pullRequestStatus === 'closed').length;
 
     return (
         <div className="space-y-6">
@@ -79,11 +164,14 @@ export const PluginDetail = () => {
                 <ArrowLeft size={16} className="mr-1" /> Back to Plugins
             </Link>
 
-            {/* Plugin Header */}
+            {/* ── Summary Card ────────────────────────────────────────── */}
             <div className="bg-[#1e2329] p-8 rounded-xl border border-slate-800">
                 <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">{plugin.pluginName}</h1>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h1 className="text-3xl font-bold text-white">{plugin.pluginName}</h1>
+                            <StatusBadge status={status} />
+                        </div>
                         <div className="flex flex-wrap items-center gap-3 text-sm">
                             {plugin.pluginRepository && (
                                 <a
@@ -108,7 +196,7 @@ export const PluginDetail = () => {
                             )}
                         </div>
                     </div>
-                    <div className="flex gap-3 text-center">
+                    <div className="flex flex-wrap gap-3 text-center">
                         <div className="bg-blue-500/10 px-4 py-2 rounded-lg border border-blue-500/20">
                             <span className="block text-2xl font-bold text-blue-500">{plugin.totalMigrations}</span>
                             <span className="text-xs text-blue-400 font-medium">Migrations</span>
@@ -130,18 +218,36 @@ export const PluginDetail = () => {
                     </div>
                 </div>
 
-                {/* Latest migration info */}
-                {plugin.latestMigration && (
-                    <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400 border-t border-slate-800 pt-4">
+                {/* PR counts + latest migration */}
+                <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400 border-t border-slate-800 pt-4">
+                    {plugin.latestMigration && (
                         <span className="flex items-center gap-1">
                             <Clock size={12} />
-                            Latest migration: <span className="text-white">{plugin.latestMigration.split('T')[0]}</span>
+                            Last Updated: <span className="text-white">{plugin.latestMigration.split('T')[0]}</span>
                         </span>
-                    </div>
-                )}
+                    )}
+                    {openPRs > 0 && (
+                        <span className="flex items-center gap-1">
+                            <GitBranch size={12} className="text-green-400" />
+                            Open PRs: <span className="text-green-400 font-medium">{openPRs}</span>
+                        </span>
+                    )}
+                    {mergedPRs > 0 && (
+                        <span className="flex items-center gap-1">
+                            <GitBranch size={12} className="text-purple-400" />
+                            Merged PRs: <span className="text-purple-400 font-medium">{mergedPRs}</span>
+                        </span>
+                    )}
+                    {closedPRs > 0 && (
+                        <span className="flex items-center gap-1">
+                            <GitBranch size={12} className="text-slate-400" />
+                            Closed PRs: <span className="text-slate-300 font-medium">{closedPRs}</span>
+                        </span>
+                    )}
+                </div>
             </div>
 
-            {/* Per-plugin Timeline Chart */}
+            {/* ── Migration Timeline Chart ────────────────────────────── */}
             {timelineOption && (
                 <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
                     <h3 className="text-lg font-semibold text-white mb-4">Migration Timeline</h3>
@@ -149,7 +255,166 @@ export const PluginDetail = () => {
                 </div>
             )}
 
-            {/* Migration History */}
+            {/* ── Recipe Breakdown ────────────────────────────────────── */}
+            {recipeBreakdown.length > 0 && (
+                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a]">
+                        <h2 className="font-bold text-slate-200">Recipe Breakdown ({recipeBreakdown.length})</h2>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left" role="table">
+                            <thead>
+                                <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
+                                    <th className="px-6 py-3">Recipe</th>
+                                    <th className="px-6 py-3 text-center">Applied</th>
+                                    <th className="px-6 py-3 text-center">Success</th>
+                                    <th className="px-6 py-3 text-center">Failed</th>
+                                    <th className="px-6 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800">
+                                {recipeBreakdown.map((row) => {
+                                    const rowStatus = row.failed > 0 && row.success > 0
+                                        ? 'partial'
+                                        : row.failed > 0
+                                            ? 'failed'
+                                            : row.success > 0
+                                                ? 'success'
+                                                : 'pending';
+                                    return (
+                                        <tr key={row.recipeId} className="hover:bg-white/5 transition-colors">
+                                            <td className="px-6 py-3">
+                                                <Link
+                                                    to={`/recipes/${encodeURIComponent(row.recipeId)}`}
+                                                    className="text-blue-400 hover:underline text-sm font-mono"
+                                                >
+                                                    {row.recipeName}
+                                                </Link>
+                                            </td>
+                                            <td className="px-6 py-3 text-center text-slate-300 text-sm">{row.applied}</td>
+                                            <td className="px-6 py-3 text-center">
+                                                {row.success > 0 ? (
+                                                    <span className="text-green-400 text-sm">{row.success}</span>
+                                                ) : (
+                                                    <span className="text-slate-600 text-sm">0</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-3 text-center">
+                                                {row.failed > 0 ? (
+                                                    <span className="text-red-400 text-sm">{row.failed}</span>
+                                                ) : (
+                                                    <span className="text-slate-600 text-sm">0</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-3 text-center">
+                                                <StatusBadge status={rowStatus} />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* ── PR History ─────────────────────────────────────────── */}
+            {prHistory.length > 0 && (
+                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a]">
+                        <h2 className="font-bold text-slate-200">PR History ({prHistory.length})</h2>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left" role="table">
+                            <thead>
+                                <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
+                                    <th className="px-6 py-3">Pull Request</th>
+                                    <th className="px-6 py-3">Recipe</th>
+                                    <th className="px-6 py-3 text-center">Status</th>
+                                    <th className="px-6 py-3">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800">
+                                {prHistory.map((pr) => (
+                                    <tr key={pr.key} className="hover:bg-white/5 transition-colors">
+                                        <td className="px-6 py-3">
+                                            <a
+                                                href={pr.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-400 hover:underline text-sm inline-flex items-center gap-1"
+                                            >
+                                                <GitBranch size={14} />
+                                                {pr.url.split('/').slice(-2).join('/')}
+                                                <ExternalLink size={12} />
+                                            </a>
+                                        </td>
+                                        <td className="px-6 py-3">
+                                            <Link
+                                                to={`/recipes/${encodeURIComponent(pr.recipeId)}`}
+                                                className="text-sm text-slate-300 hover:text-blue-400 font-mono"
+                                            >
+                                                {pr.recipeId.split('.').pop() ?? pr.recipeId}
+                                            </Link>
+                                        </td>
+                                        <td className="px-6 py-3 text-center">
+                                            <PRStatusBadge status={pr.status} />
+                                        </td>
+                                        <td className="px-6 py-3 text-slate-400 text-sm font-mono flex items-center gap-1">
+                                            <Clock size={12} />
+                                            {pr.date}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Failed Migrations (conditional) ────────────────────── */}
+            {failCount > 0 && (
+                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a] flex items-center gap-2">
+                        <AlertTriangle size={16} className="text-red-400" />
+                        <h2 className="font-bold text-slate-200">Failed Migrations</h2>
+                    </div>
+                    {csvLoading ? (
+                        <div className="p-8 text-center">
+                            <Loader2 className="w-6 h-6 text-slate-500 animate-spin mx-auto" />
+                        </div>
+                    ) : csvData && csvData.length > 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left" role="table">
+                                <thead>
+                                    <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
+                                        {headers.map((h, i) => (
+                                            <th key={i} className="px-6 py-3">{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800">
+                                    {csvData.map((row, i) => (
+                                        <tr key={i} className="hover:bg-white/5 transition-colors">
+                                            {row.map((cell, j) => (
+                                                <td key={j} className="px-6 py-3 text-slate-300 text-sm">
+                                                    {cell}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="p-6 text-center text-slate-500 text-sm">
+                            No CSV data available. Failed migration details may not have been exported.
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ── Migration History (existing, preserved) ─────────────── */}
             <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a] flex items-center justify-between">
                     <h2 className="font-bold text-slate-200">Migration History ({plugin.migrations.length})</h2>
@@ -179,13 +444,7 @@ export const PluginDetail = () => {
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                     {migration.pullRequestStatus && (
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            migration.pullRequestStatus === 'open' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                            migration.pullRequestStatus === 'merged' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                            'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-                                        }`}>
-                                            PR {migration.pullRequestStatus}
-                                        </span>
+                                        <PRStatusBadge status={migration.pullRequestStatus} />
                                     )}
                                     <span className="text-xs text-slate-500 font-mono flex items-center gap-1">
                                         <Clock size={12} />
@@ -255,26 +514,25 @@ export const PluginDetail = () => {
                                 <div className="mb-3 ml-7 p-3 bg-[#15171a] rounded-lg border border-slate-700">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium text-slate-300">CI Check Runs</span>
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            migration.checkRunsSummary === 'success' ? 'bg-green-500/10 text-green-400' :
-                                            migration.checkRunsSummary === 'pending' ? 'bg-amber-500/10 text-amber-400' :
-                                            'bg-red-500/10 text-red-400'
-                                        }`}>
+                                        <span className={`px-2 py-1 rounded text-xs font-medium ${migration.checkRunsSummary === 'success' ? 'bg-green-500/10 text-green-400' :
+                                                migration.checkRunsSummary === 'pending' ? 'bg-amber-500/10 text-amber-400' :
+                                                    'bg-red-500/10 text-red-400'
+                                            }`}>
                                             {migration.checkRunsSummary}
                                         </span>
                                     </div>
                                     {migration.checkRuns && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                            {(Object.entries(migration.checkRuns) as [string, string | null][]).map(([checkName, status]) => (
+                                            {(Object.entries(migration.checkRuns) as [string, string | null][]).map(([checkName, sts]) => (
                                                 <div key={checkName} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-white/5">
                                                     <span className="text-slate-400 truncate mr-2">{checkName}</span>
                                                     <span className={
-                                                        status === 'success' ? 'text-green-400' :
-                                                        status === 'failure' ? 'text-red-400' :
-                                                        status === null ? 'text-slate-600' :
-                                                        'text-amber-400'
+                                                        sts === 'success' ? 'text-green-400' :
+                                                            sts === 'failure' ? 'text-red-400' :
+                                                                sts === null ? 'text-slate-600' :
+                                                                    'text-amber-400'
                                                     }>
-                                                        {status === null ? 'pending' : status}
+                                                        {sts === null ? 'pending' : sts}
                                                     </span>
                                                 </div>
                                             ))}
@@ -322,6 +580,35 @@ export const PluginDetail = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+
+            {/* ── Raw Data Links ──────────────────────────────────────── */}
+            <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
+                <h3 className="text-lg font-semibold text-white mb-4">Raw Data</h3>
+                <div className="flex flex-wrap gap-3">
+                    <a
+                        href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/aggregated_migrations.json`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#15171a] text-slate-300 rounded-lg border border-slate-700 hover:border-slate-600 hover:text-white transition-colors text-sm"
+                    >
+                        <FileText size={16} />
+                        aggregated_migrations.json
+                        <ExternalLink size={12} />
+                    </a>
+                    {failCount > 0 && (
+                        <a
+                            href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/failed_migrations.csv`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#15171a] text-slate-300 rounded-lg border border-slate-700 hover:border-slate-600 hover:text-white transition-colors text-sm"
+                        >
+                            <Download size={16} />
+                            failed_migrations.csv
+                            <ExternalLink size={12} />
+                        </a>
+                    )}
                 </div>
             </div>
         </div>

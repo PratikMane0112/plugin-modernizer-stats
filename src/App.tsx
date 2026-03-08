@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { SkeletonPage, SkeletonTable, SkeletonDetail } from './components/Skeleton';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -13,13 +14,22 @@ function App() {
     return (
         <BrowserRouter>
             <Layout>
-                <Routes>
-                    <Route path="/" element={<Suspense fallback={<SkeletonPage />}><Dashboard /></Suspense>} />
-                    <Route path="/plugins" element={<Suspense fallback={<SkeletonTable />}><PluginList /></Suspense>} />
-                    <Route path="/plugins/:name" element={<Suspense fallback={<SkeletonDetail />}><PluginDetail /></Suspense>} />
-                    <Route path="/recipes" element={<Suspense fallback={<SkeletonTable />}><RecipeList /></Suspense>} />
-                    <Route path="/recipes/:id" element={<Suspense fallback={<SkeletonDetail />}><RecipeDetail /></Suspense>} />
-                </Routes>
+                <ErrorBoundary>
+                    <Routes>
+                        <Route path="/" element={<Suspense fallback={<SkeletonPage />}><Dashboard /></Suspense>} />
+                        <Route path="/plugins" element={<Suspense fallback={<SkeletonTable />}><PluginList /></Suspense>} />
+                        <Route
+                            path="/plugins/:name"
+                            element={
+                                <Suspense fallback={<SkeletonDetail />}>
+                                    <PluginDetail />
+                                </Suspense>
+                            }
+                        />
+                        <Route path="/recipes" element={<Suspense fallback={<SkeletonTable />}><RecipeList /></Suspense>} />
+                        <Route path="/recipes/:id" element={<Suspense fallback={<SkeletonDetail />}><RecipeDetail /></Suspense>} />
+                    </Routes>
+                </ErrorBoundary>
             </Layout>
         </BrowserRouter>
     );
