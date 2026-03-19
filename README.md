@@ -50,16 +50,13 @@ npm ci
 
 ### 3. Fetch upstream data
 
-Downloads the latest data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) into `.tmp/`:
+Downloads the latest data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) :
 
 ```bash
 ./scripts/fetch-metadata-plugin-modernizer.sh
 ```
 
 ### 4. Consolidate data
-
-Parses `summary.md` and transforms raw data into validated JSON files in `public/plugin-modernizer-stats/`.
-Includes strict type enforcement and cross-field validation
 
 ```bash
 python3 scripts/consolidate.py
