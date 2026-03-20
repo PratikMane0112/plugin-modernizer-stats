@@ -209,20 +209,40 @@ export const Dashboard = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         {topFailingRecipes.map(recipe => {
                             const shortName = recipe.recipeId.split('.').pop() ?? recipe.recipeId;
+                            const failRate = 100 - recipe.successRate;
                             return (
-                                <Link key={recipe.recipeId} to={`/recipes/${encodeURIComponent(recipe.recipeId)}`} className="flex items-center justify-between p-3 bg-[#15171a] rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
-                                    <div>
-                                        <span className="text-slate-200 font-medium text-sm">{shortName}</span>
-                                        <div className="flex gap-3 mt-1 text-xs">
-                                            <span className="text-green-400">✓ {recipe.successCount}</span>
-                                            <span className="text-red-400">✗ {recipe.failureCount}</span>
-                                        </div>
+                                <Link
+                                    key={recipe.recipeId}
+                                    to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
+                                    className="flex flex-col gap-2 p-3 bg-[#15171a] rounded-lg border border-slate-800 hover:border-red-500/40 hover:bg-[#1a1c20] transition-all group"
+                                >
+                                    {/* Recipe name — truncated with tooltip */}
+                                    <span
+                                        className="text-slate-200 font-medium text-sm truncate w-full group-hover:text-white transition-colors"
+                                        title={shortName}
+                                    >
+                                        {shortName}
+                                    </span>
+
+                                    {/* Progress bar */}
+                                    <div
+                                        className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden"
+                                        role="progressbar"
+                                        aria-valuenow={failRate}
+                                        aria-valuemin={0}
+                                        aria-valuemax={100}
+                                        aria-label={`${failRate.toFixed(0)}% failure rate`}
+                                    >
+                                        <div className="h-full bg-red-500 rounded-full" style={{ width: `${failRate}%` }} />
                                     </div>
-                                    <div className="text-right">
-                                        <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden" role="progressbar" aria-valuenow={recipe.successRate} aria-valuemin={0} aria-valuemax={100}>
-                                            <div className="h-full bg-red-500" style={{ width: `${100 - recipe.successRate}%` }} />
+
+                                    {/* Stats row */}
+                                    <div className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-green-400 font-medium">✓ {recipe.successCount}</span>
+                                            <span className="text-red-400 font-medium">✗ {recipe.failureCount}</span>
                                         </div>
-                                        <span className="text-xs text-slate-500 mt-1">{recipe.successRate.toFixed(0)}% success</span>
+                                        <span className="text-slate-500 shrink-0">{recipe.successRate.toFixed(0)}% success</span>
                                     </div>
                                 </Link>
                             );
