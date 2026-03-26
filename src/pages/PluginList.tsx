@@ -1,12 +1,33 @@
 import { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ChevronRight, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputAdornment from '@mui/material/InputAdornment';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Search, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useIndex } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 type SortField = 'name';
 type SortDir = 'asc' | 'desc';
+
+const inputSx = {
+    '& .MuiOutlinedInput-root': {
+        bgcolor: '#15171a',
+        color: '#e2e8f0',
+        borderRadius: '8px',
+        '& fieldset': { borderColor: '#334155' },
+        '&:hover fieldset': { borderColor: '#475569' },
+        '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
+    },
+    '& input::placeholder': { color: '#475569', opacity: 1 },
+};
+
+const cardSx = { bgcolor: '#1e2329', borderRadius: '12px', border: '1px solid #1e293b', overflow: 'hidden' };
 
 export const PluginList = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -26,30 +47,25 @@ export const PluginList = () => {
     };
 
     const renderSortIcon = (field: SortField) => {
-        if (sortField !== field) return <ChevronDown size={14} className="text-slate-600" />;
+        if (sortField !== field) return <ChevronDown size={14} style={{ color: '#475569' }} />;
         return sortDir === 'asc'
-            ? <ChevronUp size={14} className="text-blue-400" />
-            : <ChevronDown size={14} className="text-blue-400" />;
+            ? <ChevronUp size={14} style={{ color: '#60a5fa' }} />
+            : <ChevronDown size={14} style={{ color: '#60a5fa' }} />;
     };
 
-    // All plugins from the index — lightweight, no per-plugin fetches
     const plugins = index?.plugins ?? [];
     const recipes = index?.recipes ?? [];
 
     const filtered = useMemo(() => {
         const q = searchTerm.toLowerCase();
-        const list = plugins
-            .filter(name => name.toLowerCase().includes(q));
-
+        const list = plugins.filter(name => name.toLowerCase().includes(q));
         const sorted = [...list].sort((a, b) => {
             const dir = sortDir === 'asc' ? 1 : -1;
             return dir * a.localeCompare(b);
         });
-
         return sorted;
     }, [plugins, searchTerm, sortDir, sortField]);
 
-    // Virtualizer — only render visible rows
     const virtualizer = useVirtualizer({
         count: filtered.length,
         getScrollElement: () => parentRef.current,
@@ -59,9 +75,9 @@ export const PluginList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-100">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+                <CircularProgress sx={{ color: '#3b82f6' }} size={48} />
+            </Box>
         );
     }
 
@@ -70,108 +86,112 @@ export const PluginList = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Header stats */}
-            <div className="flex items-center gap-3 text-sm text-slate-400">
-                <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 font-medium">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: '0.875rem', color: '#94a3b8' }}>
+                <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: 'rgba(59,130,246,0.1)', color: '#60a5fa', borderRadius: '9999px', border: '1px solid rgba(59,130,246,0.2)', fontWeight: 500, fontSize: '0.875rem' }}>
                     {plugins.length} plugins
-                </span>
-                <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full border border-purple-500/20 font-medium">
+                </Box>
+                <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: 'rgba(168,85,247,0.1)', color: '#c084fc', borderRadius: '9999px', border: '1px solid rgba(168,85,247,0.2)', fontWeight: 500, fontSize: '0.875rem' }}>
                     {recipes.length} recipes
-                </span>
-            </div>
+                </Box>
+            </Box>
 
             {/* Search + Filter bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e2329] p-4 rounded-xl border border-slate-800">
-                <div className="relative flex-1 w-full sm:max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search plugins..."
-                        className="w-full pl-10 pr-4 py-2 bg-[#15171a] border border-slate-700 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        aria-label="Search plugins"
-                    />
-                </div>
-                <div className="flex gap-2 items-center">
-                    <span className="text-sm text-slate-400">{filtered.length} results</span>
-                    <select
-                        className="px-4 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#15171a] text-slate-200"
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, bgcolor: '#1e2329', p: 2, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                <TextField
+                    placeholder="Search plugins..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    inputProps={{ 'aria-label': 'Search plugins' }}
+                    size="small"
+                    sx={{ ...inputSx, flex: 1, maxWidth: { sm: 400 } }}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search size={20} style={{ color: '#64748b' }} />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                    <Typography sx={{ fontSize: '0.875rem', color: '#94a3b8' }}>{filtered.length} results</Typography>
+                    <Select
                         value={recipeFilter}
-                        onChange={(e) => setRecipeFilter(e.target.value)}
-                        aria-label="Filter by recipe"
+                        onChange={e => setRecipeFilter(e.target.value)}
+                        inputProps={{ 'aria-label': 'Filter by recipe' }}
+                        size="small"
+                        sx={{
+                            bgcolor: '#15171a', color: '#e2e8f0', borderRadius: '8px',
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#334155' },
+                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#475569' },
+                            '& .MuiSvgIcon-root': { color: '#94a3b8' },
+                        }}
+                        MenuProps={{ PaperProps: { sx: { bgcolor: '#1e2329', border: '1px solid #334155' } } }}
                     >
-                        <option value="all">All Recipes</option>
+                        <MenuItem value="all" sx={{ color: '#e2e8f0' }}>All Recipes</MenuItem>
                         {recipes.map(r => {
                             const shortName = r.split('.').pop() ?? r;
-                            return (
-                                <option key={r} value={r}>{shortName}</option>
-                            );
+                            return <MenuItem key={r} value={r} sx={{ color: '#e2e8f0' }}>{shortName}</MenuItem>;
                         })}
-                    </select>
-                </div>
-            </div>
+                    </Select>
+                </Box>
+            </Box>
 
             {/* Virtualized Table */}
-            <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
+            <Box sx={cardSx}>
                 {/* Table header */}
-                <div className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
-                    <div className="flex items-center">
-                        <div
-                            className="flex-1 px-6 py-4 cursor-pointer select-none hover:text-slate-200"
+                <Box sx={{ bgcolor: '#15171a', borderBottom: '1px solid #1e293b', color: '#94a3b8', fontSize: '0.875rem', fontWeight: 500 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box
+                            sx={{ flex: 1, px: 3, py: 2, cursor: 'pointer', userSelect: 'none', '&:hover': { color: '#e2e8f0' } }}
                             onClick={() => toggleSort('name')}
                         >
-                            <span className="flex items-center gap-1">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 Plugin Name {renderSortIcon('name')}
-                            </span>
-                        </div>
-                        <div className="w-24 px-6 py-4 text-right">
-                            Actions
-                        </div>
-                    </div>
-                </div>
+                            </Box>
+                        </Box>
+                        <Box sx={{ width: 96, px: 3, py: 2, textAlign: 'right' }}>Actions</Box>
+                    </Box>
+                </Box>
 
                 {/* Virtual scroll container */}
-                <div
-                    ref={parentRef}
-                    style={{ height: '70vh', overflowY: 'auto' }}
-                >
-                    <div
-                        style={{
-                            height: virtualizer.getTotalSize(),
-                            position: 'relative',
-                        }}
-                    >
-                        {virtualizer.getVirtualItems().map((virtualRow) => {
+                <div ref={parentRef} style={{ height: '70vh', overflowY: 'auto' }}>
+                    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+                        {virtualizer.getVirtualItems().map(virtualRow => {
                             const pluginName = filtered[virtualRow.index];
                             return (
                                 <div
                                     key={pluginName}
                                     data-index={virtualRow.index}
                                     ref={virtualizer.measureElement}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        transform: `translateY(${virtualRow.start}px)`,
-                                        width: '100%',
-                                    }}
+                                    style={{ position: 'absolute', top: 0, transform: `translateY(${virtualRow.start}px)`, width: '100%' }}
                                 >
-                                    <Link
+                                    <Box
+                                        component={Link}
                                         to={`/plugins/${pluginName}`}
-                                        className="flex items-center hover:bg-white/5 transition-colors border-b border-slate-800/50"
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            textDecoration: 'none',
+                                            borderBottom: '1px solid rgba(30,41,59,0.5)',
+                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                                            transition: 'background 0.15s',
+                                        }}
                                     >
-                                        <div className="flex-1 px-6 py-4">
-                                            <span className="font-medium text-slate-200">
+                                        <Box sx={{ flex: 1, px: 3, py: 2 }}>
+                                            <Typography sx={{ fontWeight: 500, color: '#e2e8f0', fontSize: '0.9375rem' }}>
                                                 {pluginName}
-                                            </span>
-                                        </div>
-                                        <div className="w-24 px-6 py-4 text-right">
-                                            <span className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1">
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ width: 96, px: 3, py: 2, textAlign: 'right' }}>
+                                            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#60a5fa', fontWeight: 500, fontSize: '0.875rem' }}>
                                                 Details <ChevronRight size={16} />
-                                            </span>
-                                        </div>
-                                    </Link>
+                                            </Box>
+                                        </Box>
+                                    </Box>
                                 </div>
                             );
                         })}
@@ -179,11 +199,11 @@ export const PluginList = () => {
                 </div>
 
                 {filtered.length === 0 && (
-                    <div className="p-8 text-center text-slate-500">
+                    <Box sx={{ p: 4, textAlign: 'center', color: '#64748b' }}>
                         No plugins found matching your criteria.
-                    </div>
+                    </Box>
                 )}
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 };

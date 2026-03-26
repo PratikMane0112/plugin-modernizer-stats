@@ -1,71 +1,77 @@
-/**
- * Skeleton loading components for perceived-performance improvement.
- */
+import Box from '@mui/material/Box';
+import MuiSkeleton from '@mui/material/Skeleton';
+import Grid from '@mui/material/Grid';
+
+const cardBg = '#1e2329';
+const border = '1px solid #1e293b';
+const borderRadius = '12px';
 
 export const SkeletonCard = () => (
-    <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800 animate-pulse">
-        <div className="h-4 bg-slate-700 rounded w-24 mb-3" />
-        <div className="h-8 bg-slate-700 rounded w-16 mb-2" />
-        <div className="h-3 bg-slate-800 rounded w-20" />
-    </div>
+    <Box sx={{ bgcolor: cardBg, p: 3, borderRadius, border }}>
+        <MuiSkeleton variant="text" width={96} height={20} sx={{ bgcolor: '#334155', mb: 1.5 }} />
+        <MuiSkeleton variant="text" width={64} height={32} sx={{ bgcolor: '#334155', mb: 1 }} />
+        <MuiSkeleton variant="text" width={80} height={14} sx={{ bgcolor: '#1e293b' }} />
+    </Box>
 );
 
-export const SkeletonChart = ({ height = 'h-[350px]' }: { height?: string }) => (
-    <div className={`bg-[#1e2329] p-6 rounded-xl border border-slate-800 animate-pulse ${height}`}>
-        <div className="h-5 bg-slate-700 rounded w-40 mb-4" />
-        <div className="h-full bg-slate-800 rounded" />
-    </div>
+export const SkeletonChart = ({ height = 350 }: { height?: number }) => (
+    <Box sx={{ bgcolor: cardBg, p: 3, borderRadius, border, height }}>
+        <MuiSkeleton variant="text" width={160} height={24} sx={{ bgcolor: '#334155', mb: 2 }} />
+        <MuiSkeleton variant="rectangular" height={height - 80} sx={{ bgcolor: '#1e293b', borderRadius: 1 }} />
+    </Box>
 );
 
 export const SkeletonRow = () => (
-    <div className="flex items-center gap-4 px-6 py-4 animate-pulse border-b border-slate-800">
-        <div className="h-4 bg-slate-700 rounded w-48" />
-        <div className="h-4 bg-slate-700 rounded w-16" />
-        <div className="h-4 bg-slate-700 rounded w-24" />
-        <div className="h-4 bg-slate-700 rounded w-12" />
-    </div>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 3, py: 2, borderBottom: border }}>
+        <MuiSkeleton variant="text" width={192} height={18} sx={{ bgcolor: '#334155' }} />
+        <MuiSkeleton variant="text" width={64} height={18} sx={{ bgcolor: '#334155' }} />
+        <MuiSkeleton variant="text" width={96} height={18} sx={{ bgcolor: '#334155' }} />
+        <MuiSkeleton variant="text" width={48} height={18} sx={{ bgcolor: '#334155' }} />
+    </Box>
 );
 
 export const SkeletonPage = () => (
-    <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Grid container spacing={2}>
             {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }} key={i}>
+                    <SkeletonCard />
+                </Grid>
             ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SkeletonChart />
-            <SkeletonChart />
-        </div>
-    </div>
+        </Grid>
+        <Grid container spacing={3}>
+            <Grid size={{ xs: 12, lg: 6 }}><SkeletonChart /></Grid>
+            <Grid size={{ xs: 12, lg: 6 }}><SkeletonChart /></Grid>
+        </Grid>
+    </Box>
 );
 
 export const SkeletonTable = ({ rows = 10 }: { rows?: number }) => (
-    <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a] animate-pulse">
-            <div className="h-5 bg-slate-700 rounded w-48" />
-        </div>
+    <Box sx={{ bgcolor: cardBg, borderRadius, border, overflow: 'hidden' }}>
+        <Box sx={{ px: 3, py: 2.5, borderBottom: border, bgcolor: '#15171a' }}>
+            <MuiSkeleton variant="text" width={192} height={22} sx={{ bgcolor: '#334155' }} />
+        </Box>
         {Array.from({ length: rows }).map((_, i) => (
             <SkeletonRow key={i} />
         ))}
-    </div>
+    </Box>
 );
 
 export const SkeletonDetail = () => (
-    <div className="space-y-6 animate-pulse">
-        <div className="h-4 bg-slate-700 rounded w-32" />
-        <div className="bg-[#1e2329] p-8 rounded-xl border border-slate-800">
-            <div className="h-8 bg-slate-700 rounded w-64 mb-4" />
-            <div className="h-4 bg-slate-800 rounded w-96 mb-4" />
-            <div className="flex gap-3">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <MuiSkeleton variant="text" width={128} height={18} sx={{ bgcolor: '#334155' }} />
+        <Box sx={{ bgcolor: cardBg, p: 4, borderRadius, border }}>
+            <MuiSkeleton variant="text" width={256} height={36} sx={{ bgcolor: '#334155', mb: 2 }} />
+            <MuiSkeleton variant="text" width={384} height={18} sx={{ bgcolor: '#1e293b', mb: 2 }} />
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
                 {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-16 w-20 bg-slate-800 rounded-lg" />
+                    <MuiSkeleton key={i} variant="rectangular" width={80} height={64} sx={{ bgcolor: '#1e293b', borderRadius: 1 }} />
                 ))}
-            </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SkeletonChart />
-            <SkeletonChart />
-        </div>
-    </div>
+            </Box>
+        </Box>
+        <Grid container spacing={3}>
+            <Grid size={{ xs: 12, lg: 6 }}><SkeletonChart /></Grid>
+            <Grid size={{ xs: 12, lg: 6 }}><SkeletonChart /></Grid>
+        </Grid>
+    </Box>
 );

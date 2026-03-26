@@ -1,3 +1,6 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface ErrorBannerProps {
@@ -6,19 +9,44 @@ interface ErrorBannerProps {
 }
 
 export const ErrorBanner = ({ message, onRetry }: ErrorBannerProps) => (
-    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center" role="alert">
-        <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" aria-hidden="true" />
-        <p className="text-red-400 text-lg mb-2">Failed to load data</p>
-        <p className="text-red-300 text-sm mb-4">{message}</p>
+    <Box
+        role="alert"
+        sx={{
+            bgcolor: 'rgba(239,68,68,0.1)',
+            border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: '12px',
+            p: 4,
+            textAlign: 'center',
+        }}
+    >
+        <AlertTriangle
+            style={{ width: 48, height: 48, color: '#f87171', margin: '0 auto 16px' }}
+            aria-hidden="true"
+        />
+        <Typography sx={{ color: '#f87171', fontSize: '1.125rem', mb: 1 }}>
+            Failed to load data
+        </Typography>
+        <Typography sx={{ color: '#fca5a5', fontSize: '0.875rem', mb: 2 }}>
+            {message}
+        </Typography>
         {onRetry && (
-            <button
+            <Button
                 onClick={onRetry}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-300 rounded-lg border border-red-500/30 hover:bg-red-500/30 transition-colors"
                 aria-label="Retry loading data"
+                startIcon={<RefreshCw size={16} aria-hidden="true" />}
+                sx={{
+                    bgcolor: 'rgba(239,68,68,0.2)',
+                    color: '#fca5a5',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    borderRadius: '8px',
+                    px: 2,
+                    py: 1,
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: 'rgba(239,68,68,0.3)' },
+                }}
             >
-                <RefreshCw size={16} aria-hidden="true" />
                 Retry
-            </button>
+            </Button>
         )}
-    </div>
+    </Box>
 );

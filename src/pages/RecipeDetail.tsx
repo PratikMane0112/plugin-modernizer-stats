@@ -2,9 +2,17 @@ import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
 import {
-    ArrowLeft, CheckCircle, XCircle, Clock, Loader2,
+    ArrowLeft, CheckCircle, XCircle, Clock,
     ExternalLink, FileText, BookOpen
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import { useRecipeData } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { SuccessRateBadge } from '../components/SuccessRateBadge';
@@ -12,25 +20,13 @@ import { StatusBadge } from '../components/StatusBadge';
 
 const BASE = '/plugin-modernizer-stats';
 
-// ── Affected Plugin Row (derived from recipe.plugins) ───────────────────────
-interface AffectedPluginRow {
-    pluginName: string;
-    applied: number;
-    success: number;
-    failures: number;
-    lastRun: string;
-}
+// ── Affected Plugin Row ─────────────────────────────────────────────────────
+interface AffectedPluginRow { pluginName: string; applied: number; success: number; failures: number; lastRun: string; }
 
 function buildAffectedPlugins(plugins: { pluginName: string; status: string; timestamp: string }[]): AffectedPluginRow[] {
     const map = new Map<string, AffectedPluginRow>();
     for (const p of plugins) {
-        const existing = map.get(p.pluginName) || {
-            pluginName: p.pluginName,
-            applied: 0,
-            success: 0,
-            failures: 0,
-            lastRun: '',
-        };
+        const existing = map.get(p.pluginName) || { pluginName: p.pluginName, applied: 0, success: 0, failures: 0, lastRun: '' };
         existing.applied++;
         if (p.status === 'success') existing.success++;
         if (p.status === 'fail' || p.status === 'failure') existing.failures++;
@@ -40,12 +36,15 @@ function buildAffectedPlugins(plugins: { pluginName: string; status: string; tim
     return [...map.values()].sort((a, b) => b.failures - a.failures);
 }
 
+const cardSx = { bgcolor: '#1e2329', borderRadius: '12px', border: '1px solid #1e293b', overflow: 'hidden' };
+const thSx = { color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, bgcolor: 'rgba(21,23,26,0.5)', borderBottom: '1px solid #1e293b', py: 1.5 };
+const tdSx = { color: '#cbd5e1', fontSize: '0.875rem', borderBottom: '1px solid #1e293b', py: 1.5 };
+
 export const RecipeDetail = () => {
     const { id } = useParams<{ id: string }>();
     const recipeName = decodeURIComponent(id ?? '');
     const { recipe, loading, error } = useRecipeData(recipeName);
 
-    // Derive display info dynamically from recipe ID — no hardcoded constants
     const docsUrl = 'https://github.com/openrewrite/rewrite-jenkins';
 
     const statusChartOption = useMemo(() => {
@@ -55,17 +54,14 @@ export const RecipeDetail = () => {
             tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
             legend: { bottom: '0%', textStyle: { color: '#cbd5e1' } },
             series: [{
-                type: 'pie',
-                radius: ['40%', '70%'],
+                type: 'pie', radius: ['40%', '70%'],
                 itemStyle: { borderRadius: 10, borderColor: '#1e2329', borderWidth: 2 },
                 label: { show: false },
                 emphasis: { label: { show: true, fontSize: 18, fontWeight: 'bold' } },
                 data: [
                     { value: recipe.successCount, name: 'Success', itemStyle: { color: '#22c55e' } },
                     { value: recipe.failureCount, name: 'Failed', itemStyle: { color: '#ef4444' } },
-                    ...(pendingCount > 0
-                        ? [{ value: pendingCount, name: 'Pending', itemStyle: { color: '#f59e0b' } }]
-                        : []),
+                    ...(pendingCount > 0 ? [{ value: pendingCount, name: 'Pending', itemStyle: { color: '#f59e0b' } }] : []),
                 ]
             }]
         };
@@ -73,7 +69,6 @@ export const RecipeDetail = () => {
 
     const timelineOption = useMemo(() => {
         if (!recipe?.plugins || recipe.plugins.length === 0) return null;
-
         const monthMap = new Map<string, { success: number; fail: number }>();
         for (const p of recipe.plugins) {
             const month = p.timestamp?.split('T')[0]?.substring(0, 7) || '';
@@ -83,9 +78,7 @@ export const RecipeDetail = () => {
             else entry.fail++;
             monthMap.set(month, entry);
         }
-
         if (monthMap.size < 2) return null;
-
         const months = [...monthMap.keys()].sort();
         return {
             tooltip: { trigger: 'axis' },
@@ -100,12 +93,7 @@ export const RecipeDetail = () => {
         };
     }, [recipe]);
 
-    const affectedPlugins = useMemo(() => {
-        if (!recipe?.plugins) return [];
-        return buildAffectedPlugins(recipe.plugins);
-    }, [recipe]);
-
-    // Failure rows — plugins where this recipe failed
+    const affectedPlugins = useMemo(() => recipe?.plugins ? buildAffectedPlugins(recipe.plugins) : [], [recipe]);
     const failureRows = useMemo(() => {
         if (!recipe?.plugins) return [];
         return recipe.plugins
@@ -115,28 +103,28 @@ export const RecipeDetail = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-100">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+                <CircularProgress sx={{ color: '#3b82f6' }} size={48} />
+            </Box>
         );
     }
 
     if (error) {
         const is404 = error.message.includes('404');
         return (
-            <div className="space-y-4">
-                <Link to="/recipes" className="inline-flex items-center text-slate-400 hover:text-slate-200">
-                    <ArrowLeft size={16} className="mr-1" /> Back to Recipes
-                </Link>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box component={Link} to="/recipes" sx={{ display: 'inline-flex', alignItems: 'center', color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#e2e8f0' } }}>
+                    <ArrowLeft size={16} style={{ marginRight: 4 }} /> Back to Recipes
+                </Box>
                 {is404 ? (
-                    <div className="bg-[#1e2329] rounded-xl border border-slate-800 p-12 text-center">
-                        <p className="text-slate-500 text-lg mb-2">Recipe not found</p>
-                        <p className="text-slate-600 text-sm font-mono">{recipeName}</p>
-                    </div>
+                    <Box sx={{ ...cardSx, p: 6, textAlign: 'center' }}>
+                        <Typography sx={{ color: '#64748b', fontSize: '1.125rem', mb: 1 }}>Recipe not found</Typography>
+                        <Typography sx={{ color: '#475569', fontSize: '0.875rem', fontFamily: 'monospace' }}>{recipeName}</Typography>
+                    </Box>
                 ) : (
                     <ErrorBanner message={error.message} onRetry={() => window.location.reload()} />
                 )}
-            </div>
+            </Box>
         );
     }
 
@@ -145,267 +133,211 @@ export const RecipeDetail = () => {
     const displayName = recipe.recipeId.split('.').pop() || recipe.recipeId;
     const pendingCount = recipe.totalApplications - recipe.successCount - recipe.failureCount;
 
-    return (
-        <div className="space-y-6">
-            <Link to="/recipes" className="inline-flex items-center text-slate-400 hover:text-slate-200">
-                <ArrowLeft size={16} className="mr-1" /> Back to Recipes
-            </Link>
+    const statBadge = (bg: string, color: string, border: string, val: number | string, label: string) => (
+        <Box sx={{ bgcolor: bg, px: 2, py: 1, borderRadius: '8px', border: `1px solid ${border}`, textAlign: 'center' }}>
+            <Typography sx={{ display: 'block', fontSize: '1.5rem', fontWeight: 700, color }}>{val}</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color, fontWeight: 500 }}>{label}</Typography>
+        </Box>
+    );
 
-            {/* ── Summary Card ────────────────────────────────────────── */}
-            <div className="bg-[#1e2329] p-8 rounded-xl border border-slate-800">
-                <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-bold text-white">{displayName}</h1>
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box component={Link} to="/recipes" sx={{ display: 'inline-flex', alignItems: 'center', color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#e2e8f0' } }}>
+                <ArrowLeft size={16} style={{ marginRight: 4 }} /> Back to Recipes
+            </Box>
+
+            {/* ── Summary Card ─────────────────────────────────── */}
+            <Box sx={{ bgcolor: '#1e2329', p: 4, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 700, color: '#f1f5f9' }}>{displayName}</Typography>
                             <SuccessRateBadge rate={recipe.successRate} />
-                        </div>
-                        <p className="text-sm text-slate-500 font-mono mb-3">{recipe.recipeId}</p>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <a
-                                href={docsUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-blue-400 hover:underline text-sm"
-                            >
-                                <BookOpen size={14} />
-                                OpenRewrite Source
-                                <ExternalLink size={12} />
-                            </a>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-center">
-                        <div className="bg-blue-500/10 px-4 py-2 rounded-lg border border-blue-500/20">
-                            <span className="block text-2xl font-bold text-blue-400">{recipe.totalApplications}</span>
-                            <span className="text-xs text-blue-300">Total</span>
-                        </div>
-                        <div className="bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/20">
-                            <span className="block text-2xl font-bold text-green-400">{recipe.successCount}</span>
-                            <span className="text-xs text-green-300">Success</span>
-                        </div>
-                        <div className="bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/20">
-                            <span className="block text-2xl font-bold text-red-400">{recipe.failureCount}</span>
-                            <span className="text-xs text-red-300">Failed</span>
-                        </div>
-                        {pendingCount > 0 && (
-                            <div className="bg-amber-500/10 px-4 py-2 rounded-lg border border-amber-500/20">
-                                <span className="block text-2xl font-bold text-amber-400">{pendingCount}</span>
-                                <span className="text-xs text-amber-300">Pending</span>
-                            </div>
-                        )}
-                        <div className="bg-indigo-500/10 px-4 py-2 rounded-lg border border-indigo-500/20">
-                            <span className="block text-2xl font-bold text-indigo-400">{recipe.successRate.toFixed(1)}%</span>
-                            <span className="text-xs text-indigo-300">Success Rate</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </Box>
+                        <Typography sx={{ fontSize: '0.875rem', color: '#64748b', fontFamily: 'monospace', mb: 1.5 }}>{recipe.recipeId}</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
+                            <Box component="a" href={docsUrl} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, color: '#60a5fa', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { textDecoration: 'underline' } }}>
+                                <BookOpen size={14} /> OpenRewrite Source <ExternalLink size={12} />
+                            </Box>
+                        </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, textAlign: 'center' }}>
+                        {statBadge('rgba(59,130,246,0.1)', '#60a5fa', 'rgba(59,130,246,0.2)', recipe.totalApplications, 'Total')}
+                        {statBadge('rgba(34,197,94,0.1)', '#4ade80', 'rgba(34,197,94,0.2)', recipe.successCount, 'Success')}
+                        {statBadge('rgba(239,68,68,0.1)', '#f87171', 'rgba(239,68,68,0.2)', recipe.failureCount, 'Failed')}
+                        {pendingCount > 0 && statBadge('rgba(245,158,11,0.1)', '#fbbf24', 'rgba(245,158,11,0.2)', pendingCount, 'Pending')}
+                        {statBadge('rgba(99,102,241,0.1)', '#818cf8', 'rgba(99,102,241,0.2)', `${recipe.successRate.toFixed(1)}%`, 'Success Rate')}
+                    </Box>
+                </Box>
+            </Box>
 
             {/* ── Charts: Status Distribution + Application Timeline ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                    <h3 className="text-lg font-semibold text-white mb-4">Status Distribution</h3>
-                    <ReactECharts option={statusChartOption} style={{ height: '300px' }} theme="dark" />
-                </div>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
+                    <Box sx={{ bgcolor: '#1e2329', p: 3, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Status Distribution</Typography>
+                        <ReactECharts option={statusChartOption} style={{ height: '300px' }} theme="dark" />
+                    </Box>
+                </Box>
                 {timelineOption && (
-                    <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                        <h3 className="text-lg font-semibold text-white mb-4">Application Timeline</h3>
-                        <ReactECharts option={timelineOption} style={{ height: '300px' }} theme="dark" />
-                    </div>
+                    <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
+                        <Box sx={{ bgcolor: '#1e2329', p: 3, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                            <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Application Timeline</Typography>
+                            <ReactECharts option={timelineOption} style={{ height: '300px' }} theme="dark" />
+                        </Box>
+                    </Box>
                 )}
-            </div>
+            </Box>
 
-            {/* ── Affected Plugins Table ──────────────────────────────── */}
+            {/* ── Affected Plugins Table ──────────────────────── */}
             {affectedPlugins.length > 0 && (
-                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a]">
-                        <h2 className="font-bold text-slate-200">Affected Plugins ({affectedPlugins.length})</h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left" role="table">
-                            <thead>
-                                <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
-                                    <th className="px-6 py-3">Plugin</th>
-                                    <th className="px-6 py-3 text-center">Applied</th>
-                                    <th className="px-6 py-3 text-center">Success</th>
-                                    <th className="px-6 py-3 text-center">Failures</th>
-                                    <th className="px-6 py-3">Last Run</th>
-                                    <th className="px-6 py-3 text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800">
-                                {affectedPlugins.map((p) => {
-                                    const pluginStatus = p.failures > 0 && p.success > 0
-                                        ? 'partial'
-                                        : p.failures > 0
-                                            ? 'failed'
-                                            : p.success > 0
-                                                ? 'success'
-                                                : 'pending';
+                <Box sx={cardSx}>
+                    <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a' }}>
+                        <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>Affected Plugins ({affectedPlugins.length})</Typography>
+                    </Box>
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Table role="table" size="small">
+                            <TableHead>
+                                <TableRow>
+                                    {['Plugin', 'Applied', 'Success', 'Failures', 'Last Run', 'Status'].map((h, i) => (
+                                        <TableCell key={h} align={i === 0 ? 'left' : 'center'} sx={thSx}>{h}</TableCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {affectedPlugins.map(p => {
+                                    const pluginStatus = p.failures > 0 && p.success > 0 ? 'partial' : p.failures > 0 ? 'failed' : p.success > 0 ? 'success' : 'pending';
                                     return (
-                                        <tr key={p.pluginName} className="hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-3">
-                                                <Link
-                                                    to={`/plugins/${p.pluginName}`}
-                                                    className="text-blue-400 hover:underline text-sm font-medium"
-                                                >
+                                        <TableRow key={p.pluginName} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                            <TableCell sx={tdSx}>
+                                                <Box component={Link} to={`/plugins/${p.pluginName}`} sx={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 500, fontSize: '0.875rem', '&:hover': { textDecoration: 'underline' } }}>
                                                     {p.pluginName}
-                                                </Link>
-                                            </td>
-                                            <td className="px-6 py-3 text-center text-slate-300 text-sm">{p.applied}</td>
-                                            <td className="px-6 py-3 text-center">
-                                                {p.success > 0 ? (
-                                                    <span className="text-green-400 text-sm">{p.success}</span>
-                                                ) : (
-                                                    <span className="text-slate-600 text-sm">0</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-3 text-center">
-                                                {p.failures > 0 ? (
-                                                    <span className="text-red-400 text-sm">{p.failures}</span>
-                                                ) : (
-                                                    <span className="text-slate-600 text-sm">0</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-3 text-slate-400 text-sm font-mono flex items-center gap-1">
-                                                <Clock size={12} />
-                                                {p.lastRun?.split('T')[0] || '-'}
-                                            </td>
-                                            <td className="px-6 py-3 text-center">
-                                                <StatusBadge status={pluginStatus} />
-                                            </td>
-                                        </tr>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={tdSx}>{p.applied}</TableCell>
+                                            <TableCell align="center" sx={tdSx}>
+                                                <Box component="span" sx={{ color: p.success > 0 ? '#4ade80' : '#475569' }}>{p.success}</Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={tdSx}>
+                                                <Box component="span" sx={{ color: p.failures > 0 ? '#f87171' : '#475569' }}>{p.failures}</Box>
+                                            </TableCell>
+                                            <TableCell sx={{ ...tdSx, fontFamily: 'monospace' }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <Clock size={12} /> {p.lastRun?.split('T')[0] || '-'}
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={tdSx}><StatusBadge status={pluginStatus} /></TableCell>
+                                        </TableRow>
                                     );
                                 })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </TableBody>
+                        </Table>
+                    </Box>
+                </Box>
             )}
 
-            {/* ── Failure Breakdown (only if failures exist) ──────────── */}
+            {/* ── Failure Breakdown ────────────────────────────── */}
             {failureRows.length > 0 && (
-                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a] flex items-center gap-2">
-                        <XCircle size={16} className="text-red-400" />
-                        <h2 className="font-bold text-slate-200">Failure Breakdown ({failureRows.length})</h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left" role="table">
-                            <thead>
-                                <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
-                                    <th className="px-6 py-3">Plugin</th>
-                                    <th className="px-6 py-3">Timestamp</th>
-                                    <th className="px-6 py-3">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800">
+                <Box sx={cardSx}>
+                    <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <XCircle size={16} style={{ color: '#f87171' }} />
+                        <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>Failure Breakdown ({failureRows.length})</Typography>
+                    </Box>
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Table role="table" size="small">
+                            <TableHead>
+                                <TableRow>
+                                    {['Plugin', 'Timestamp', 'Actions'].map(h => (
+                                        <TableCell key={h} sx={thSx}>{h}</TableCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
                                 {failureRows.map((row, i) => (
-                                    <tr key={`${row.pluginName}-${i}`} className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-3">
-                                            <Link
-                                                to={`/plugins/${row.pluginName}`}
-                                                className="text-blue-400 hover:underline text-sm"
-                                            >
+                                    <TableRow key={`${row.pluginName}-${i}`} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                        <TableCell sx={tdSx}>
+                                            <Box component={Link} to={`/plugins/${row.pluginName}`} sx={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { textDecoration: 'underline' } }}>
                                                 {row.pluginName}
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-3 text-slate-400 text-sm font-mono flex items-center gap-1">
-                                            <Clock size={12} />
-                                            {row.timestamp?.split('T')[0] || '-'}
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <Link
-                                                to={`/plugins/${row.pluginName}`}
-                                                className="text-blue-400 hover:underline text-xs"
-                                            >
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ ...tdSx, fontFamily: 'monospace' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <Clock size={12} /> {row.timestamp?.split('T')[0] || '-'}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={tdSx}>
+                                            <Box component={Link} to={`/plugins/${row.pluginName}`} sx={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.75rem', '&:hover': { textDecoration: 'underline' } }}>
                                                 View Plugin →
-                                            </Link>
-                                        </td>
-                                    </tr>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </TableBody>
+                        </Table>
+                    </Box>
+                </Box>
             )}
 
-            {/* ── Plugin Applications (full list) ────────────────────── */}
-            <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a]">
-                    <h2 className="font-bold text-slate-200">All Plugin Applications ({recipe.plugins.length})</h2>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left" role="table">
-                        <thead>
-                            <tr className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
-                                <th className="px-6 py-3">Plugin</th>
-                                <th className="px-6 py-3">Status</th>
-                                <th className="px-6 py-3">Timestamp</th>
-                                <th className="px-6 py-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
+            {/* ── Plugin Applications (full list) ─────────────── */}
+            <Box sx={cardSx}>
+                <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>All Plugin Applications ({recipe.plugins.length})</Typography>
+                </Box>
+                <Box sx={{ overflowX: 'auto' }}>
+                    <Table role="table" size="small">
+                        <TableHead>
+                            <TableRow>
+                                {['Plugin', 'Status', 'Timestamp', 'Actions'].map(h => (
+                                    <TableCell key={h} sx={thSx}>{h}</TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
                             {recipe.plugins.map((plugin, idx) => (
-                                <tr key={`${plugin.pluginName}-${idx}`} className="hover:bg-white/5 transition-colors">
-                                    <td className="px-6 py-3 text-slate-200 font-medium">{plugin.pluginName}</td>
-                                    <td className="px-6 py-3">
-                                        <span className="flex items-center gap-1">
+                                <TableRow key={`${plugin.pluginName}-${idx}`} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                    <TableCell sx={{ ...tdSx, fontWeight: 500 }}>{plugin.pluginName}</TableCell>
+                                    <TableCell sx={tdSx}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                             {plugin.status === 'success' ? (
-                                                <><CheckCircle size={14} className="text-green-400" /><span className="text-green-400 text-sm">success</span></>
+                                                <><CheckCircle size={14} style={{ color: '#4ade80' }} /><Box component="span" sx={{ color: '#4ade80', fontSize: '0.875rem' }}>success</Box></>
                                             ) : plugin.status === 'fail' || plugin.status === 'failure' ? (
-                                                <><XCircle size={14} className="text-red-400" /><span className="text-red-400 text-sm">failed</span></>
+                                                <><XCircle size={14} style={{ color: '#f87171' }} /><Box component="span" sx={{ color: '#f87171', fontSize: '0.875rem' }}>failed</Box></>
                                             ) : (
-                                                <span className="text-slate-500 text-sm">{plugin.status || 'unknown'}</span>
+                                                <Box component="span" sx={{ color: '#64748b', fontSize: '0.875rem' }}>{plugin.status || 'unknown'}</Box>
                                             )}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        <span className="text-slate-500 text-sm font-mono flex items-center gap-1">
-                                            <Clock size={12} />
-                                            {plugin.timestamp?.split('T')[0] || '-'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        <Link
-                                            to={`/plugins/${plugin.pluginName}`}
-                                            className="text-blue-400 hover:underline text-sm"
-                                        >
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell sx={{ ...tdSx, fontFamily: 'monospace' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748b' }}>
+                                            <Clock size={12} /> {plugin.timestamp?.split('T')[0] || '-'}
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell sx={tdSx}>
+                                        <Box component={Link} to={`/plugins/${plugin.pluginName}`} sx={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { textDecoration: 'underline' } }}>
                                             View Plugin →
-                                        </Link>
-                                    </td>
-                                </tr>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </TableBody>
+                    </Table>
+                </Box>
+            </Box>
 
-            {/* ── Raw Data Links ──────────────────────────────────────── */}
-            <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                <h3 className="text-lg font-semibold text-white mb-4">Raw Data</h3>
-                <div className="flex flex-wrap gap-3">
-                    <a
-                        href={`${BASE}/recipes/${encodeURIComponent(recipe.recipeId)}.json`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#15171a] text-slate-300 rounded-lg border border-slate-700 hover:border-slate-600 hover:text-white transition-colors text-sm"
-                    >
-                        <FileText size={16} />
-                        {recipe.recipeId}.json
-                        <ExternalLink size={12} />
-                    </a>
-                    <a
-                        href={`${BASE}/plugin-recipes-index.json`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#15171a] text-slate-300 rounded-lg border border-slate-700 hover:border-slate-600 hover:text-white transition-colors text-sm"
-                    >
-                        <FileText size={16} />
-                        plugin-recipes-index.json
-                        <ExternalLink size={12} />
-                    </a>
-                </div>
-            </div>
-        </div>
+            {/* ── Raw Data Links ───────────────────────────────── */}
+            <Box sx={{ bgcolor: '#1e2329', p: 3, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Raw Data</Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                    {[
+                        { href: `${BASE}/recipes/${encodeURIComponent(recipe.recipeId)}.json`, icon: <FileText size={16} />, label: `${recipe.recipeId}.json` },
+                        { href: `${BASE}/plugin-recipes-index.json`, icon: <FileText size={16} />, label: 'plugin-recipes-index.json' },
+                    ].map(({ href, icon, label }) => (
+                        <Box key={label} component="a" href={href} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
+                            {icon} {label} <ExternalLink size={12} />
+                        </Box>
+                    ))}
+                </Box>
+            </Box>
+        </Box>
     );
 };

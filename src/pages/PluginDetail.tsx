@@ -3,8 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
 import {
     ArrowLeft, ExternalLink, CheckCircle, XCircle, GitBranch,
-    Loader2, Clock, GitCommit, AlertTriangle, FileText, Download
+    Clock, GitCommit, AlertTriangle, FileText, Download
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import { usePluginData, useFailedMigrations } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { StatusBadge, deriveStatus } from '../components/StatusBadge';
@@ -14,38 +22,27 @@ const BASE = '/plugin-modernizer-stats';
 
 // ── PR Status Badge ─────────────────────────────────────────────────────────
 function PRStatusBadge({ status }: { status: string }) {
-    const config: Record<string, string> = {
-        open: 'bg-green-500/10 text-green-400 border-green-500/20',
-        merged: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-        closed: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+    const config: Record<string, { bg: string; color: string; border: string }> = {
+        open: { bg: 'rgba(34,197,94,0.1)', color: '#4ade80', border: 'rgba(34,197,94,0.2)' },
+        merged: { bg: 'rgba(168,85,247,0.1)', color: '#c084fc', border: 'rgba(168,85,247,0.2)' },
+        closed: { bg: 'rgba(100,116,139,0.1)', color: '#94a3b8', border: 'rgba(100,116,139,0.2)' },
     };
+    const { bg, color, border } = config[status] ?? config.closed;
     return (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${config[status] ?? config.closed}`}>
+        <Box component="span" sx={{ px: 1, py: 0.5, borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 500, bgcolor: bg, color, border: `1px solid ${border}` }}>
             {status}
-        </span>
+        </Box>
     );
 }
 
 // ── Recipe row for breakdown table ──────────────────────────────────────────
-interface RecipeBreakdownRow {
-    recipeId: string;
-    recipeName: string;
-    applied: number;
-    success: number;
-    failed: number;
-}
+interface RecipeBreakdownRow { recipeId: string; recipeName: string; applied: number; success: number; failed: number; }
 
 function buildRecipeBreakdown(migrations: Migration[]): RecipeBreakdownRow[] {
     const map = new Map<string, RecipeBreakdownRow>();
     for (const m of migrations) {
         const id = m.migrationId;
-        const existing = map.get(id) || {
-            recipeId: id,
-            recipeName: m.migrationName || id,
-            applied: 0,
-            success: 0,
-            failed: 0,
-        };
+        const existing = map.get(id) || { recipeId: id, recipeName: m.migrationName || id, applied: 0, success: 0, failed: 0 };
         existing.applied++;
         if (m.migrationStatus === 'success') existing.success++;
         if (m.migrationStatus === 'fail' || m.migrationStatus === 'failure') existing.failed++;
@@ -55,13 +52,7 @@ function buildRecipeBreakdown(migrations: Migration[]): RecipeBreakdownRow[] {
 }
 
 // ── PR history rows ─────────────────────────────────────────────────────────
-interface PRHistoryRow {
-    url: string;
-    recipeId: string;
-    status: string;
-    date: string;
-    key: string;
-}
+interface PRHistoryRow { url: string; recipeId: string; status: string; date: string; key: string; }
 
 function buildPRHistory(migrations: Migration[]): PRHistoryRow[] {
     return migrations
@@ -76,6 +67,10 @@ function buildPRHistory(migrations: Migration[]): PRHistoryRow[] {
         .sort((a, b) => b.date.localeCompare(a.date));
 }
 
+const cardSx = { bgcolor: '#1e2329', borderRadius: '12px', border: '1px solid #1e293b', overflow: 'hidden' };
+const thSx = { color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, bgcolor: 'rgba(21,23,26,0.5)', borderBottom: '1px solid #1e293b', py: 1.5 };
+const tdSx = { color: '#cbd5e1', fontSize: '0.875rem', borderBottom: '1px solid #1e293b', py: 1.5 };
+
 export const PluginDetail = () => {
     const { name } = useParams<{ name: string }>();
     const { plugin, loading, error } = usePluginData(name || '');
@@ -83,7 +78,6 @@ export const PluginDetail = () => {
 
     const timelineOption = useMemo(() => {
         if (!plugin?.migrations || plugin.migrations.length === 0) return null;
-
         const monthMap = new Map<string, { success: number; fail: number }>();
         for (const m of plugin.migrations) {
             const date = m.timestamp?.split('T')[0] || '';
@@ -94,9 +88,7 @@ export const PluginDetail = () => {
             else entry.fail++;
             monthMap.set(month, entry);
         }
-
         if (monthMap.size < 2) return null;
-
         const months = [...monthMap.keys()].sort();
         return {
             tooltip: { trigger: 'axis' },
@@ -111,40 +103,33 @@ export const PluginDetail = () => {
         };
     }, [plugin]);
 
-    const recipeBreakdown = useMemo(() => {
-        if (!plugin?.migrations) return [];
-        return buildRecipeBreakdown(plugin.migrations);
-    }, [plugin]);
-
-    const prHistory = useMemo(() => {
-        if (!plugin?.migrations) return [];
-        return buildPRHistory(plugin.migrations);
-    }, [plugin]);
+    const recipeBreakdown = useMemo(() => plugin?.migrations ? buildRecipeBreakdown(plugin.migrations) : [], [plugin]);
+    const prHistory = useMemo(() => plugin?.migrations ? buildPRHistory(plugin.migrations) : [], [plugin]);
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-100">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+                <CircularProgress sx={{ color: '#3b82f6' }} size={48} />
+            </Box>
         );
     }
 
     if (error || !plugin) {
         const is404 = error?.message.includes('404');
         return (
-            <div className="space-y-4">
-                <Link to="/plugins" className="inline-flex items-center text-slate-400 hover:text-slate-200">
-                    <ArrowLeft size={16} className="mr-1" /> Back to Plugins
-                </Link>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box component={Link} to="/plugins" sx={{ display: 'inline-flex', alignItems: 'center', color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#e2e8f0' } }}>
+                    <ArrowLeft size={16} style={{ marginRight: 4 }} /> Back to Plugins
+                </Box>
                 {is404 ? (
-                    <div className="bg-[#1e2329] rounded-xl border border-slate-800 p-12 text-center">
-                        <p className="text-slate-500 text-lg mb-2">Plugin not found</p>
-                        <p className="text-slate-600 text-sm">{name}</p>
-                    </div>
+                    <Box sx={{ ...cardSx, p: 6, textAlign: 'center' }}>
+                        <Typography sx={{ color: '#64748b', fontSize: '1.125rem', mb: 1 }}>Plugin not found</Typography>
+                        <Typography sx={{ color: '#475569', fontSize: '0.875rem' }}>{name}</Typography>
+                    </Box>
                 ) : (
                     <ErrorBanner message={error?.message ?? 'Unknown error'} onRetry={() => window.location.reload()} />
                 )}
-            </div>
+            </Box>
         );
     }
 
@@ -152,465 +137,339 @@ export const PluginDetail = () => {
     const successCount = plugin.migrations.filter(m => m.migrationStatus === 'success').length;
     const failCount = plugin.migrations.filter(m => m.migrationStatus === 'fail' || m.migrationStatus === 'failure').length;
     const pendingCount = plugin.totalMigrations - successCount - failCount;
-
-    // PR counts
     const openPRs = plugin.migrations.filter(m => m.pullRequestStatus === 'open').length;
     const mergedPRs = plugin.migrations.filter(m => m.pullRequestStatus === 'merged').length;
     const closedPRs = plugin.migrations.filter(m => m.pullRequestStatus === 'closed').length;
 
-    return (
-        <div className="space-y-6">
-            <Link to="/plugins" className="inline-flex items-center text-slate-400 hover:text-slate-200">
-                <ArrowLeft size={16} className="mr-1" /> Back to Plugins
-            </Link>
+    const statMiniBadge = (bg: string, color: string, border: string, val: number, label: string) => (
+        <Box sx={{ bgcolor: bg, px: 2, py: 1, borderRadius: '8px', border: `1px solid ${border}`, textAlign: 'center' }}>
+            <Typography sx={{ display: 'block', fontSize: '1.5rem', fontWeight: 700, color }}>{val}</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color, fontWeight: 500 }}>{label}</Typography>
+        </Box>
+    );
 
-            {/* ── Summary Card ────────────────────────────────────────── */}
-            <div className="bg-[#1e2329] p-8 rounded-xl border border-slate-800">
-                <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-bold text-white">{plugin.pluginName}</h1>
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box component={Link} to="/plugins" sx={{ display: 'inline-flex', alignItems: 'center', color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#e2e8f0' } }}>
+                <ArrowLeft size={16} style={{ marginRight: 4 }} /> Back to Plugins
+            </Box>
+
+            {/* ── Summary Card ─────────────────────────────────── */}
+            <Box sx={{ bgcolor: '#1e2329', p: 4, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 700, color: '#f1f5f9' }}>{plugin.pluginName}</Typography>
                             <StatusBadge status={status} />
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, fontSize: '0.875rem' }}>
                             {plugin.pluginRepository && (
-                                <a
-                                    href={plugin.pluginRepository}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center text-blue-400 hover:underline"
-                                >
-                                    View Repository <ExternalLink size={14} className="ml-1" />
-                                </a>
+                                <Box component="a" href={plugin.pluginRepository} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', color: '#60a5fa', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                                    View Repository <ExternalLink size={14} style={{ marginLeft: 4 }} />
+                                </Box>
                             )}
                             {plugin.migrations[0]?.defaultBranch && (
-                                <span className="text-slate-500 flex items-center gap-1">
-                                    <GitBranch size={14} />
-                                    {plugin.migrations[0].defaultBranch}
-                                </span>
+                                <Box component="span" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <GitBranch size={14} /> {plugin.migrations[0].defaultBranch}
+                                </Box>
                             )}
                             {plugin.migrations[0]?.pluginVersion && (
-                                <span className="px-2 py-0.5 bg-slate-700 text-slate-300 text-xs rounded font-mono">
+                                <Box component="span" sx={{ px: 1, py: 0.25, bgcolor: '#334155', color: '#cbd5e1', fontSize: '0.75rem', borderRadius: '4px', fontFamily: 'monospace' }}>
                                     v{plugin.migrations[0].pluginVersion}
-                                </span>
+                                </Box>
                             )}
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-center">
-                        <div className="bg-blue-500/10 px-4 py-2 rounded-lg border border-blue-500/20">
-                            <span className="block text-2xl font-bold text-blue-500">{plugin.totalMigrations}</span>
-                            <span className="text-xs text-blue-400 font-medium">Migrations</span>
-                        </div>
-                        <div className="bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/20">
-                            <span className="block text-2xl font-bold text-green-500">{successCount}</span>
-                            <span className="text-xs text-green-400 font-medium">Success</span>
-                        </div>
-                        <div className="bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/20">
-                            <span className="block text-2xl font-bold text-red-500">{failCount}</span>
-                            <span className="text-xs text-red-400 font-medium">Failed</span>
-                        </div>
-                        {pendingCount > 0 && (
-                            <div className="bg-amber-500/10 px-4 py-2 rounded-lg border border-amber-500/20">
-                                <span className="block text-2xl font-bold text-amber-500">{pendingCount}</span>
-                                <span className="text-xs text-amber-400 font-medium">Pending</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
+                        </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, textAlign: 'center' }}>
+                        {statMiniBadge('rgba(59,130,246,0.1)', '#3b82f6', 'rgba(59,130,246,0.2)', plugin.totalMigrations, 'Migrations')}
+                        {statMiniBadge('rgba(34,197,94,0.1)', '#22c55e', 'rgba(34,197,94,0.2)', successCount, 'Success')}
+                        {statMiniBadge('rgba(239,68,68,0.1)', '#ef4444', 'rgba(239,68,68,0.2)', failCount, 'Failed')}
+                        {pendingCount > 0 && statMiniBadge('rgba(245,158,11,0.1)', '#f59e0b', 'rgba(245,158,11,0.2)', pendingCount, 'Pending')}
+                    </Box>
+                </Box>
                 {/* PR counts + latest migration */}
-                <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400 border-t border-slate-800 pt-4">
+                <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2, fontSize: '0.75rem', color: '#94a3b8', borderTop: '1px solid #1e293b', pt: 2 }}>
                     {plugin.latestMigration && (
-                        <span className="flex items-center gap-1">
-                            <Clock size={12} />
-                            Last Updated: <span className="text-white">{plugin.latestMigration.split('T')[0]}</span>
-                        </span>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Clock size={12} /> Last Updated: <Box component="span" sx={{ color: '#f1f5f9' }}>{plugin.latestMigration.split('T')[0]}</Box>
+                        </Box>
                     )}
-                    {openPRs > 0 && (
-                        <span className="flex items-center gap-1">
-                            <GitBranch size={12} className="text-green-400" />
-                            Open PRs: <span className="text-green-400 font-medium">{openPRs}</span>
-                        </span>
-                    )}
-                    {mergedPRs > 0 && (
-                        <span className="flex items-center gap-1">
-                            <GitBranch size={12} className="text-purple-400" />
-                            Merged PRs: <span className="text-purple-400 font-medium">{mergedPRs}</span>
-                        </span>
-                    )}
-                    {closedPRs > 0 && (
-                        <span className="flex items-center gap-1">
-                            <GitBranch size={12} className="text-slate-400" />
-                            Closed PRs: <span className="text-slate-300 font-medium">{closedPRs}</span>
-                        </span>
-                    )}
-                </div>
-            </div>
+                    {openPRs > 0 && <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><GitBranch size={12} style={{ color: '#4ade80' }} /> Open PRs: <Box component="span" sx={{ color: '#4ade80', fontWeight: 600 }}>{openPRs}</Box></Box>}
+                    {mergedPRs > 0 && <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><GitBranch size={12} style={{ color: '#c084fc' }} /> Merged PRs: <Box component="span" sx={{ color: '#c084fc', fontWeight: 600 }}>{mergedPRs}</Box></Box>}
+                    {closedPRs > 0 && <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><GitBranch size={12} /> Closed PRs: <Box component="span" sx={{ color: '#cbd5e1', fontWeight: 600 }}>{closedPRs}</Box></Box>}
+                </Box>
+            </Box>
 
-            {/* ── Migration Timeline Chart ────────────────────────────── */}
+            {/* ── Migration Timeline Chart ─────────────────────── */}
             {timelineOption && (
-                <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                    <h3 className="text-lg font-semibold text-white mb-4">Migration Timeline</h3>
+                <Box sx={{ bgcolor: '#1e2329', p: 3, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                    <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Migration Timeline</Typography>
                     <ReactECharts option={timelineOption} style={{ height: '250px' }} theme="dark" />
-                </div>
+                </Box>
             )}
 
-            {/* ── Recipe Breakdown ────────────────────────────────────── */}
+            {/* ── Recipe Breakdown ─────────────────────────────── */}
             {recipeBreakdown.length > 0 && (
-                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a]">
-                        <h2 className="font-bold text-slate-200">Recipe Breakdown ({recipeBreakdown.length})</h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left" role="table">
-                            <thead>
-                                <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
-                                    <th className="px-6 py-3">Recipe</th>
-                                    <th className="px-6 py-3 text-center">Applied</th>
-                                    <th className="px-6 py-3 text-center">Success</th>
-                                    <th className="px-6 py-3 text-center">Failed</th>
-                                    <th className="px-6 py-3 text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800">
-                                {recipeBreakdown.map((row) => {
-                                    const rowStatus = row.failed > 0 && row.success > 0
-                                        ? 'partial'
-                                        : row.failed > 0
-                                            ? 'failed'
-                                            : row.success > 0
-                                                ? 'success'
-                                                : 'pending';
+                <Box sx={cardSx}>
+                    <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a' }}>
+                        <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>Recipe Breakdown ({recipeBreakdown.length})</Typography>
+                    </Box>
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Table role="table" size="small">
+                            <TableHead>
+                                <TableRow>
+                                    {['Recipe', 'Applied', 'Success', 'Failed', 'Status'].map(h => (
+                                        <TableCell key={h} align={h === 'Recipe' ? 'left' : 'center'} sx={thSx}>{h}</TableCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {recipeBreakdown.map(row => {
+                                    const rowStatus = row.failed > 0 && row.success > 0 ? 'partial' : row.failed > 0 ? 'failed' : row.success > 0 ? 'success' : 'pending';
                                     return (
-                                        <tr key={row.recipeId} className="hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-3">
-                                                <Link
-                                                    to={`/recipes/${encodeURIComponent(row.recipeId)}`}
-                                                    className="text-blue-400 hover:underline text-sm font-mono"
-                                                >
+                                        <TableRow key={row.recipeId} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                            <TableCell sx={tdSx}>
+                                                <Box component={Link} to={`/recipes/${encodeURIComponent(row.recipeId)}`} sx={{ color: '#60a5fa', textDecoration: 'none', fontFamily: 'monospace', fontSize: '0.8125rem', '&:hover': { textDecoration: 'underline' } }}>
                                                     {row.recipeName}
-                                                </Link>
-                                            </td>
-                                            <td className="px-6 py-3 text-center text-slate-300 text-sm">{row.applied}</td>
-                                            <td className="px-6 py-3 text-center">
-                                                {row.success > 0 ? (
-                                                    <span className="text-green-400 text-sm">{row.success}</span>
-                                                ) : (
-                                                    <span className="text-slate-600 text-sm">0</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-3 text-center">
-                                                {row.failed > 0 ? (
-                                                    <span className="text-red-400 text-sm">{row.failed}</span>
-                                                ) : (
-                                                    <span className="text-slate-600 text-sm">0</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-3 text-center">
-                                                <StatusBadge status={rowStatus} />
-                                            </td>
-                                        </tr>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={tdSx}>{row.applied}</TableCell>
+                                            <TableCell align="center" sx={tdSx}>
+                                                <Box component="span" sx={{ color: row.success > 0 ? '#4ade80' : '#475569' }}>{row.success}</Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={tdSx}>
+                                                <Box component="span" sx={{ color: row.failed > 0 ? '#f87171' : '#475569' }}>{row.failed}</Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={tdSx}><StatusBadge status={rowStatus} /></TableCell>
+                                        </TableRow>
                                     );
                                 })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </TableBody>
+                        </Table>
+                    </Box>
+                </Box>
             )}
 
-            {/* ── PR History ─────────────────────────────────────────── */}
+            {/* ── PR History ──────────────────────────────────── */}
             {prHistory.length > 0 && (
-                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a]">
-                        <h2 className="font-bold text-slate-200">PR History ({prHistory.length})</h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left" role="table">
-                            <thead>
-                                <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
-                                    <th className="px-6 py-3">Pull Request</th>
-                                    <th className="px-6 py-3">Recipe</th>
-                                    <th className="px-6 py-3 text-center">Status</th>
-                                    <th className="px-6 py-3">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800">
-                                {prHistory.map((pr) => (
-                                    <tr key={pr.key} className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-3">
-                                            <a
-                                                href={pr.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-400 hover:underline text-sm inline-flex items-center gap-1"
-                                            >
-                                                <GitBranch size={14} />
-                                                {pr.url.split('/').slice(-2).join('/')}
-                                                <ExternalLink size={12} />
-                                            </a>
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <Link
-                                                to={`/recipes/${encodeURIComponent(pr.recipeId)}`}
-                                                className="text-sm text-slate-300 hover:text-blue-400 font-mono"
-                                            >
-                                                {pr.recipeId.split('.').pop() ?? pr.recipeId}
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-3 text-center">
-                                            <PRStatusBadge status={pr.status} />
-                                        </td>
-                                        <td className="px-6 py-3 text-slate-400 text-sm font-mono flex items-center gap-1">
-                                            <Clock size={12} />
-                                            {pr.date}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Failed Migrations (conditional) ────────────────────── */}
-            {failCount > 0 && (
-                <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a] flex items-center gap-2">
-                        <AlertTriangle size={16} className="text-red-400" />
-                        <h2 className="font-bold text-slate-200">Failed Migrations</h2>
-                    </div>
-                    {csvLoading ? (
-                        <div className="p-8 text-center">
-                            <Loader2 className="w-6 h-6 text-slate-500 animate-spin mx-auto" />
-                        </div>
-                    ) : csvData && csvData.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left" role="table">
-                                <thead>
-                                    <tr className="bg-[#15171a]/50 border-b border-slate-800 text-slate-400 text-sm">
-                                        {headers.map((h, i) => (
-                                            <th key={i} className="px-6 py-3">{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-800">
-                                    {csvData.map((row, i) => (
-                                        <tr key={i} className="hover:bg-white/5 transition-colors">
-                                            {row.map((cell, j) => (
-                                                <td key={j} className="px-6 py-3 text-slate-300 text-sm">
-                                                    {cell}
-                                                </td>
-                                            ))}
-                                        </tr>
+                <Box sx={cardSx}>
+                    <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a' }}>
+                        <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>PR History ({prHistory.length})</Typography>
+                    </Box>
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Table role="table" size="small">
+                            <TableHead>
+                                <TableRow>
+                                    {['Pull Request', 'Recipe', 'Status', 'Date'].map(h => (
+                                        <TableCell key={h} sx={thSx}>{h}</TableCell>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <div className="p-6 text-center text-slate-500 text-sm">
-                            No CSV data available. Failed migration details may not have been exported.
-                        </div>
-                    )}
-                </div>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {prHistory.map(pr => (
+                                    <TableRow key={pr.key} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                        <TableCell sx={tdSx}>
+                                            <Box component="a" href={pr.url} target="_blank" rel="noopener noreferrer" sx={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: 0.5, '&:hover': { textDecoration: 'underline' } }}>
+                                                <GitBranch size={14} /> {pr.url.split('/').slice(-2).join('/')} <ExternalLink size={12} />
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={tdSx}>
+                                            <Box component={Link} to={`/recipes/${encodeURIComponent(pr.recipeId)}`} sx={{ color: '#cbd5e1', textDecoration: 'none', fontFamily: 'monospace', fontSize: '0.875rem', '&:hover': { color: '#60a5fa' } }}>
+                                                {pr.recipeId.split('.').pop() ?? pr.recipeId}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={tdSx}><PRStatusBadge status={pr.status} /></TableCell>
+                                        <TableCell sx={{ ...tdSx, fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                            <Clock size={12} /> {pr.date}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Box>
+                </Box>
             )}
 
-            {/* ── Migration History (existing, preserved) ─────────────── */}
-            <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-800 bg-[#15171a] flex items-center justify-between">
-                    <h2 className="font-bold text-slate-200">Migration History ({plugin.migrations.length})</h2>
-                </div>
-                <div className="divide-y divide-slate-800">
-                    {plugin.migrations.map((migration) => (
-                        <div key={migration.key} className="p-6 hover:bg-white/5 transition-colors">
-                            {/* Header row */}
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="flex items-center gap-2 flex-1">
-                                    {migration.migrationStatus === 'success' ? (
-                                        <CheckCircle className="text-green-500 shrink-0" size={20} />
-                                    ) : migration.migrationStatus === 'fail' || migration.migrationStatus === 'failure' ? (
-                                        <XCircle className="text-red-500 shrink-0" size={20} />
-                                    ) : (
-                                        <AlertTriangle className="text-amber-500 shrink-0" size={20} />
-                                    )}
-                                    <div>
-                                        <h3 className="font-semibold text-slate-200">{migration.migrationName}</h3>
-                                        <Link
-                                            to={`/recipes/${encodeURIComponent(migration.migrationId)}`}
-                                            className="text-xs text-blue-400 hover:underline font-mono"
-                                        >
-                                            {migration.migrationId}
-                                        </Link>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    {migration.pullRequestStatus && (
-                                        <PRStatusBadge status={migration.pullRequestStatus} />
-                                    )}
-                                    <span className="text-xs text-slate-500 font-mono flex items-center gap-1">
-                                        <Clock size={12} />
-                                        {migration.timestamp?.split('T')[0] || 'N/A'}
-                                    </span>
-                                </div>
-                            </div>
+            {/* ── Failed Migrations ────────────────────────────── */}
+            {failCount > 0 && (
+                <Box sx={cardSx}>
+                    <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AlertTriangle size={16} style={{ color: '#f87171' }} />
+                        <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>Failed Migrations</Typography>
+                    </Box>
+                    {csvLoading ? (
+                        <Box sx={{ p: 4, textAlign: 'center' }}>
+                            <CircularProgress size={24} sx={{ color: '#64748b' }} />
+                        </Box>
+                    ) : csvData && csvData.length > 0 ? (
+                        <Box sx={{ overflowX: 'auto' }}>
+                            <Table role="table" size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        {headers.map((h, i) => <TableCell key={i} sx={thSx}>{h}</TableCell>)}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {csvData.map((row, i) => (
+                                        <TableRow key={i} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                            {row.map((cell, j) => <TableCell key={j} sx={tdSx}>{cell}</TableCell>)}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    ) : (
+                        <Box sx={{ p: 3, textAlign: 'center', color: '#64748b', fontSize: '0.875rem' }}>
+                            No CSV data available. Failed migration details may not have been exported.
+                        </Box>
+                    )}
+                </Box>
+            )}
 
-                            {/* Description */}
+            {/* ── Migration History ────────────────────────────── */}
+            <Box sx={cardSx}>
+                <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #1e293b', bgcolor: '#15171a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#e2e8f0' }}>Migration History ({plugin.migrations.length})</Typography>
+                </Box>
+                <Box sx={{ '& > *:not(:last-child)': { borderBottom: '1px solid #1e293b' } }}>
+                    {plugin.migrations.map(migration => (
+                        <Box key={migration.key} sx={{ p: 3, '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                            {/* Header row */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                                    {migration.migrationStatus === 'success'
+                                        ? <CheckCircle style={{ color: '#22c55e', flexShrink: 0 }} size={20} />
+                                        : (migration.migrationStatus === 'fail' || migration.migrationStatus === 'failure')
+                                            ? <XCircle style={{ color: '#ef4444', flexShrink: 0 }} size={20} />
+                                            : <AlertTriangle style={{ color: '#f59e0b', flexShrink: 0 }} size={20} />}
+                                    <Box>
+                                        <Typography sx={{ fontWeight: 600, color: '#e2e8f0' }}>{migration.migrationName}</Typography>
+                                        <Box component={Link} to={`/recipes/${encodeURIComponent(migration.migrationId)}`} sx={{ fontSize: '0.75rem', color: '#60a5fa', textDecoration: 'none', fontFamily: 'monospace', '&:hover': { textDecoration: 'underline' } }}>
+                                            {migration.migrationId}
+                                        </Box>
+                                    </Box>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                                    {migration.pullRequestStatus && <PRStatusBadge status={migration.pullRequestStatus} />}
+                                    <Box component="span" sx={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Clock size={12} /> {migration.timestamp?.split('T')[0] || 'N/A'}
+                                    </Box>
+                                </Box>
+                            </Box>
+
                             {migration.migrationDescription && (
-                                <p className="text-slate-400 text-sm mb-3 ml-7">{migration.migrationDescription}</p>
+                                <Typography sx={{ color: '#94a3b8', fontSize: '0.875rem', mb: 1.5, ml: 3.5 }}>{migration.migrationDescription}</Typography>
                             )}
 
-                            {/* Tags */}
                             {migration.tags && migration.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-3 ml-7">
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5, ml: 3.5 }}>
                                     {migration.tags.map((tag: string, idx: number) => (
-                                        <span key={idx} className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">
+                                        <Box key={idx} component="span" sx={{ px: 1, py: 0.5, bgcolor: 'rgba(59,130,246,0.1)', color: '#60a5fa', fontSize: '0.75rem', borderRadius: '4px', border: '1px solid rgba(59,130,246,0.2)' }}>
                                             {tag}
-                                        </span>
+                                        </Box>
                                     ))}
-                                </div>
+                                </Box>
                             )}
 
                             {/* Baselines & Version Info */}
-                            <div className="flex flex-wrap gap-3 mb-3 ml-7 text-xs">
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 1.5, ml: 3.5, fontSize: '0.75rem' }}>
                                 {migration.pluginVersion && (
-                                    <span className="text-slate-500">
-                                        Plugin: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-slate-300">v{migration.pluginVersion}</span>
-                                    </span>
+                                    <Box component="span" sx={{ color: '#64748b' }}>Plugin: <Box component="span" sx={{ fontFamily: 'monospace', bgcolor: '#15171a', border: '1px solid #334155', px: 0.5, borderRadius: '4px', color: '#cbd5e1' }}>v{migration.pluginVersion}</Box></Box>
                                 )}
                                 {migration.jenkinsBaseline && (
-                                    <span className="text-slate-500">
-                                        Jenkins BL: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-slate-300">{migration.jenkinsBaseline}</span>
-                                    </span>
+                                    <Box component="span" sx={{ color: '#64748b' }}>Jenkins BL: <Box component="span" sx={{ fontFamily: 'monospace', bgcolor: '#15171a', border: '1px solid #334155', px: 0.5, borderRadius: '4px', color: '#cbd5e1' }}>{migration.jenkinsBaseline}</Box></Box>
                                 )}
                                 {migration.targetBaseline && (
-                                    <span className="text-slate-500">
-                                        Target BL: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-amber-300">{migration.targetBaseline}</span>
-                                    </span>
+                                    <Box component="span" sx={{ color: '#64748b' }}>Target BL: <Box component="span" sx={{ fontFamily: 'monospace', bgcolor: '#15171a', border: '1px solid #334155', px: 0.5, borderRadius: '4px', color: '#fde68a' }}>{migration.targetBaseline}</Box></Box>
                                 )}
                                 {migration.effectiveBaseline && (
-                                    <span className="text-slate-500">
-                                        Effective BL: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-green-300">{migration.effectiveBaseline}</span>
-                                    </span>
+                                    <Box component="span" sx={{ color: '#64748b' }}>Effective BL: <Box component="span" sx={{ fontFamily: 'monospace', bgcolor: '#15171a', border: '1px solid #334155', px: 0.5, borderRadius: '4px', color: '#86efac' }}>{migration.effectiveBaseline}</Box></Box>
                                 )}
                                 {migration.jenkinsVersion && (
-                                    <span className="text-slate-500">
-                                        Jenkins: <span className="font-mono bg-[#15171a] border border-slate-700 px-1 rounded text-slate-300">{migration.jenkinsVersion}</span>
-                                    </span>
+                                    <Box component="span" sx={{ color: '#64748b' }}>Jenkins: <Box component="span" sx={{ fontFamily: 'monospace', bgcolor: '#15171a', border: '1px solid #334155', px: 0.5, borderRadius: '4px', color: '#cbd5e1' }}>{migration.jenkinsVersion}</Box></Box>
                                 )}
                                 {migration.defaultBranch && (
-                                    <span className="text-slate-500 flex items-center gap-1">
+                                    <Box component="span" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                         <GitBranch size={12} /> {migration.defaultBranch}
-                                    </span>
+                                    </Box>
                                 )}
                                 {migration.defaultBranchLatestCommitSha && (
-                                    <span className="text-slate-500 flex items-center gap-1">
+                                    <Box component="span" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                         <GitCommit size={12} />
-                                        <span className="font-mono text-slate-300">{migration.defaultBranchLatestCommitSha.substring(0, 7)}</span>
-                                    </span>
+                                        <Box component="span" sx={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{migration.defaultBranchLatestCommitSha.substring(0, 7)}</Box>
+                                    </Box>
                                 )}
-                            </div>
+                            </Box>
 
                             {/* Check Runs Status */}
                             {migration.checkRunsSummary && (
-                                <div className="mb-3 ml-7 p-3 bg-[#15171a] rounded-lg border border-slate-700">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium text-slate-300">CI Check Runs</span>
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${migration.checkRunsSummary === 'success' ? 'bg-green-500/10 text-green-400' :
-                                                migration.checkRunsSummary === 'pending' ? 'bg-amber-500/10 text-amber-400' :
-                                                    'bg-red-500/10 text-red-400'
-                                            }`}>
+                                <Box sx={{ mb: 1.5, ml: 3.5, p: 1.5, bgcolor: '#15171a', borderRadius: '8px', border: '1px solid #334155' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#cbd5e1' }}>CI Check Runs</Typography>
+                                        <Box component="span" sx={{
+                                            px: 1, py: 0.5, borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500,
+                                            bgcolor: migration.checkRunsSummary === 'success' ? 'rgba(34,197,94,0.1)' : migration.checkRunsSummary === 'pending' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                                            color: migration.checkRunsSummary === 'success' ? '#4ade80' : migration.checkRunsSummary === 'pending' ? '#fbbf24' : '#f87171',
+                                        }}>
                                             {migration.checkRunsSummary}
-                                        </span>
-                                    </div>
+                                        </Box>
+                                    </Box>
                                     {migration.checkRuns && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 0.5 }}>
                                             {(Object.entries(migration.checkRuns) as [string, string | null][]).map(([checkName, sts]) => (
-                                                <div key={checkName} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-white/5">
-                                                    <span className="text-slate-400 truncate mr-2">{checkName}</span>
-                                                    <span className={
-                                                        sts === 'success' ? 'text-green-400' :
-                                                            sts === 'failure' ? 'text-red-400' :
-                                                                sts === null ? 'text-slate-600' :
-                                                                    'text-amber-400'
-                                                    }>
+                                                <Box key={checkName} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', px: 1, py: 0.5, borderRadius: '4px', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}>
+                                                    <Box component="span" sx={{ color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', mr: 1 }}>{checkName}</Box>
+                                                    <Box component="span" sx={{ color: sts === 'success' ? '#4ade80' : sts === 'failure' ? '#f87171' : sts === null ? '#475569' : '#fbbf24' }}>
                                                         {sts === null ? 'pending' : sts}
-                                                    </span>
-                                                </div>
+                                                    </Box>
+                                                </Box>
                                             ))}
-                                        </div>
+                                        </Box>
                                     )}
-                                </div>
+                                </Box>
                             )}
 
-                            {/* Action row: PR link, code changes, flags */}
-                            <div className="flex flex-wrap items-center gap-4 text-sm ml-7">
+                            {/* Action row */}
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, ml: 3.5, fontSize: '0.875rem' }}>
                                 {migration.pullRequestUrl ? (
-                                    <a
-                                        href={migration.pullRequestUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center text-blue-400 hover:text-blue-300 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20"
-                                    >
-                                        <GitBranch size={14} className="mr-1" />
-                                        View PR
-                                    </a>
+                                    <Box component="a" href={migration.pullRequestUrl} target="_blank" rel="noopener noreferrer" sx={{ display: 'flex', alignItems: 'center', color: '#60a5fa', bgcolor: 'rgba(59,130,246,0.1)', px: 1.5, py: 0.5, borderRadius: '9999px', border: '1px solid rgba(59,130,246,0.2)', textDecoration: 'none', '&:hover': { color: '#93c5fd' } }}>
+                                        <GitBranch size={14} style={{ marginRight: 4 }} /> View PR
+                                    </Box>
                                 ) : (
-                                    <span className="text-slate-600 italic">No PR created</span>
+                                    <Box component="span" sx={{ color: '#475569', fontStyle: 'italic' }}>No PR created</Box>
                                 )}
-
-                                {/* Code Changes */}
                                 {(migration.additions !== undefined || migration.deletions !== undefined) && (
-                                    <div className="flex items-center gap-2 text-xs bg-[#15171a] px-2 py-1 rounded border border-slate-700">
-                                        {migration.additions !== undefined && migration.additions > 0 && (
-                                            <span className="text-green-400">+{migration.additions}</span>
-                                        )}
-                                        {migration.deletions !== undefined && migration.deletions > 0 && (
-                                            <span className="text-red-400">-{migration.deletions}</span>
-                                        )}
-                                        {migration.changedFiles !== undefined && migration.changedFiles > 0 && (
-                                            <span className="text-slate-500">{migration.changedFiles} files</span>
-                                        )}
-                                    </div>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.75rem', bgcolor: '#15171a', px: 1, py: 0.5, borderRadius: '4px', border: '1px solid #334155' }}>
+                                        {migration.additions !== undefined && migration.additions > 0 && <Box component="span" sx={{ color: '#4ade80' }}>+{migration.additions}</Box>}
+                                        {migration.deletions !== undefined && migration.deletions > 0 && <Box component="span" sx={{ color: '#f87171' }}>-{migration.deletions}</Box>}
+                                        {migration.changedFiles !== undefined && migration.changedFiles > 0 && <Box component="span" sx={{ color: '#64748b' }}>{migration.changedFiles} files</Box>}
+                                    </Box>
                                 )}
-
                                 {migration.dryRun && (
-                                    <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-xs rounded border border-yellow-500/20">
+                                    <Box component="span" sx={{ px: 1, py: 0.5, bgcolor: 'rgba(234,179,8,0.1)', color: '#fbbf24', fontSize: '0.75rem', borderRadius: '4px', border: '1px solid rgba(234,179,8,0.2)' }}>
                                         Dry Run
-                                    </span>
+                                    </Box>
                                 )}
-                            </div>
-                        </div>
+                            </Box>
+                        </Box>
                     ))}
-                </div>
-            </div>
+                </Box>
+            </Box>
 
-            {/* ── Raw Data Links ──────────────────────────────────────── */}
-            <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                <h3 className="text-lg font-semibold text-white mb-4">Raw Data</h3>
-                <div className="flex flex-wrap gap-3">
-                    <a
-                        href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/aggregated_migrations.json`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#15171a] text-slate-300 rounded-lg border border-slate-700 hover:border-slate-600 hover:text-white transition-colors text-sm"
-                    >
-                        <FileText size={16} />
-                        aggregated_migrations.json
-                        <ExternalLink size={12} />
-                    </a>
+            {/* ── Raw Data Links ───────────────────────────────── */}
+            <Box sx={{ bgcolor: '#1e2329', p: 3, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Raw Data</Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                    <Box component="a" href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/aggregated_migrations.json`} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
+                        <FileText size={16} /> aggregated_migrations.json <ExternalLink size={12} />
+                    </Box>
                     {failCount > 0 && (
-                        <a
-                            href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/failed_migrations.csv`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#15171a] text-slate-300 rounded-lg border border-slate-700 hover:border-slate-600 hover:text-white transition-colors text-sm"
-                        >
-                            <Download size={16} />
-                            failed_migrations.csv
-                            <ExternalLink size={12} />
-                        </a>
+                        <Box component="a" href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/failed_migrations.csv`} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
+                            <Download size={16} /> failed_migrations.csv <ExternalLink size={12} />
+                        </Box>
                     )}
-                </div>
-            </div>
-        </div>
+                </Box>
+            </Box>
+        </Box>
     );
 };

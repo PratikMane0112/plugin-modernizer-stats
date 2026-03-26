@@ -14,31 +14,47 @@ export function deriveStatus(migrations: Migration[]): PluginStatus {
     return 'pending';
 }
 
-const STATUS_CONFIG: Record<PluginStatus, { label: string; className: string }> = {
+const STATUS_CONFIG: Record<PluginStatus, { label: string; bg: string; color: string; border: string }> = {
     success: {
         label: '✓ Modernized',
-        className: 'bg-green-500/10 text-green-400 border-green-500/20',
+        bg: 'rgba(34,197,94,0.1)',
+        color: '#4ade80',
+        border: 'rgba(34,197,94,0.2)',
     },
     partial: {
         label: '⚠ Partial',
-        className: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        bg: 'rgba(234,179,8,0.1)',
+        color: '#fbbf24',
+        border: 'rgba(234,179,8,0.2)',
     },
     failed: {
         label: '✗ Failed',
-        className: 'bg-red-500/10 text-red-400 border-red-500/20',
+        bg: 'rgba(239,68,68,0.1)',
+        color: '#f87171',
+        border: 'rgba(239,68,68,0.2)',
     },
     pending: {
         label: '○ Pending',
-        className: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+        bg: 'rgba(100,116,139,0.1)',
+        color: '#94a3b8',
+        border: 'rgba(100,116,139,0.2)',
     },
 };
 
 export function StatusBadge({ status }: { status: PluginStatus }) {
-    const { label, className } = STATUS_CONFIG[status];
+    const { label, bg, color, border } = STATUS_CONFIG[status];
     return (
-        <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${className}`}
-        >
+        <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '2px 10px',
+            borderRadius: '9999px',
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            backgroundColor: bg,
+            color,
+            border: `1px solid ${border}`,
+        }}>
             {label}
         </span>
     );

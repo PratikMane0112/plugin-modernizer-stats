@@ -1,4 +1,7 @@
 import { Component, type ReactNode } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -36,34 +39,50 @@ export class ErrorBoundary extends Component<Props, State> {
                 this.state.error?.message?.includes('Failed to fetch dynamically imported module');
 
             return (
-                <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-                    <div className="bg-[#1e2329] rounded-xl border border-slate-800 p-8 text-center max-w-md">
-                        <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-                        <h2 className="text-lg font-semibold text-white mb-2">
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', p: 4 }}>
+                    <Box sx={{ bgcolor: '#1e2329', borderRadius: '12px', border: '1px solid #1e293b', p: 4, textAlign: 'center', maxWidth: 400 }}>
+                        <AlertTriangle style={{ width: 48, height: 48, color: '#fbbf24', margin: '0 auto 16px' }} />
+                        <Typography variant="h6" sx={{ color: '#f1f5f9', fontWeight: 600, mb: 1 }}>
                             {isChunkError ? 'Failed to Load Page' : 'Something Went Wrong'}
-                        </h2>
-                        <p className="text-slate-400 text-sm mb-6">
+                        </Typography>
+                        <Typography sx={{ color: '#94a3b8', fontSize: '0.875rem', mb: 3 }}>
                             {isChunkError
                                 ? 'The page failed to load. This usually happens due to a network issue. Please try again.'
                                 : this.props.fallbackMessage ?? 'An unexpected error occurred while rendering this page.'}
-                        </p>
-                        <div className="flex gap-3 justify-center">
-                            <button
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+                            <Button
                                 onClick={this.handleRetry}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm font-medium"
+                                startIcon={<RefreshCw size={16} />}
+                                sx={{
+                                    bgcolor: '#2563eb',
+                                    color: '#fff',
+                                    borderRadius: '8px',
+                                    textTransform: 'none',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 500,
+                                    '&:hover': { bgcolor: '#3b82f6' },
+                                }}
                             >
-                                <RefreshCw size={16} />
                                 Try Again
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={() => window.location.reload()}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors text-sm font-medium"
+                                sx={{
+                                    bgcolor: '#334155',
+                                    color: '#e2e8f0',
+                                    borderRadius: '8px',
+                                    textTransform: 'none',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 500,
+                                    '&:hover': { bgcolor: '#475569' },
+                                }}
                             >
                                 Reload Page
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
             );
         }
 

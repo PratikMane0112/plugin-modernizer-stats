@@ -5,6 +5,9 @@ import {
     Package, GitBranch, CheckCircle, XCircle,
     TrendingUp, Clock, AlertTriangle, Tag
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import MuiLink from '@mui/material/Link';
 import { useMetadata } from '../hooks/useMetadata';
 import { SkeletonPage } from '../components/Skeleton';
 import { ErrorBanner } from '../components/ErrorBanner';
@@ -13,20 +16,46 @@ import type { RecipeStats } from '../types';
 const StatCard = ({ title, value, icon: Icon, color, subtitle }: {
     title: string;
     value: string | number;
-    icon: React.ComponentType<{ size?: number; className?: string }>;
+    icon: React.ComponentType<{ size?: number }>;
     color: string;
     subtitle?: string;
 }) => (
-    <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800 flex items-center justify-between transition-all hover:scale-[1.02] hover:border-slate-700">
-        <div>
-            <p className="text-sm font-medium text-slate-400 mb-1">{title}</p>
-            <h3 className="text-2xl font-bold text-white">{value}</h3>
-            {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
-        </div>
-        <div className={`p-3 rounded-full ${color} bg-opacity-20`} aria-hidden="true">
-            <Icon size={24} className="text-white" />
-        </div>
-    </div>
+    <Box
+        sx={{
+            bgcolor: '#1e2329',
+            p: 3,
+            borderRadius: '12px',
+            border: '1px solid #1e293b',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '100%',
+            transition: 'transform 0.15s, border-color 0.15s',
+            '&:hover': { transform: 'scale(1.02)', borderColor: '#334155' },
+        }}
+    >
+        <Box>
+            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: '#94a3b8', mb: 0.25 }}>{title}</Typography>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#f1f5f9' }}>{value}</Typography>
+            {subtitle && <Typography sx={{ fontSize: '0.75rem', color: '#64748b', mt: 0.25 }}>{subtitle}</Typography>}
+        </Box>
+        <Box
+            aria-hidden="true"
+            sx={{
+                p: 1.5,
+                borderRadius: '50%',
+                bgcolor: `${color}55`,
+                border: `1px solid ${color}88`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                color,
+            }}
+        >
+            <Icon size={24} />
+        </Box>
+    </Box>
 );
 
 export const Dashboard = () => {
@@ -137,133 +166,206 @@ export const Dashboard = () => {
         return <ErrorBanner message={error?.message ?? 'Unknown error'} onRetry={handleRetry} />;
     }
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-linear-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl px-6 py-3 gap-2">
-                <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-blue-400" aria-hidden="true" />
-                    <span className="text-sm text-slate-300">
-                        Data generated: <span className="font-medium text-white">{new Date(summary.generatedAt).toLocaleString()}</span>
-                    </span>
-                </div>
-                <span className="text-xs text-slate-500">
-                    Source:{' '}
-                    <a href="https://github.com/jenkins-infra/metadata-plugin-modernizer" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline" aria-label="View data source on GitHub">metadata-plugin-modernizer</a>
-                </span>
-            </div>
+    const cardSx = {
+        bgcolor: '#1e2329',
+        p: 3,
+        borderRadius: '12px',
+        border: '1px solid #1e293b',
+    };
 
-            {/* Stat cards — only reliable migration data, no PR stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                <StatCard title="Total Plugins" value={overview.totalPlugins} icon={Package} color="bg-blue-500" />
-                <StatCard title="Total Migrations" value={overview.totalMigrations} icon={GitBranch} color="bg-indigo-500" />
-                <StatCard title="Success Rate" value={`${successRate}%`} icon={CheckCircle} color="bg-green-500" subtitle={`${overview.successfulMigrations} successful`} />
-                <StatCard title="Failed Migrations" value={overview.failedMigrations} icon={XCircle} color="bg-red-500" />
-                <StatCard title="Pending" value={overview.pendingMigrations} icon={AlertTriangle} color="bg-amber-500" />
-            </div>
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Data freshness banner */}
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    justifyContent: 'space-between',
+                    background: 'linear-gradient(to right, rgba(59,130,246,0.1), rgba(168,85,247,0.1))',
+                    border: '1px solid rgba(59,130,246,0.2)',
+                    borderRadius: '12px',
+                    px: 3,
+                    py: 1.5,
+                    gap: 1,
+                }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Clock size={16} style={{ color: '#60a5fa' }} aria-hidden="true" />
+                    <Typography sx={{ fontSize: '0.875rem', color: '#cbd5e1' }}>
+                        Data generated:{' '}
+                        <Box component="span" sx={{ fontWeight: 600, color: '#f1f5f9' }}>
+                            {new Date(summary.generatedAt).toLocaleString()}
+                        </Box>
+                    </Typography>
+                </Box>
+                <Typography sx={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    Source:{' '}
+                    <MuiLink
+                        href="https://github.com/jenkins-infra/metadata-plugin-modernizer"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ color: '#60a5fa' }}
+                        aria-label="View data source on GitHub"
+                    >
+                        metadata-plugin-modernizer
+                    </MuiLink>
+                </Typography>
+            </Box>
+
+            {/* Stat Cards */}
+            {/* Stat Cards — flex row so all 5 fill the full width equally */}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'stretch' }}>
+                {[{ title: 'Total Plugins', value: overview.totalPlugins, icon: Package, color: '#3b82f6' },
+                { title: 'Total Migrations', value: overview.totalMigrations, icon: GitBranch, color: '#6366f1' },
+                { title: 'Success Rate', value: `${successRate}%`, icon: CheckCircle, color: '#22c55e', subtitle: `${overview.successfulMigrations} successful` },
+                { title: 'Failed Migrations', value: overview.failedMigrations, icon: XCircle, color: '#ef4444' },
+                { title: 'Pending', value: overview.pendingMigrations, icon: AlertTriangle, color: '#f59e0b' },
+                ].map(card => (
+                    <Box key={card.title} sx={{ flex: '1 1 160px', minWidth: 0 }}>
+                        <StatCard {...card} />
+                    </Box>
+                ))}
+            </Box>
 
             {/* Charts row: Migration Status + Recipe Performance */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                    <h3 className="text-lg font-semibold text-white mb-4">Migration Status</h3>
-                    <ReactECharts option={migrationStatusOption} style={{ height: '350px' }} theme="dark" />
-                </div>
-                <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-white">Recipe Performance</h3>
-                        <Link to="/recipes" className="text-sm text-blue-400 hover:underline">View all →</Link>
-                    </div>
-                    <ReactECharts option={topRecipesOption} style={{ height: '350px' }} theme="dark" />
-                </div>
-            </div>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
+                    <Box sx={cardSx}>
+                        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Migration Status</Typography>
+                        <ReactECharts option={migrationStatusOption} style={{ height: '350px' }} theme="dark" />
+                    </Box>
+                </Box>
+                <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
+                    <Box sx={cardSx}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                            <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9' }}>Recipe Performance</Typography>
+                            <MuiLink component={Link} to="/recipes" sx={{ fontSize: '0.875rem', color: '#60a5fa', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                                View all →
+                            </MuiLink>
+                        </Box>
+                        <ReactECharts option={topRecipesOption} style={{ height: '350px' }} theme="dark" />
+                    </Box>
+                </Box>
+            </Box>
 
-            {/* Timeline + Tags/Failing Recipes */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                    <h3 className="text-lg font-semibold text-white mb-4">Migration Timeline</h3>
-                    {timelineOption ? (
-                        <ReactECharts option={timelineOption} style={{ height: '400px' }} theme="dark" />
-                    ) : (
-                        <div className="flex items-center justify-center h-100 text-slate-500 text-sm">
-                            <p>Historical timeline data not yet available.</p>
-                        </div>
-                    )}
-                </div>
+            {/* Timeline + Tags */}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
+                    <Box sx={cardSx}>
+                        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Migration Timeline</Typography>
+                        {timelineOption ? (
+                            <ReactECharts option={timelineOption} style={{ height: '400px' }} theme="dark" />
+                        ) : (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400, color: '#64748b', fontSize: '0.875rem' }}>
+                                <p>Historical timeline data not yet available.</p>
+                            </Box>
+                        )}
+                    </Box>
+                </Box>
                 {tagsOption && (
-                    <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Tag size={18} className="text-blue-400" aria-hidden="true" />
-                            <h3 className="text-lg font-semibold text-white">Migration Tags</h3>
-                        </div>
-                        <ReactECharts option={tagsOption} style={{ height: '400px' }} theme="dark" />
-                    </div>
+                    <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
+                        <Box sx={cardSx}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <Tag size={18} style={{ color: '#60a5fa' }} aria-hidden="true" />
+                                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9' }}>Migration Tags</Typography>
+                            </Box>
+                            <ReactECharts option={tagsOption} style={{ height: '400px' }} theme="dark" />
+                        </Box>
+                    </Box>
                 )}
-            </div>
+            </Box>
 
             {/* Top Failing Recipes */}
             {topFailingRecipes.length > 0 && (
-                <div className="bg-[#1e2329] p-6 rounded-xl border border-slate-800">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-white">Recipes with Most Failures</h3>
-                        <Link to="/recipes" className="text-sm text-blue-400 hover:underline">View all →</Link>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Box sx={cardSx}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9' }}>Recipes with Most Failures</Typography>
+                        <MuiLink component={Link} to="/recipes" sx={{ fontSize: '0.875rem', color: '#60a5fa', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                            View all →
+                        </MuiLink>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                         {topFailingRecipes.map(recipe => {
                             const shortName = recipe.recipeId.split('.').pop() ?? recipe.recipeId;
                             const failRate = 100 - recipe.successRate;
                             return (
-                                <Link
-                                    key={recipe.recipeId}
-                                    to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
-                                    className="flex flex-col gap-2 p-3 bg-[#15171a] rounded-lg border border-slate-800 hover:border-red-500/40 hover:bg-[#1a1c20] transition-all group"
-                                >
-                                    {/* Recipe name — truncated with tooltip */}
-                                    <span
-                                        className="text-slate-200 font-medium text-sm truncate w-full group-hover:text-white transition-colors"
-                                        title={shortName}
+                                <Box key={recipe.recipeId} sx={{ flex: '1 1 200px', minWidth: 0 }}>
+                                    <Box
+                                        component={Link}
+                                        to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 1,
+                                            p: 1.5,
+                                            height: '100%',
+                                            bgcolor: '#15171a',
+                                            borderRadius: '8px',
+                                            border: '1px solid #1e293b',
+                                            textDecoration: 'none',
+                                            transition: 'border-color 0.15s, background 0.15s',
+                                            '&:hover': { borderColor: 'rgba(239,68,68,0.4)', bgcolor: '#1a1c20' },
+                                        }}
                                     >
-                                        {shortName}
-                                    </span>
-
-                                    {/* Progress bar */}
-                                    <div
-                                        className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden"
-                                        role="progressbar"
-                                        aria-valuenow={failRate}
-                                        aria-valuemin={0}
-                                        aria-valuemax={100}
-                                        aria-label={`${failRate.toFixed(0)}% failure rate`}
-                                    >
-                                        <div className="h-full bg-red-500 rounded-full" style={{ width: `${failRate}%` }} />
-                                    </div>
-
-                                    {/* Stats row */}
-                                    <div className="flex items-center justify-between text-xs">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-green-400 font-medium">✓ {recipe.successCount}</span>
-                                            <span className="text-red-400 font-medium">✗ {recipe.failureCount}</span>
-                                        </div>
-                                        <span className="text-slate-500 shrink-0">{recipe.successRate.toFixed(0)}% success</span>
-                                    </div>
-                                </Link>
+                                        <Typography
+                                            title={shortName}
+                                            sx={{ color: '#e2e8f0', fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                        >
+                                            {shortName}
+                                        </Typography>
+                                        <Box
+                                            role="progressbar"
+                                            aria-valuenow={failRate}
+                                            aria-valuemin={0}
+                                            aria-valuemax={100}
+                                            aria-label={`${failRate.toFixed(0)}% failure rate`}
+                                            sx={{ width: '100%', height: 6, bgcolor: '#334155', borderRadius: '9999px', overflow: 'hidden' }}
+                                        >
+                                            <Box sx={{ height: '100%', bgcolor: '#ef4444', borderRadius: '9999px', width: `${failRate}%` }} />
+                                        </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                <Typography component="span" sx={{ color: '#4ade80', fontWeight: 500, fontSize: 'inherit' }}>✓ {recipe.successCount}</Typography>
+                                                <Typography component="span" sx={{ color: '#f87171', fontWeight: 500, fontSize: 'inherit' }}>✗ {recipe.failureCount}</Typography>
+                                            </Box>
+                                            <Typography component="span" sx={{ color: '#64748b', fontSize: 'inherit', flexShrink: 0 }}>
+                                                {recipe.successRate.toFixed(0)}% success
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
                             );
                         })}
-                    </div>
-                </div>
+                    </Box>
+                </Box>
             )}
 
-            {/* Footer summary — only reliable data */}
-            <div className="bg-linear-to-r from-slate-800/50 to-slate-900/50 p-4 rounded-xl border border-slate-800 flex flex-wrap items-center justify-center gap-6 text-sm">
-                <span className="text-slate-400">
-                    <TrendingUp size={14} className="inline mr-1" aria-hidden="true" />
-                    Success Rate: <span className="text-white font-bold">{successRate}%</span>
-                </span>
-                <span className="text-slate-600" aria-hidden="true">|</span>
-                <span className="text-slate-400">Plugins: <span className="text-blue-400 font-bold">{overview.totalPlugins}</span></span>
-                <span className="text-slate-600" aria-hidden="true">|</span>
-                <span className="text-slate-400">Migrations: <span className="text-indigo-400 font-bold">{overview.totalMigrations}</span></span>
-                <span className="text-slate-600" aria-hidden="true">|</span>
-                <span className="text-slate-400">Recipes: <span className="text-purple-400 font-bold">{summary.recipes.length}</span></span>
-            </div>
-        </div>
+            {/* Footer summary */}
+            <Box
+                sx={{
+                    background: 'linear-gradient(to right, rgba(30,41,59,0.5), rgba(15,23,42,0.5))',
+                    p: 2,
+                    borderRadius: '12px',
+                    border: '1px solid #1e293b',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 3,
+                }}
+            >
+                <Typography sx={{ color: '#94a3b8', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <TrendingUp size={14} aria-hidden="true" />
+                    Success Rate: <Box component="span" sx={{ color: '#f1f5f9', fontWeight: 700 }}>{successRate}%</Box>
+                </Typography>
+                <Box component="span" sx={{ color: '#475569' }} aria-hidden="true">|</Box>
+                <Typography sx={{ color: '#94a3b8', fontSize: '0.875rem' }}>Plugins: <Box component="span" sx={{ color: '#60a5fa', fontWeight: 700 }}>{overview.totalPlugins}</Box></Typography>
+                <Box component="span" sx={{ color: '#475569' }} aria-hidden="true">|</Box>
+                <Typography sx={{ color: '#94a3b8', fontSize: '0.875rem' }}>Migrations: <Box component="span" sx={{ color: '#818cf8', fontWeight: 700 }}>{overview.totalMigrations}</Box></Typography>
+                <Box component="span" sx={{ color: '#475569' }} aria-hidden="true">|</Box>
+                <Typography sx={{ color: '#94a3b8', fontSize: '0.875rem' }}>Recipes: <Box component="span" sx={{ color: '#c084fc', fontWeight: 700 }}>{summary.recipes.length}</Box></Typography>
+            </Box>
+        </Box>
     );
 };

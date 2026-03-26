@@ -1,6 +1,13 @@
 import { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Loader2, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputAdornment from '@mui/material/InputAdornment';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Search, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useMetadata } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
@@ -10,6 +17,27 @@ import type { RecipeReport } from '../types';
 type SortField = 'name' | 'totalApplications' | 'successCount' | 'failureCount' | 'successRate';
 type SortDir = 'asc' | 'desc';
 type RateFilter = 'all' | 'high' | 'medium' | 'low';
+
+const inputSx = {
+    '& .MuiOutlinedInput-root': {
+        bgcolor: '#15171a',
+        color: '#e2e8f0',
+        borderRadius: '8px',
+        '& fieldset': { borderColor: '#334155' },
+        '&:hover fieldset': { borderColor: '#475569' },
+        '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
+    },
+    '& input::placeholder': { color: '#475569', opacity: 1 },
+};
+
+const selectSx = {
+    bgcolor: '#15171a', color: '#e2e8f0', borderRadius: '8px',
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#334155' },
+    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#475569' },
+    '& .MuiSvgIcon-root': { color: '#94a3b8' },
+};
+
+const menuPropsSx = { PaperProps: { sx: { bgcolor: '#1e2329', border: '1px solid #334155' } } };
 
 export const RecipeList = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,25 +57,22 @@ export const RecipeList = () => {
     };
 
     const renderSortIcon = (field: SortField) => {
-        if (sortField !== field) return <ChevronDown size={14} className="text-slate-600" />;
+        if (sortField !== field) return <ChevronDown size={14} style={{ color: '#475569' }} />;
         return sortDir === 'asc'
-            ? <ChevronUp size={14} className="text-blue-400" />
-            : <ChevronDown size={14} className="text-blue-400" />;
+            ? <ChevronUp size={14} style={{ color: '#60a5fa' }} />
+            : <ChevronDown size={14} style={{ color: '#60a5fa' }} />;
     };
 
     const filtered = useMemo(() => {
         if (!recipes) return [];
         const q = searchTerm.toLowerCase();
-
         const list = recipes.filter((recipe: RecipeReport) => {
             const matchesSearch = recipe.recipeId.toLowerCase().includes(q);
             if (!matchesSearch) return false;
-
             if (rateFilter === 'all') return true;
             const tier = getRateTier(recipe.successRate);
             return tier === rateFilter;
         });
-
         const sorted = [...list].sort((a, b) => {
             const dir = sortDir === 'asc' ? 1 : -1;
             switch (sortField) {
@@ -59,7 +84,6 @@ export const RecipeList = () => {
                 default: return 0;
             }
         });
-
         return sorted;
     }, [recipes, searchTerm, rateFilter, sortField, sortDir]);
 
@@ -72,9 +96,9 @@ export const RecipeList = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-100">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+                <CircularProgress sx={{ color: '#3b82f6' }} size={48} />
+            </Box>
         );
     }
 
@@ -82,107 +106,92 @@ export const RecipeList = () => {
         return <ErrorBanner message={error.message} onRetry={() => window.location.reload()} />;
     }
 
+    const colHeaderSx = {
+        px: 1.5,
+        py: 2,
+        cursor: 'pointer',
+        userSelect: 'none' as const,
+        '&:hover': { color: '#e2e8f0' },
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 0.5,
+    };
+
     return (
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Header stats */}
-            <div className="flex items-center gap-3 text-sm text-slate-400">
-                <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full border border-purple-500/20 font-medium">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box component="span" sx={{ px: 1.5, py: 0.5, bgcolor: 'rgba(168,85,247,0.1)', color: '#c084fc', borderRadius: '9999px', border: '1px solid rgba(168,85,247,0.2)', fontWeight: 500, fontSize: '0.875rem' }}>
                     {recipes?.length ?? 0} recipes
-                </span>
-            </div>
+                </Box>
+            </Box>
 
             {/* Search + Filter bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e2329] p-4 rounded-xl border border-slate-800">
-                <div className="relative flex-1 w-full sm:max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search recipes..."
-                        className="w-full pl-10 pr-4 py-2 bg-[#15171a] border border-slate-700 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-600"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        aria-label="Search recipes"
-                    />
-                </div>
-                <div className="flex gap-2 items-center">
-                    <span className="text-sm text-slate-400">{filtered.length} results</span>
-                    <select
-                        className="px-4 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#15171a] text-slate-200"
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, bgcolor: '#1e2329', p: 2, borderRadius: '12px', border: '1px solid #1e293b' }}>
+                <TextField
+                    placeholder="Search recipes..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    inputProps={{ 'aria-label': 'Search recipes' }}
+                    size="small"
+                    sx={{ ...inputSx, flex: 1, maxWidth: { sm: 400 } }}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search size={20} style={{ color: '#64748b' }} />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                    <Typography sx={{ fontSize: '0.875rem', color: '#94a3b8' }}>{filtered.length} results</Typography>
+                    <Select
                         value={rateFilter}
-                        onChange={(e) => setRateFilter(e.target.value as RateFilter)}
-                        aria-label="Filter by success rate"
+                        onChange={e => setRateFilter(e.target.value as RateFilter)}
+                        inputProps={{ 'aria-label': 'Filter by success rate' }}
+                        size="small"
+                        sx={selectSx}
+                        MenuProps={menuPropsSx}
                     >
-                        <option value="all">All Rates</option>
-                        <option value="high">● High (≥80%)</option>
-                        <option value="medium">◑ Medium (50–79%)</option>
-                        <option value="low">○ Low (&lt;50%)</option>
-                    </select>
-                </div>
-            </div>
+                        <MenuItem value="all" sx={{ color: '#e2e8f0' }}>All Rates</MenuItem>
+                        <MenuItem value="high" sx={{ color: '#e2e8f0' }}>● High (≥80%)</MenuItem>
+                        <MenuItem value="medium" sx={{ color: '#e2e8f0' }}>◑ Medium (50–79%)</MenuItem>
+                        <MenuItem value="low" sx={{ color: '#e2e8f0' }}>○ Low ({'<'}50%)</MenuItem>
+                    </Select>
+                </Box>
+            </Box>
 
-            {/* Virtualized Table */}
-            <div className="bg-[#1e2329] rounded-xl border border-slate-800 overflow-hidden">
+            {/* Virtualized table */}
+            <Box sx={{ bgcolor: '#1e2329', borderRadius: '12px', border: '1px solid #1e293b', overflow: 'hidden' }}>
                 {/* Table header */}
-                <div className="bg-[#15171a] border-b border-slate-800 text-slate-400 text-sm font-medium">
-                    <div className="flex items-center">
-                        <div
-                            className="flex-1 min-w-0 px-6 py-4 cursor-pointer select-none hover:text-slate-200"
-                            onClick={() => toggleSort('name')}
-                        >
-                            <span className="flex items-center gap-1">
-                                Recipe {renderSortIcon('name')}
-                            </span>
-                        </div>
-                        <div
-                            className="w-20 px-3 py-4 text-center cursor-pointer select-none hover:text-slate-200 hidden sm:block"
-                            onClick={() => toggleSort('totalApplications')}
-                        >
-                            <span className="flex items-center justify-center gap-1">
-                                Total {renderSortIcon('totalApplications')}
-                            </span>
-                        </div>
-                        <div
-                            className="w-20 px-3 py-4 text-center cursor-pointer select-none hover:text-slate-200 hidden sm:block"
-                            onClick={() => toggleSort('successCount')}
-                        >
-                            <span className="flex items-center justify-center gap-1">
-                                Success {renderSortIcon('successCount')}
-                            </span>
-                        </div>
-                        <div
-                            className="w-20 px-3 py-4 text-center cursor-pointer select-none hover:text-slate-200 hidden sm:block"
-                            onClick={() => toggleSort('failureCount')}
-                        >
-                            <span className="flex items-center justify-center gap-1">
-                                Failed {renderSortIcon('failureCount')}
-                            </span>
-                        </div>
-                        <div
-                            className="w-40 px-3 py-4 text-center cursor-pointer select-none hover:text-slate-200"
-                            onClick={() => toggleSort('successRate')}
-                        >
-                            <span className="flex items-center justify-center gap-1">
-                                Success Rate {renderSortIcon('successRate')}
-                            </span>
-                        </div>
-                        <div className="w-20 px-3 py-4 text-right">
-                            Actions
-                        </div>
-                    </div>
-                </div>
+                <Box sx={{ bgcolor: '#15171a', borderBottom: '1px solid #1e293b', color: '#94a3b8', fontSize: '0.875rem', fontWeight: 500 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ flex: 1, minWidth: 0, px: 3, py: 2, cursor: 'pointer', userSelect: 'none', '&:hover': { color: '#e2e8f0' } }} onClick={() => toggleSort('name')}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>Recipe {renderSortIcon('name')}</Box>
+                        </Box>
+                        <Box sx={{ width: 80, ...colHeaderSx, display: { xs: 'none', sm: 'flex' } }} onClick={() => toggleSort('totalApplications')}>
+                            Total {renderSortIcon('totalApplications')}
+                        </Box>
+                        <Box sx={{ width: 80, ...colHeaderSx, display: { xs: 'none', sm: 'flex' } }} onClick={() => toggleSort('successCount')}>
+                            Success {renderSortIcon('successCount')}
+                        </Box>
+                        <Box sx={{ width: 80, ...colHeaderSx, display: { xs: 'none', sm: 'flex' } }} onClick={() => toggleSort('failureCount')}>
+                            Failed {renderSortIcon('failureCount')}
+                        </Box>
+                        <Box sx={{ width: 160, ...colHeaderSx }} onClick={() => toggleSort('successRate')}>
+                            Success Rate {renderSortIcon('successRate')}
+                        </Box>
+                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'right' }}>Actions</Box>
+                    </Box>
+                </Box>
 
                 {/* Virtual scroll container */}
-                <div
-                    ref={parentRef}
-                    style={{ height: '70vh', overflowY: 'auto' }}
-                >
-                    <div
-                        style={{
-                            height: virtualizer.getTotalSize(),
-                            position: 'relative',
-                        }}
-                    >
-                        {virtualizer.getVirtualItems().map((virtualRow) => {
+                <div ref={parentRef} style={{ height: '70vh', overflowY: 'auto' }}>
+                    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+                        {virtualizer.getVirtualItems().map(virtualRow => {
                             const recipe = filtered[virtualRow.index];
                             const shortName = recipe.recipeId.split('.').pop() || recipe.recipeId;
                             const pendingCount = recipe.totalApplications - recipe.successCount - recipe.failureCount;
@@ -192,59 +201,54 @@ export const RecipeList = () => {
                                     key={recipe.recipeId}
                                     data-index={virtualRow.index}
                                     ref={virtualizer.measureElement}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        transform: `translateY(${virtualRow.start}px)`,
-                                        width: '100%',
-                                    }}
+                                    style={{ position: 'absolute', top: 0, transform: `translateY(${virtualRow.start}px)`, width: '100%' }}
                                 >
-                                    <div className="flex items-center hover:bg-white/5 transition-colors border-b border-slate-800/50">
-                                        <div className="flex-1 min-w-0 px-6 py-4">
-                                            <Link
+                                    <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(30,41,59,0.5)', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }, transition: 'background 0.15s' }}>
+                                        <Box sx={{ flex: 1, minWidth: 0, px: 3, py: 2 }}>
+                                            <Box
+                                                component={Link}
                                                 to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
-                                                className="font-medium text-slate-200 hover:text-blue-400 transition-colors"
+                                                sx={{ fontWeight: 500, color: '#e2e8f0', textDecoration: 'none', '&:hover': { color: '#60a5fa' }, transition: 'color 0.15s' }}
                                             >
                                                 {shortName}
-                                            </Link>
-                                            <p className="text-xs text-slate-600 font-mono truncate mt-0.5">{recipe.recipeId}</p>
+                                            </Box>
+                                            <Typography sx={{ fontSize: '0.75rem', color: '#475569', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mt: 0.25 }}>
+                                                {recipe.recipeId}
+                                            </Typography>
                                             {/* Mobile-only inline stats */}
-                                            <div className="flex gap-3 mt-1 text-xs sm:hidden">
-                                                <span className="text-slate-400">Total: <span className="text-white font-bold">{recipe.totalApplications}</span></span>
-                                                <span className="text-green-400">✓ {recipe.successCount}</span>
-                                                <span className="text-red-400">✗ {recipe.failureCount}</span>
-                                                {pendingCount > 0 && <span className="text-amber-400">⏳ {pendingCount}</span>}
-                                            </div>
-                                        </div>
-                                        <div className="w-20 px-3 py-4 text-center text-slate-300 text-sm hidden sm:block">
+                                            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1.5, mt: 0.5, fontSize: '0.75rem' }}>
+                                                <Typography component="span" sx={{ color: '#94a3b8', fontSize: 'inherit' }}>Total: <Box component="span" sx={{ color: '#f1f5f9', fontWeight: 700 }}>{recipe.totalApplications}</Box></Typography>
+                                                <Typography component="span" sx={{ color: '#4ade80', fontSize: 'inherit' }}>✓ {recipe.successCount}</Typography>
+                                                <Typography component="span" sx={{ color: '#f87171', fontSize: 'inherit' }}>✗ {recipe.failureCount}</Typography>
+                                                {pendingCount > 0 && <Typography component="span" sx={{ color: '#fbbf24', fontSize: 'inherit' }}>⏳ {pendingCount}</Typography>}
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'center', color: '#cbd5e1', fontSize: '0.875rem', display: { xs: 'none', sm: 'block' } }}>
                                             {recipe.totalApplications}
-                                        </div>
-                                        <div className="w-20 px-3 py-4 text-center hidden sm:block">
-                                            {recipe.successCount > 0 ? (
-                                                <span className="text-green-400 text-sm">{recipe.successCount}</span>
-                                            ) : (
-                                                <span className="text-slate-600 text-sm">0</span>
-                                            )}
-                                        </div>
-                                        <div className="w-20 px-3 py-4 text-center hidden sm:block">
-                                            {recipe.failureCount > 0 ? (
-                                                <span className="text-red-400 text-sm">{recipe.failureCount}</span>
-                                            ) : (
-                                                <span className="text-slate-600 text-sm">0</span>
-                                            )}
-                                        </div>
-                                        <div className="w-40 px-3 py-4 text-center">
+                                        </Box>
+                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'center', display: { xs: 'none', sm: 'block' } }}>
+                                            {recipe.successCount > 0
+                                                ? <Typography component="span" sx={{ color: '#4ade80', fontSize: '0.875rem' }}>{recipe.successCount}</Typography>
+                                                : <Typography component="span" sx={{ color: '#475569', fontSize: '0.875rem' }}>0</Typography>}
+                                        </Box>
+                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'center', display: { xs: 'none', sm: 'block' } }}>
+                                            {recipe.failureCount > 0
+                                                ? <Typography component="span" sx={{ color: '#f87171', fontSize: '0.875rem' }}>{recipe.failureCount}</Typography>
+                                                : <Typography component="span" sx={{ color: '#475569', fontSize: '0.875rem' }}>0</Typography>}
+                                        </Box>
+                                        <Box sx={{ width: 160, px: 1.5, py: 2, textAlign: 'center' }}>
                                             <SuccessRateBadge rate={recipe.successRate} />
-                                        </div>
-                                        <div className="w-20 px-3 py-4 text-right">
-                                            <Link
+                                        </Box>
+                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'right' }}>
+                                            <Box
+                                                component={Link}
                                                 to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
-                                                className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1"
+                                                sx={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 0.5, '&:hover': { color: '#93c5fd' } }}
                                             >
                                                 <ChevronRight size={16} />
-                                            </Link>
-                                        </div>
-                                    </div>
+                                            </Box>
+                                        </Box>
+                                    </Box>
                                 </div>
                             );
                         })}
@@ -252,11 +256,11 @@ export const RecipeList = () => {
                 </div>
 
                 {filtered.length === 0 && (
-                    <div className="p-8 text-center text-slate-500">
+                    <Box sx={{ p: 4, textAlign: 'center', color: '#64748b' }}>
                         No recipes found matching your criteria.
-                    </div>
+                    </Box>
                 )}
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 };
