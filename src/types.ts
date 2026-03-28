@@ -40,6 +40,9 @@ export interface PluginReport {
     failCount: number;
     latestMigration: string | null;
     migrations: Migration[];
+    sourceUrls?: PluginSourceUrls;
+    rawAggregatedMigrations?: AggregatedMigrations | null;
+    rawFailedMigrations?: Record<string, string>[];
 }
 
 // ── Recipe stats (summary-level, in overview widgets) ───────────────────────
@@ -130,7 +133,13 @@ export interface AggregatedMigrations {
     migrations: Migration[];
 }
 
+export interface PluginSourceUrls {
+    aggregatedMigrations: string;
+    failedMigrations: string;
+}
+
 export interface PluginData {
+    sourceUrls?: PluginSourceUrls;
     aggregatedMigrations: AggregatedMigrations | null;
     failedMigrations: Record<string, string>[];   // CSV rows as key-value dicts
     modernizationMetadata: unknown[];

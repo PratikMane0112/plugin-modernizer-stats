@@ -30,10 +30,12 @@ This project will make the exploration of `metadata-plugin-modernizer` data smoo
 
 ### Prerequisites
 
-- **Node.js** ≥ 22 (LTS)
-- **npm** ≥ 10
-- **Python 3** ≥ 3.9 (for the data consolidation script — stdlib only, no pip install needed)
-- **bash** (for the fetch script)
+| Tool | Version | Notes |
+|------|---------|-------|
+| **Node.js** | ≥ 22 (LTS) | See `.tool-versions` for the pinned version |
+| **npm** | ≥ 10 | Ships with Node.js 22+ |
+| **Python 3** | ≥ 3.9 | stdlib only — no `pip install` needed |
+
 
 ### 1. Clone the repository
 
@@ -48,12 +50,12 @@ cd plugin-modernizer-stats
 npm ci
 ```
 
-### 3. Fetch upstream data
+### 3. Fetch the metadata data
 
-Downloads the latest data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) :
+Fetch metadata data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer)
 
 ```bash
-./scripts/fetch-metadata-plugin-modernizer.sh
+npm run generate-report
 ```
 
 ### 4. Consolidate data
@@ -68,7 +70,7 @@ python3 scripts/consolidate.py
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view the dashboard locally ...
+Open [http://localhost:5173](http://localhost:5173) to view the dashboard locally.
 
 
 ## Deployment
@@ -82,7 +84,7 @@ The protoype is deployed on netlify. Here is a live demo: [plugin-modernizer-sta
 |---------------------|----------------------------------------|
 | Frontend            | React 19 + TypeScript (strict mode)    |
 | Build Tool          | Vite                                   |
-| Styling             | Tailwind CSS v4 (dark mode)            |
+| Styling             | Material UI (dark mode)            |
 | Visualization       | Apache ECharts via `echarts-for-react` |
 | Routing             | React Router DOM v7                    |
 | List Virtualization | `@tanstack/react-virtual`              |
@@ -93,6 +95,7 @@ The protoype is deployed on netlify. Here is a live demo: [plugin-modernizer-sta
 
 ```
 ├── scripts/
+│   ├── generate-report.sh                    # All-in-one: fetch → consolidate → cleanup
 │   ├── fetch-metadata-plugin-modernizer.sh   # Downloads upstream data
 │   └── consolidate.py                        # Transforms raw MD → validated JSON (Python 3)
 ├── src/

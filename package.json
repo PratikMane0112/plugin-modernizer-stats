@@ -9,6 +9,7 @@
   "scripts": {
     "fetch": "bash scripts/fetch-metadata-plugin-modernizer.sh",
     "consolidate": "python3 scripts/consolidate.py",
+    "generate-report": "bash scripts/generate-report.sh",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

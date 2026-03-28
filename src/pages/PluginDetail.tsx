@@ -18,8 +18,6 @@ import { ErrorBanner } from '../components/ErrorBanner';
 import { StatusBadge, deriveStatus } from '../components/StatusBadge';
 import type { Migration } from '../types';
 
-const BASE = '/plugin-modernizer-stats';
-
 // ── PR Status Badge ─────────────────────────────────────────────────────────
 function PRStatusBadge({ status }: { status: string }) {
     const config: Record<string, { bg: string; color: string; border: string }> = {
@@ -456,19 +454,64 @@ export const PluginDetail = () => {
                 </Box>
             </Box>
 
-            {/* ── Raw Data Links ───────────────────────────────── */}
+            {/* ── Raw Data ─────────────────────────────────────── */}
             <Box sx={{ bgcolor: '#1e2329', p: 3, borderRadius: '12px', border: '1px solid #1e293b' }}>
                 <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: '#f1f5f9', mb: 2 }}>Raw Data</Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                    <Box component="a" href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/aggregated_migrations.json`} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
-                        <FileText size={16} /> aggregated_migrations.json <ExternalLink size={12} />
-                    </Box>
-                    {failCount > 0 && (
-                        <Box component="a" href={`${BASE}/plugins-reports/${encodeURIComponent(name || '')}/reports/failed_migrations.csv`} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
+
+                {/* Source links to GitHub */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 3 }}>
+                    {plugin.sourceUrls?.aggregatedMigrations && (
+                        <Box component="a" href={plugin.sourceUrls.aggregatedMigrations} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
+                            <FileText size={16} /> aggregated_migrations.json <ExternalLink size={12} />
+                        </Box>
+                    )}
+                    {plugin.sourceUrls?.failedMigrations && plugin.rawFailedMigrations && plugin.rawFailedMigrations.length > 0 && (
+                        <Box component="a" href={plugin.sourceUrls.failedMigrations} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: '#15171a', color: '#cbd5e1', borderRadius: '8px', border: '1px solid #334155', textDecoration: 'none', fontSize: '0.875rem', '&:hover': { borderColor: '#475569', color: '#f1f5f9' }, transition: 'all 0.15s' }}>
                             <Download size={16} /> failed_migrations.csv <ExternalLink size={12} />
                         </Box>
                     )}
                 </Box>
+
+                {/* Inline raw aggregated_migrations.json */}
+                {plugin.rawAggregatedMigrations && (
+                    <Box sx={{ mb: 3 }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#94a3b8', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <FileText size={14} /> aggregated_migrations.json
+                        </Typography>
+                        <Box sx={{ bgcolor: '#15171a', border: '1px solid #334155', borderRadius: '8px', p: 2, maxHeight: '400px', overflow: 'auto', fontFamily: 'monospace', fontSize: '0.8125rem', color: '#cbd5e1', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            {JSON.stringify(plugin.rawAggregatedMigrations, null, 2)}
+                        </Box>
+                    </Box>
+                )}
+
+                {/* Inline raw failed_migrations (CSV rows as table) */}
+                {plugin.rawFailedMigrations && plugin.rawFailedMigrations.length > 0 && (
+                    <Box>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#94a3b8', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Download size={14} /> failed_migrations.csv ({plugin.rawFailedMigrations.length} rows)
+                        </Typography>
+                        <Box sx={{ overflowX: 'auto', bgcolor: '#15171a', border: '1px solid #334155', borderRadius: '8px' }}>
+                            <Table role="table" size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        {Object.keys(plugin.rawFailedMigrations[0]).map(h => (
+                                            <TableCell key={h} sx={thSx}>{h}</TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {plugin.rawFailedMigrations.map((row, i) => (
+                                        <TableRow key={i} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                                            {Object.values(row).map((val, j) => (
+                                                <TableCell key={j} sx={{ ...tdSx, fontFamily: 'monospace', fontSize: '0.8125rem' }}>{val}</TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Box>
+                )}
             </Box>
         </Box>
     );

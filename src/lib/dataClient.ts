@@ -49,12 +49,17 @@ function getReport(): Promise<Result<ReportJson>> {
 
 // ── Plugin report builder ────────────────────────────────────────────────────
 
-function buildPluginReport(pluginId: string, agg: {
-    pluginName?: string;
-    pluginRepository?: string;
-    migrations?: Migration[];
+function buildPluginReport(pluginId: string, pluginData: {
+    sourceUrls?: { aggregatedMigrations: string; failedMigrations: string };
+    aggregatedMigrations: {
+        pluginName?: string;
+        pluginRepository?: string;
+        migrations?: Migration[];
+    } | null;
+    failedMigrations?: Record<string, string>[];
 }): PluginReport {
-    const migrations = agg.migrations ?? [];
+    const agg = pluginData.aggregatedMigrations;
+    const migrations = agg?.migrations ?? [];
     const successCount = migrations.filter(m => m.migrationStatus === 'success').length;
     const failCount = migrations.filter(m =>
         m.migrationStatus === 'fail' || m.migrationStatus === 'failure'
@@ -68,13 +73,16 @@ function buildPluginReport(pluginId: string, agg: {
     }
 
     return {
-        pluginName: agg.pluginName ?? pluginId,
-        pluginRepository: agg.pluginRepository ?? '',
+        pluginName: agg?.pluginName ?? pluginId,
+        pluginRepository: agg?.pluginRepository ?? '',
         totalMigrations: migrations.length,
         successCount,
         failCount,
         latestMigration,
         migrations,
+        sourceUrls: pluginData.sourceUrls,
+        rawAggregatedMigrations: agg,
+        rawFailedMigrations: pluginData.failedMigrations ?? [],
     };
 }
 
@@ -158,11 +166,10 @@ export const dataClient = {
         if (!pluginData) {
             return { ok: false, error: `HTTP 404: Plugin '${pluginName}' not found in report.json` };
         }
-        const agg = pluginData.aggregatedMigrations;
-        if (!agg) {
+        if (!pluginData.aggregatedMigrations) {
             return { ok: false, error: `Plugin '${pluginName}' has no aggregatedMigrations` };
         }
-        return { ok: true, data: buildPluginReport(pluginName, agg) };
+        return { ok: true, data: buildPluginReport(pluginName, pluginData) };
     },
 
     /**
@@ -197,7 +204,7 @@ export const dataClient = {
         const plugins: PluginReport[] = [];
         for (const [pluginId, pluginData] of Object.entries(result.data.plugins)) {
             if (!pluginData.aggregatedMigrations) continue;
-            plugins.push(buildPluginReport(pluginId, pluginData.aggregatedMigrations));
+            plugins.push(buildPluginReport(pluginId, pluginData));
         }
         return { ok: true, data: plugins };
     },

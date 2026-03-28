@@ -342,13 +342,6 @@ def build_plugins() -> tuple:
         try:
             plugin_data = {}
 
-            # GitHub source URLs for raw file browsing
-            base_url = f"{UPSTREAM_REPO}/blob/{UPSTREAM_BRANCH}/{plugin_id}"
-            plugin_data["sourceUrls"] = {
-                "aggregatedMigrations": f"{base_url}/reports/aggregated_migrations.json",
-                "failedMigrations":     f"{base_url}/reports/failed_migrations.csv",
-            }
-
             # 1. aggregated_migrations.json
             agg_path = entry / "reports" / "aggregated_migrations.json"
             if agg_path.exists():
@@ -363,12 +356,21 @@ def build_plugins() -> tuple:
                     )
 
             # 2. failed_migrations.csv -> JSON
-            # Actual path: <plugin>/reports/failed_migrations.csv
             csv_path = entry / "reports" / "failed_migrations.csv"
             plugin_data["failedMigrations"] = (
                 read_failed_migrations_csv(csv_path)
                 if csv_path.exists() else []
             )
+
+            # GitHub source URLs — only include links for files that exist
+            base_url = f"{UPSTREAM_REPO}/blob/{UPSTREAM_BRANCH}/{plugin_id}"
+            source_urls = {}
+            if agg_path.exists():
+                source_urls["aggregatedMigrations"] = f"{base_url}/reports/aggregated_migrations.json"
+            if csv_path.exists():
+                source_urls["failedMigrations"] = f"{base_url}/reports/failed_migrations.csv"
+            if source_urls:
+                plugin_data["sourceUrls"] = source_urls
 
             # 3. modernization-metadata/*.json
             meta_dir = entry / "modernization-metadata"
