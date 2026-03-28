@@ -1,6 +1,6 @@
 [build]
   # Fetch upstream data, consolidate into static JSON, then build the Vite app
-  command = "npm run fetch && npm run consolidate && npm run build"
+  command = "npm run generate-report"
   
   # Directory with the built files
   publish = "dist"
