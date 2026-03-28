@@ -1,0 +1,54 @@
+name: Auto-fix npm vulnerabilities
+
+on:
+  schedule:
+    # Runs every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  audit-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check for vulnerabilities
+        id: check
+        run: |
+          if npm audit --audit-level=moderate 2>&1 | grep -q 'found 0 vulnerabilities'; then
+            echo "clean=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "clean=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply audit fixes
+        if: steps.check.outputs.clean == 'false'
+        run: npm audit fix
+
+      - name: Create pull request
+        if: steps.check.outputs.clean == 'false'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "fix: resolve npm audit vulnerabilities"
+          title: "fix: resolve npm audit vulnerabilities"
+          body: |
+            Automated PR created by the `audit-fix` workflow.
+
+            This applies `npm audit fix` to resolve known vulnerabilities
+            in transitive dependencies.
+
+            **Review the lockfile diff** to verify no breaking changes were introduced.
+          branch: automated/npm-audit-fix
+          delete-branch: true
+          labels: dependencies, security

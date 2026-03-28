@@ -6,16 +6,34 @@ updates:
     schedule:
       interval: "daily"
 
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
 
-    # Group updates to avoid peer dependency conflicts
+    # Group routine version bumps into a single PR
     groups:
-      all-dependencies:
-        patterns:
-          - "*"
+      production-deps:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-deps:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
 
-    # Ignore breaking (major) updates
+    # Ignore major bumps for routine updates.
+    # Security updates bypass ignore rules automatically,
+    # so CVE fixes that require a major bump still get PRs.
     ignore:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      gh-actions:
+        patterns:
+          - "*"
