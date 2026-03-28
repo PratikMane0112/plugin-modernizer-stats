@@ -72,16 +72,20 @@ function buildPluginReport(pluginId: string, pluginData: {
         }
     }
 
+    const rawAgg: import('../types').AggregatedMigrations | null = agg
+        ? { pluginName: agg.pluginName ?? pluginId, pluginRepository: agg.pluginRepository ?? '', migrations: agg.migrations ?? [] }
+        : null;
+
     return {
-        pluginName: agg?.pluginName ?? pluginId,
-        pluginRepository: agg?.pluginRepository ?? '',
+        pluginName: rawAgg?.pluginName ?? pluginId,
+        pluginRepository: rawAgg?.pluginRepository ?? '',
         totalMigrations: migrations.length,
         successCount,
         failCount,
         latestMigration,
         migrations,
         sourceUrls: pluginData.sourceUrls,
-        rawAggregatedMigrations: agg,
+        rawAggregatedMigrations: rawAgg,
         rawFailedMigrations: pluginData.failedMigrations ?? [],
     };
 }

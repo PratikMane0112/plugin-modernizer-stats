@@ -85,8 +85,8 @@ export const Dashboard = () => {
                 data: [
                     { value: overview.successfulMigrations, name: 'Success', itemStyle: { color: '#22c55e' } },
                     { value: overview.failedMigrations, name: 'Failed', itemStyle: { color: '#ef4444' } },
-                    ...(overview.pendingMigrations > 0
-                        ? [{ value: overview.pendingMigrations, name: 'Pending', itemStyle: { color: '#f59e0b' } }]
+                    ...((overview.pendingMigrations ?? 0) > 0
+                        ? [{ value: overview.pendingMigrations!, name: 'Pending', itemStyle: { color: '#f59e0b' } }]
                         : []),
                 ]
             }]
@@ -220,7 +220,7 @@ export const Dashboard = () => {
                 { title: 'Total Migrations', value: overview.totalMigrations, icon: GitBranch, color: '#6366f1' },
                 { title: 'Success Rate', value: `${successRate}%`, icon: CheckCircle, color: '#22c55e', subtitle: `${overview.successfulMigrations} successful` },
                 { title: 'Failed Migrations', value: overview.failedMigrations, icon: XCircle, color: '#ef4444' },
-                { title: 'Pending', value: overview.pendingMigrations, icon: AlertTriangle, color: '#f59e0b' },
+                { title: 'Pending', value: overview.pendingMigrations ?? 0, icon: AlertTriangle, color: '#f59e0b' },
                 ].map(card => (
                     <Box key={card.title} sx={{ flex: '1 1 160px', minWidth: 0 }}>
                         <StatCard {...card} />
