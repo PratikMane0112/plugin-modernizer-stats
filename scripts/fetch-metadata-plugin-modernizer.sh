@@ -25,9 +25,6 @@ trap cleanup EXIT
 mkdir -p "${TMP_DIR}"
 
 # ── ETag-based incremental download ─────────────────────────────────────────
-# Fix #7: capture response headers from the *same* GET request using
-# --dump-header so the ETag we store is always consistent with the body we
-# actually downloaded — no second HEAD request, no race condition.
 CURL_ARGS=(
     --silent
     --location
@@ -37,19 +34,19 @@ CURL_ARGS=(
     --write-out "%{http_code}"
 )
 
-# Fix #3: ETag caching strategy.
-# On ephemeral agents the workspace is wiped each build, so .etag never
-# survives between runs and we always get HTTP 200 — this is correct and safe.
-# On persistent workspaces (or when the workspace IS reused) the .etag file
-# survives and the 304 short-circuit becomes effective.
-# Either way, we never rely on stale extracted data without validation.
 if [ -f "${ETAG_FILE}" ] && [ -d "${EXTRACTED_DIR}" ]; then
     STORED_ETAG=$(cat "${ETAG_FILE}")
     echo "[INFO] Found cached ETag: ${STORED_ETAG}"
     CURL_ARGS+=(--header "If-None-Match: ${STORED_ETAG}")
 fi
 
-HTTP_CODE=$(curl "${CURL_ARGS[@]}" "${ZIP_URL}" 2>/dev/null || echo "000")
+CURL_ERR_FILE="${TMP_DIR}/.curl-stderr"
+HTTP_CODE=$(curl "${CURL_ARGS[@]}" "${ZIP_URL}" 2>"${CURL_ERR_FILE}") || {
+    CURL_ERR=$(cat "${CURL_ERR_FILE}" 2>/dev/null)
+    echo "[WARN] curl failed: ${CURL_ERR:-unknown error}"
+    HTTP_CODE="000"
+}
+rm -f "${CURL_ERR_FILE}"
 
 if [ "${HTTP_CODE}" = "304" ]; then
     echo "[INFO] Data unchanged (HTTP 304) — reusing existing extracted data."
@@ -99,39 +96,27 @@ else
 fi
 
 # ── Validate extracted content ───────────────────────────────────────────────
-# Fix #10: validate the specific sections/structure we actually parse so that
-# upstream format changes are caught early and loudly rather than silently
-# producing empty or wrong output.
+# Validate that summary.json exists and contains required keys so that
+# upstream format changes are caught early and loudly.
 echo "[INFO] Validating extracted data..."
 
-SUMMARY_MD="${EXTRACTED_DIR}/reports/summary.md"
+SUMMARY_JSON="${EXTRACTED_DIR}/reports/summary.json"
 
-if [ ! -f "${SUMMARY_MD}" ]; then
-    echo "[ERROR] Validation failed: reports/summary.md not found."
+if [ ! -f "${SUMMARY_JSON}" ]; then
+    echo "[ERROR] Validation failed: reports/summary.json not found."
     exit 1
 fi
 
-# Check that every required section heading exists in summary.md.
-REQUIRED_SECTIONS=(
-    "## Overview"
-    "## Failures by Recipe"
-    "## Plugins with Failed Migrations"
-    "## Pull Request Statistics"
-)
-for section in "${REQUIRED_SECTIONS[@]}"; do
-    if ! grep -qF "${section}" "${SUMMARY_MD}"; then
-        echo "[ERROR] Validation failed: missing section '${section}' in summary.md."
+# Validate that summary.json is valid JSON and contains required top-level keys.
+REQUIRED_KEYS=("generatedOn" "totalMigrations" "failedMigrations" "successRate" "pullRequestStats" "failuresByRecipe" "pluginsWithFailures")
+for key in "${REQUIRED_KEYS[@]}"; do
+    if ! python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert sys.argv[2] in d" "${SUMMARY_JSON}" "${key}" 2>/dev/null; then
+        echo "[ERROR] Validation failed: required key '${key}' not found in summary.json."
         echo "[ERROR] Upstream format may have changed — review the raw file:"
-        head -30 "${SUMMARY_MD}" >&2
+        head -30 "${SUMMARY_JSON}" >&2
         exit 1
     fi
 done
-
-# Check that summary.md contains a 'Generated on:' timestamp line.
-if ! grep -q "Generated on:" "${SUMMARY_MD}"; then
-    echo "[ERROR] Validation failed: 'Generated on:' timestamp not found in summary.md."
-    exit 1
-fi
 
 if [ ! -d "${EXTRACTED_DIR}/reports/recipes" ] \
    || [ -z "$(ls -A "${EXTRACTED_DIR}/reports/recipes" 2>/dev/null)" ]; then

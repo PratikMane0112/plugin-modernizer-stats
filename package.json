@@ -7,9 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "fetch": "bash scripts/fetch-metadata-plugin-modernizer.sh",
-    "consolidate": "python3 scripts/consolidate.py",
-    "generate-report": "bash scripts/generate-report.sh",
+    "fetch-metadata": "bash scripts/fetch-metadata.sh",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

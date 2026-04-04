@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![MUI](https://img.shields.io/badge/MUI-%230081CB.svg?style=flat&logo=mui&logoColor=white)](https://mui.com/)
 
 A static visualization site prototype for tracking the modernization & migration progress of the [Jenkins Plugin Modernizer Tool](https://github.com/jenkins-infra/plugin-modernizer-tool). This project consumes data stored in the [Metadata Repository](https://github.com/jenkins-infra/metadata-plugin-modernizer) during migration and modernization of a plugin (w.r.t applied recipe & scheduled github action workflows) by plugin modernizer tool.
 
@@ -32,9 +32,9 @@ This project will make the exploration of `metadata-plugin-modernizer` data smoo
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| **Node.js** | ≥ 22 (LTS) | See `.tool-versions` for the pinned version |
-| **npm** | ≥ 10 | Ships with Node.js 22+ |
-| **Python 3** | ≥ 3.9 | stdlib only — no `pip install` needed |
+| **Node.js** | >= 22 (LTS) | See `.tool-versions` for the pinned version |
+| **npm** | >= 10 | Ships with Node.js 22+ |
+| **Python 3** | >= 3.9 | stdlib only — no `pip install` needed |
 
 
 ### 1. Clone the repository
@@ -50,21 +50,15 @@ cd plugin-modernizer-stats
 npm ci
 ```
 
-### 3. Fetch the metadata data
+### 3. Fetch and consolidate metadata
 
-Fetch metadata data from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer)
-
-```bash
-npm run generate-report
-```
-
-### 4. Consolidate data
+Fetch metadata from [jenkins-infra/metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) 
 
 ```bash
-python3 scripts/consolidate.py
+npm run fetch-metadata
 ```
 
-### 5. Start the dev server
+### 4. Start the dev server
 
 ```bash
 npm run dev
@@ -75,50 +69,50 @@ Open [http://localhost:5173](http://localhost:5173) to view the dashboard locall
 
 ## Deployment
 
-The protoype is deployed on netlify. Here is a live demo: [plugin-modernizer-stats.netlify.app](https://plugin-modernizer-stats.netlify.app/)
+The prototype is deployed on Netlify. Here is a live demo: [plugin-modernizer-stats.netlify.app](https://plugin-modernizer-stats.netlify.app/)
 
 
 ## Tech Stack
 
-| Category            | Technology                             |
-|---------------------|----------------------------------------|
-| Frontend            | React 19 + TypeScript (strict mode)    |
-| Build Tool          | Vite                                   |
-| Styling             | Material UI (dark mode)            |
-| Visualization       | Apache ECharts via `echarts-for-react` |
-| Routing             | React Router DOM v7                    |
-| List Virtualization | `@tanstack/react-virtual`              |
-| Icons               | Lucide React                           |
-| Data Processing     | Python 3 (stdlib only, build-time)     |
+| Category            | Technology                                  |
+|---------------------|---------------------------------------------|
+| Frontend            | React 19 + TypeScript (strict mode)         |
+| Build Tool          | Vite                                        |
+| UI Framework        | Material UI (dark theme)                    |
+| Visualization       | Apache ECharts via `echarts-for-react`      |
+| Routing             | React Router DOM v7                         |
+| List Virtualization | `@tanstack/react-virtual`                   |
+| Icons               | Lucide React                                |
+| Data Processing     | Python 3 (stdlib only, build-time)          |
 
-## � Project Structure
+## Project Structure
 
 ```
 ├── scripts/
-│   ├── generate-report.sh                    # All-in-one: fetch → consolidate → cleanup
-│   ├── fetch-metadata-plugin-modernizer.sh   # Downloads upstream data
-│   └── consolidate.py                        # Transforms raw MD → validated JSON (Python 3)
+│   ├── fetch-metadata.sh                      # All-in-one: fetch → consolidate → cleanup
+│   ├── fetch-metadata-plugin-modernizer.sh    # Downloads and validates upstream data
+│   ├── consolidate.py                         # Consolidates upstream  (
 ├── src/
-│   ├── lib/dataClient.ts                     # Centralized fetch layer with caching
-│   ├── hooks/useMetadata.ts                  # React hooks for data access
+│   ├── lib/dataClient.ts                      # Centralized fetch layer with caching
+│   ├── hooks/useMetadata.ts                   # React hooks for data access
 │   ├── components/
-│   │   ├── Layout.tsx                        # Sidebar nav, mobile responsive
-│   │   ├── Skeleton.tsx                      # Loading skeletons
-│   │   └── ErrorBanner.tsx                   # Error display with retry
+│   │   ├── Layout.tsx                         # Sidebar nav, mobile responsive
+│   │   ├── Skeleton.tsx                       # Loading skeletons
+│   │   └── ErrorBanner.tsx                    # Error display with retry
 │   ├── pages/
-│   │   ├── Dashboard.tsx                     # KPI cards, 5 charts
-│   │   ├── PluginList.tsx                    # Virtualized plugin list
-│   │   ├── PluginDetail.tsx                  # Plugin migration details
-│   │   ├── RecipeList.tsx                    # Virtualized recipe list
-│   │   └── RecipeDetail.tsx                  # Recipe drill-down
-│   ├── types.ts                              # All TypeScript interfaces
-│   ├── App.tsx                               # Router + lazy loading
-│   └── main.tsx                              # Entry point
-├── public/                                   # Static assets (favicon, icons)
-├── netlify.toml                              # Netlify build config
+│   │   ├── Dashboard.tsx                      # KPI cards, 5 charts
+│   │   ├── PluginList.tsx                     # Virtualized plugin list
+│   │   ├── PluginDetail.tsx                   # Plugin migration details
+│   │   ├── RecipeList.tsx                     # Virtualized recipe list
+│   │   └── RecipeDetail.tsx                   # Recipe drill-down
+│   ├── types.ts                               # All TypeScript interfaces
+│   ├── App.tsx                                # Router + lazy loading
+│   └── main.tsx                               # Entry point
+├── public/                                    # Static assets (favicon, icons)
+├── netlify.toml                               # Netlify build config
 └── package.json
 ```
 
-## 📄 License
+## License
 
 MIT
