@@ -1,9 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -30,6 +28,12 @@ const GithubIcon = ({ size = 24 }: { size?: number }) => (
 
 const sidebarBg = '#1a1d21';
 const borderColor = '#1e293b';
+
+const setFooterSkipReport = (el: HTMLElement | null) => {
+    if (el && 'skipReportIssue' in el) {
+        (el as HTMLElement & { skipReportIssue: boolean }).skipReportIssue = true;
+    }
+};
 
 const SidebarContent = ({ onClose }: { onClose: () => void }) => {
     const location = useLocation();
@@ -124,31 +128,51 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
 
 export const Layout = ({ children }: { children: ReactNode }) => {
     const theme = useTheme();
+    const location = useLocation();
     const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
     const [mobileOpen, setMobileOpen] = useState(false);
 
+    const footerRef = useCallback((el: HTMLElement | null) => {
+        setFooterSkipReport(el);
+    }, []);
+
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-            {/* Mobile AppBar */}
-            {!isDesktop && (
-                <AppBar
-                    position="fixed"
-                    elevation={0}
-                    sx={{
-                        bgcolor: sidebarBg,
-                        borderBottom: `1px solid ${borderColor}`,
-                        zIndex: theme.zIndex.drawer + 1,
-                    }}
-                >
-                    <Toolbar sx={{ justifyContent: 'space-between', minHeight: '56px !important' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            {/* Jenkins.io chrome + mobile app toolbar (replaces duplicate MUI AppBar) */}
+            <Box
+                sx={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: theme.zIndex.drawer + 1,
+                    bgcolor: '#15171a',
+                }}
+            >
+                <jio-navbar
+                    property="https://www.jenkins.io"
+                    theme="dark"
+                    locationPathname={location.pathname}
+                    showSearchBox={false}
+                />
+                {!isDesktop && (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            minHeight: 48,
+                            px: 1,
+                            borderBottom: `1px solid ${borderColor}`,
+                            bgcolor: sidebarBg,
+                        }}
+                    >
                         <Box
                             component={Link}
                             to="/"
-                            sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', minWidth: 0 }}
                             aria-label="Home"
                         >
-                            <Box component="img" src="/jenkins.svg" alt="Jenkins Logo" sx={{ width: 32, height: 32 }} />
-                            <Typography sx={{ color: '#f1f5f9', fontWeight: 700, fontSize: '1.125rem' }}>
+                            <Box component="img" src="/jenkins.svg" alt="" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                            <Typography sx={{ color: '#f1f5f9', fontWeight: 700, fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 Plugin Modernizer Stats
                             </Typography>
                         </Box>
@@ -160,61 +184,76 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                         >
                             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                         </IconButton>
-                    </Toolbar>
-                </AppBar>
-            )}
-
-            {/* Desktop permanent sidebar */}
-            {isDesktop ? (
-                <Box
-                    component="aside"
-                    aria-label="Main navigation"
-                    sx={{
-                        width: SIDEBAR_WIDTH,
-                        flexShrink: 0,
-                        borderRight: `1px solid ${borderColor}`,
-                    }}
-                >
-                    <Box sx={{ position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
-                        <SidebarContent onClose={() => { }} />
                     </Box>
-                </Box>
-            ) : (
-                <Drawer
-                    variant="temporary"
-                    open={mobileOpen}
-                    onClose={() => setMobileOpen(false)}
-                    ModalProps={{ keepMounted: true }}
-                    sx={{
-                        zIndex: theme.zIndex.drawer,
-                        '& .MuiDrawer-paper': {
-                            width: SIDEBAR_WIDTH,
-                            bgcolor: sidebarBg,
-                            border: 'none',
-                            borderRight: `1px solid ${borderColor}`,
-                            top: '56px',
-                        },
-                    }}
-                    aria-label="Navigation drawer"
-                >
-                    <SidebarContent onClose={() => setMobileOpen(false)} />
-                </Drawer>
-            )}
+                )}
+            </Box>
 
-            {/* Main content */}
-            <Box
-                component="main"
-                role="main"
-                sx={{
-                    flexGrow: 1,
-                    minWidth: 0,
-                    p: { xs: 2, md: 3, lg: 4 },
-                    mt: { xs: '56px', lg: 0 },
-                    overflowX: 'hidden',
-                }}
-            >
-                <Box sx={{ maxWidth: '1400px', mx: 'auto', width: '100%' }}>
-                    {children}
+            <Box sx={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0 }}>
+                {/* Desktop permanent sidebar */}
+                {isDesktop ? (
+                    <Box
+                        component="aside"
+                        aria-label="Main navigation"
+                        sx={{
+                            width: SIDEBAR_WIDTH,
+                            flexShrink: 0,
+                            borderRight: `1px solid ${borderColor}`,
+                        }}
+                    >
+                        <Box sx={{ position: 'sticky', top: 0, height: '100%', maxHeight: '100vh', overflowY: 'auto' }}>
+                            <SidebarContent onClose={() => { }} />
+                        </Box>
+                    </Box>
+                ) : (
+                    <Drawer
+                        variant="temporary"
+                        open={mobileOpen}
+                        onClose={() => setMobileOpen(false)}
+                        ModalProps={{ keepMounted: true }}
+                        sx={{
+                            zIndex: theme.zIndex.drawer,
+                            '& .MuiDrawer-paper': {
+                                width: SIDEBAR_WIDTH,
+                                bgcolor: sidebarBg,
+                                border: 'none',
+                                borderRight: `1px solid ${borderColor}`,
+                            },
+                        }}
+                        aria-label="Navigation drawer"
+                    >
+                        <SidebarContent onClose={() => setMobileOpen(false)} />
+                    </Drawer>
+                )}
+
+                <Box
+                    component="main"
+                    role="main"
+                    sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflowX: 'hidden',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            flex: 1,
+                            p: { xs: 2, md: 3, lg: 4 },
+                            overflowX: 'hidden',
+                        }}
+                    >
+                        <Box sx={{ maxWidth: '1400px', mx: 'auto', width: '100%' }}>
+                            {children}
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ mt: 'auto' }}>
+                        <jio-footer
+                            ref={footerRef}
+                            property="https://www.jenkins.io"
+                        />
+                    </Box>
                 </Box>
             </Box>
         </Box>

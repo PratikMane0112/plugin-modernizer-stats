@@ -81,7 +81,8 @@ The prototype is deployed on Netlify. Here is a live demo: [plugin-modernizer-st
 | UI Framework        | Material UI (dark theme)                    |
 | Visualization       | Apache ECharts via `echarts-for-react`      |
 | Routing             | React Router DOM v7                         |
-| List Virtualization | `@tanstack/react-virtual`                   |
+| List Virtualization | `react-window`                              |
+| Jenkins chrome      | `@jenkinsci/jenkins-io-components`          |
 | Icons               | Lucide React                                |
 | Data Processing     | Python 3 (stdlib only, build-time)          |
 

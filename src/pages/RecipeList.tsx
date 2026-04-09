@@ -1,5 +1,6 @@
-import { useState, useMemo, useRef } from 'react';
+import { useMemo, useState, useRef, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { VariableSizeList } from 'react-window';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -7,16 +8,22 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { Search, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useElementSize } from '../hooks/useElementSize';
 import { useMetadata } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
-import { SuccessRateBadge, getRateTier } from '../components/SuccessRateBadge';
+import { SuccessRateBadge } from '../components/SuccessRateBadge';
+import { getRateTier } from '../lib/rateTier';
 import type { RecipeReport } from '../types';
 
 type SortField = 'name' | 'totalApplications' | 'successCount' | 'failureCount' | 'successRate';
 type SortDir = 'asc' | 'desc';
 type RateFilter = 'all' | 'high' | 'medium' | 'low';
+
+const RECIPE_ROW_DESKTOP_PX = 72;
+const RECIPE_ROW_NARROW_PX = 112;
 
 const inputSx = {
     '& .MuiOutlinedInput-root': {
@@ -40,12 +47,17 @@ const selectSx = {
 const menuPropsSx = { PaperProps: { sx: { bgcolor: '#1e2329', border: '1px solid #334155' } } };
 
 export const RecipeList = () => {
+    const theme = useTheme();
+    const isNarrow = useMediaQuery(theme.breakpoints.down('sm'));
     const [searchTerm, setSearchTerm] = useState('');
     const [rateFilter, setRateFilter] = useState<RateFilter>('all');
     const [sortField, setSortField] = useState<SortField>('failureCount');
     const [sortDir, setSortDir] = useState<SortDir>('desc');
     const { recipes, loading, error } = useMetadata();
-    const parentRef = useRef<HTMLDivElement>(null);
+    const { ref: listViewportRef, width: listWidth, height: listHeight } = useElementSize<HTMLDivElement>();
+    const listRef = useRef<VariableSizeList>(null);
+
+    const rowHeight = isNarrow ? RECIPE_ROW_NARROW_PX : RECIPE_ROW_DESKTOP_PX;
 
     const toggleSort = (field: SortField) => {
         if (sortField === field) {
@@ -87,12 +99,9 @@ export const RecipeList = () => {
         return sorted;
     }, [recipes, searchTerm, rateFilter, sortField, sortDir]);
 
-    const virtualizer = useVirtualizer({
-        count: filtered.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 64,
-        overscan: 5,
-    });
+    useLayoutEffect(() => {
+        listRef.current?.resetAfterIndex(0, true);
+    }, [isNarrow, rowHeight, filtered]);
 
     if (loading) {
         return (
@@ -117,6 +126,8 @@ export const RecipeList = () => {
         justifyContent: 'center',
         gap: 0.5,
     };
+
+    const getItemSize = () => rowHeight;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -188,71 +199,74 @@ export const RecipeList = () => {
                     </Box>
                 </Box>
 
-                {/* Virtual scroll container */}
-                <div ref={parentRef} style={{ height: '70vh', overflowY: 'auto' }}>
-                    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-                        {virtualizer.getVirtualItems().map(virtualRow => {
-                            const recipe = filtered[virtualRow.index];
-                            const shortName = recipe.recipeId.split('.').pop() || recipe.recipeId;
-                            const pendingCount = recipe.totalApplications - recipe.successCount - recipe.failureCount;
+                <div ref={listViewportRef} style={{ height: '70vh', overflow: 'hidden' }}>
+                    {listWidth > 0 && listHeight > 0 && filtered.length > 0 && (
+                        <VariableSizeList
+                            ref={listRef}
+                            height={listHeight}
+                            width={listWidth}
+                            itemCount={filtered.length}
+                            itemSize={getItemSize}
+                            overscanCount={5}
+                        >
+                            {({ index, style }) => {
+                                const recipe = filtered[index];
+                                const shortName = recipe.recipeId.split('.').pop() || recipe.recipeId;
+                                const pendingCount = recipe.totalApplications - recipe.successCount - recipe.failureCount;
 
-                            return (
-                                <div
-                                    key={recipe.recipeId}
-                                    data-index={virtualRow.index}
-                                    ref={virtualizer.measureElement}
-                                    style={{ position: 'absolute', top: 0, transform: `translateY(${virtualRow.start}px)`, width: '100%' }}
-                                >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(30,41,59,0.5)', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }, transition: 'background 0.15s' }}>
-                                        <Box sx={{ flex: 1, minWidth: 0, px: 3, py: 2 }}>
-                                            <Box
-                                                component={Link}
-                                                to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
-                                                sx={{ fontWeight: 500, color: '#e2e8f0', textDecoration: 'none', '&:hover': { color: '#60a5fa' }, transition: 'color 0.15s' }}
-                                            >
-                                                {shortName}
+                                return (
+                                    <div style={style}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', borderBottom: '1px solid rgba(30,41,59,0.5)', boxSizing: 'border-box', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }, transition: 'background 0.15s' }}>
+                                            <Box sx={{ flex: 1, minWidth: 0, px: 3, py: 1.5 }}>
+                                                <Box
+                                                    component={Link}
+                                                    to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
+                                                    sx={{ fontWeight: 500, color: '#e2e8f0', textDecoration: 'none', '&:hover': { color: '#60a5fa' }, transition: 'color 0.15s' }}
+                                                >
+                                                    {shortName}
+                                                </Box>
+                                                <Typography sx={{ fontSize: '0.75rem', color: '#475569', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mt: 0.25 }}>
+                                                    {recipe.recipeId}
+                                                </Typography>
+                                                {/* Mobile-only inline stats */}
+                                                <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1.5, mt: 0.5, fontSize: '0.75rem' }}>
+                                                    <Typography component="span" sx={{ color: '#94a3b8', fontSize: 'inherit' }}>Total: <Box component="span" sx={{ color: '#f1f5f9', fontWeight: 700 }}>{recipe.totalApplications}</Box></Typography>
+                                                    <Typography component="span" sx={{ color: '#4ade80', fontSize: 'inherit' }}>✓ {recipe.successCount}</Typography>
+                                                    <Typography component="span" sx={{ color: '#f87171', fontSize: 'inherit' }}>✗ {recipe.failureCount}</Typography>
+                                                    {pendingCount > 0 && <Typography component="span" sx={{ color: '#fbbf24', fontSize: 'inherit' }}>⏳ {pendingCount}</Typography>}
+                                                </Box>
                                             </Box>
-                                            <Typography sx={{ fontSize: '0.75rem', color: '#475569', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mt: 0.25 }}>
-                                                {recipe.recipeId}
-                                            </Typography>
-                                            {/* Mobile-only inline stats */}
-                                            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1.5, mt: 0.5, fontSize: '0.75rem' }}>
-                                                <Typography component="span" sx={{ color: '#94a3b8', fontSize: 'inherit' }}>Total: <Box component="span" sx={{ color: '#f1f5f9', fontWeight: 700 }}>{recipe.totalApplications}</Box></Typography>
-                                                <Typography component="span" sx={{ color: '#4ade80', fontSize: 'inherit' }}>✓ {recipe.successCount}</Typography>
-                                                <Typography component="span" sx={{ color: '#f87171', fontSize: 'inherit' }}>✗ {recipe.failureCount}</Typography>
-                                                {pendingCount > 0 && <Typography component="span" sx={{ color: '#fbbf24', fontSize: 'inherit' }}>⏳ {pendingCount}</Typography>}
+                                            <Box sx={{ width: 80, px: 1.5, py: 1.5, textAlign: 'center', color: '#cbd5e1', fontSize: '0.875rem', display: { xs: 'none', sm: 'block' } }}>
+                                                {recipe.totalApplications}
                                             </Box>
-                                        </Box>
-                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'center', color: '#cbd5e1', fontSize: '0.875rem', display: { xs: 'none', sm: 'block' } }}>
-                                            {recipe.totalApplications}
-                                        </Box>
-                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'center', display: { xs: 'none', sm: 'block' } }}>
-                                            {recipe.successCount > 0
-                                                ? <Typography component="span" sx={{ color: '#4ade80', fontSize: '0.875rem' }}>{recipe.successCount}</Typography>
-                                                : <Typography component="span" sx={{ color: '#475569', fontSize: '0.875rem' }}>0</Typography>}
-                                        </Box>
-                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'center', display: { xs: 'none', sm: 'block' } }}>
-                                            {recipe.failureCount > 0
-                                                ? <Typography component="span" sx={{ color: '#f87171', fontSize: '0.875rem' }}>{recipe.failureCount}</Typography>
-                                                : <Typography component="span" sx={{ color: '#475569', fontSize: '0.875rem' }}>0</Typography>}
-                                        </Box>
-                                        <Box sx={{ width: 160, px: 1.5, py: 2, textAlign: 'center' }}>
-                                            <SuccessRateBadge rate={recipe.successRate} />
-                                        </Box>
-                                        <Box sx={{ width: 80, px: 1.5, py: 2, textAlign: 'right' }}>
-                                            <Box
-                                                component={Link}
-                                                to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
-                                                sx={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 0.5, '&:hover': { color: '#93c5fd' } }}
-                                            >
-                                                <ChevronRight size={16} />
+                                            <Box sx={{ width: 80, px: 1.5, py: 1.5, textAlign: 'center', display: { xs: 'none', sm: 'block' } }}>
+                                                {recipe.successCount > 0
+                                                    ? <Typography component="span" sx={{ color: '#4ade80', fontSize: '0.875rem' }}>{recipe.successCount}</Typography>
+                                                    : <Typography component="span" sx={{ color: '#475569', fontSize: '0.875rem' }}>0</Typography>}
+                                            </Box>
+                                            <Box sx={{ width: 80, px: 1.5, py: 1.5, textAlign: 'center', display: { xs: 'none', sm: 'block' } }}>
+                                                {recipe.failureCount > 0
+                                                    ? <Typography component="span" sx={{ color: '#f87171', fontSize: '0.875rem' }}>{recipe.failureCount}</Typography>
+                                                    : <Typography component="span" sx={{ color: '#475569', fontSize: '0.875rem' }}>0</Typography>}
+                                            </Box>
+                                            <Box sx={{ width: 160, px: 1.5, py: 1.5, textAlign: 'center' }}>
+                                                <SuccessRateBadge rate={recipe.successRate} />
+                                            </Box>
+                                            <Box sx={{ width: 80, px: 1.5, py: 1.5, textAlign: 'right' }}>
+                                                <Box
+                                                    component={Link}
+                                                    to={`/recipes/${encodeURIComponent(recipe.recipeId)}`}
+                                                    sx={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 0.5, '&:hover': { color: '#93c5fd' } }}
+                                                >
+                                                    <ChevronRight size={16} />
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                    </div>
+                                );
+                            }}
+                        </VariableSizeList>
+                    )}
                 </div>
 
                 {filtered.length === 0 && (

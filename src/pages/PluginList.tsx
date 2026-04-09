@@ -1,5 +1,6 @@
-import { useState, useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FixedSizeList } from 'react-window';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -8,12 +9,14 @@ import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Search, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useElementSize } from '../hooks/useElementSize';
 import { useIndex } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 type SortField = 'name';
 type SortDir = 'asc' | 'desc';
+
+const PLUGIN_ROW_PX = 56;
 
 const inputSx = {
     '& .MuiOutlinedInput-root': {
@@ -35,7 +38,7 @@ export const PluginList = () => {
     const [sortField, setSortField] = useState<SortField>('name');
     const [sortDir, setSortDir] = useState<SortDir>('asc');
     const { index, loading, error } = useIndex();
-    const parentRef = useRef<HTMLDivElement>(null);
+    const { ref: listViewportRef, width: listWidth, height: listHeight } = useElementSize<HTMLDivElement>();
 
     const toggleSort = (field: SortField) => {
         if (sortField === field) {
@@ -53,8 +56,8 @@ export const PluginList = () => {
             : <ChevronDown size={14} style={{ color: '#60a5fa' }} />;
     };
 
-    const plugins = index?.plugins ?? [];
-    const recipes = index?.recipes ?? [];
+    const plugins = useMemo(() => index?.plugins ?? [], [index]);
+    const recipes = useMemo(() => index?.recipes ?? [], [index]);
 
     const filtered = useMemo(() => {
         const q = searchTerm.toLowerCase();
@@ -64,14 +67,7 @@ export const PluginList = () => {
             return dir * a.localeCompare(b);
         });
         return sorted;
-    }, [plugins, searchTerm, sortDir, sortField]);
-
-    const virtualizer = useVirtualizer({
-        count: filtered.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 56,
-        overscan: 10,
-    });
+    }, [plugins, searchTerm, sortDir]);
 
     if (loading) {
         return (
@@ -157,45 +153,49 @@ export const PluginList = () => {
                     </Box>
                 </Box>
 
-                {/* Virtual scroll container */}
-                <div ref={parentRef} style={{ height: '70vh', overflowY: 'auto' }}>
-                    <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-                        {virtualizer.getVirtualItems().map(virtualRow => {
-                            const pluginName = filtered[virtualRow.index];
-                            return (
-                                <div
-                                    key={pluginName}
-                                    data-index={virtualRow.index}
-                                    ref={virtualizer.measureElement}
-                                    style={{ position: 'absolute', top: 0, transform: `translateY(${virtualRow.start}px)`, width: '100%' }}
-                                >
-                                    <Box
-                                        component={Link}
-                                        to={`/plugins/${pluginName}`}
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            textDecoration: 'none',
-                                            borderBottom: '1px solid rgba(30,41,59,0.5)',
-                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
-                                            transition: 'background 0.15s',
-                                        }}
-                                    >
-                                        <Box sx={{ flex: 1, px: 3, py: 2 }}>
-                                            <Typography sx={{ fontWeight: 500, color: '#e2e8f0', fontSize: '0.9375rem' }}>
-                                                {pluginName}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ width: 96, px: 3, py: 2, textAlign: 'right' }}>
-                                            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#60a5fa', fontWeight: 500, fontSize: '0.875rem' }}>
-                                                Details <ChevronRight size={16} />
+                <div ref={listViewportRef} style={{ height: '70vh', overflow: 'hidden' }}>
+                    {listWidth > 0 && listHeight > 0 && filtered.length > 0 && (
+                        <FixedSizeList
+                            height={listHeight}
+                            width={listWidth}
+                            itemCount={filtered.length}
+                            itemSize={PLUGIN_ROW_PX}
+                            overscanCount={10}
+                        >
+                            {({ index, style }) => {
+                                const pluginName = filtered[index];
+                                return (
+                                    <div style={style}>
+                                        <Box
+                                            component={Link}
+                                            to={`/plugins/${pluginName}`}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                textDecoration: 'none',
+                                                borderBottom: '1px solid rgba(30,41,59,0.5)',
+                                                boxSizing: 'border-box',
+                                                '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                                                transition: 'background 0.15s',
+                                            }}
+                                        >
+                                            <Box sx={{ flex: 1, px: 3, py: 1.5 }}>
+                                                <Typography sx={{ fontWeight: 500, color: '#e2e8f0', fontSize: '0.9375rem' }}>
+                                                    {pluginName}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ width: 96, px: 3, py: 1.5, textAlign: 'right' }}>
+                                                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#60a5fa', fontWeight: 500, fontSize: '0.875rem' }}>
+                                                    Details <ChevronRight size={16} />
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                    </div>
+                                );
+                            }}
+                        </FixedSizeList>
+                    )}
                 </div>
 
                 {filtered.length === 0 && (

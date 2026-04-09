@@ -95,7 +95,7 @@ export const usePluginData = (pluginName: string) => {
 
     useEffect(() => {
         if (!pluginName) {
-            setLoading(false);
+            queueMicrotask(() => setLoading(false));
             return;
         }
 
@@ -129,7 +129,7 @@ export const useRecipeData = (recipeName: string) => {
 
     useEffect(() => {
         if (!recipeName) {
-            setLoading(false);
+            queueMicrotask(() => setLoading(false));
             return;
         }
 

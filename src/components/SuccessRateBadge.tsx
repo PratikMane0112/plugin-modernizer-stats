@@ -1,11 +1,5 @@
-export type RateTier = 'high' | 'medium' | 'low' | 'none';
-
-export function getRateTier(rate: number): RateTier {
-    if (rate >= 80) return 'high';
-    if (rate >= 50) return 'medium';
-    if (rate > 0) return 'low';
-    return 'none';
-}
+import type { RateTier } from '../lib/rateTier';
+import { getRateTier } from '../lib/rateTier';
 
 const TIER_CONFIG: Record<RateTier, { label: string; bg: string; color: string; border: string }> = {
     high: {

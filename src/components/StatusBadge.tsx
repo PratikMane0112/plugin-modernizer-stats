@@ -1,18 +1,4 @@
-import type { Migration } from '../types';
-
-export type PluginStatus = 'success' | 'partial' | 'failed' | 'pending';
-
-export function deriveStatus(migrations: Migration[]): PluginStatus {
-    if (migrations.length === 0) return 'pending';
-    const hasFailure = migrations.some(
-        m => m.migrationStatus === 'failure' || m.migrationStatus === 'fail'
-    );
-    const hasSuccess = migrations.some(m => m.migrationStatus === 'success');
-    if (hasFailure && hasSuccess) return 'partial';
-    if (hasFailure) return 'failed';
-    if (hasSuccess) return 'success';
-    return 'pending';
-}
+import type { PluginStatus } from '../types';
 
 const STATUS_CONFIG: Record<PluginStatus, { label: string; bg: string; color: string; border: string }> = {
     success: {

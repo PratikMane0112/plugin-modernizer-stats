@@ -15,7 +15,8 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import { usePluginData, useFailedMigrations } from '../hooks/useMetadata';
 import { ErrorBanner } from '../components/ErrorBanner';
-import { StatusBadge, deriveStatus } from '../components/StatusBadge';
+import { StatusBadge } from '../components/StatusBadge';
+import { deriveStatus } from '../lib/pluginStatus';
 import type { Migration } from '../types';
 
 // ── PR Status Badge ─────────────────────────────────────────────────────────
