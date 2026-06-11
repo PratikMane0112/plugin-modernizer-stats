@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -14,7 +14,6 @@ import ViewListOutlined from '@mui/icons-material/ViewListOutlined';
 import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import { colors } from '../theme';
 
 const navItems = [
   { label: 'Dashboard', path: '/', icon: <DashboardOutlined /> },
@@ -22,7 +21,7 @@ const navItems = [
   { label: 'Recipes', path: '/recipes', icon: <ScienceOutlined /> },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -40,16 +39,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: colors.bg.sidebar,
-        borderRight: `1px solid ${colors.border.default}`,
+        bgcolor: 'background.paper',
+        borderRight: 1,
+        borderColor: 'divider',
       }}
     >
       <Box sx={{ px: 2.5, pt: 3, pb: 2, position: 'relative' }}>
         {!isDesktop && (
           <IconButton
+            aria-label="Close navigation menu"
             onClick={() => setMobileOpen(false)}
             size="small"
-            sx={{ position: 'absolute', top: 8, right: 8, color: colors.text.secondary }}
+            sx={{ position: 'absolute', top: 8, right: 8, color: 'text.secondary' }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -61,30 +62,31 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             alt="Jenkins"
             sx={{ width: 80, height: 110, flexShrink: 0 }}
           />
-          <Box sx={{ fontWeight: 800, fontSize: '1.3rem', color: colors.text.primary, lineHeight: 1.2 }}>
+          <Box sx={{ fontWeight: 800, fontSize: '1.3rem', color: 'text.primary', lineHeight: 1.2 }}>
             Jenkins Plugin Modernizer Statistics
           </Box>
         </Box>
-        <Box sx={{ fontSize: '0.90rem', color: colors.text.secondary, mt: 5, lineHeight: 1.4 }}>
+        <Box sx={{ fontSize: '0.90rem', color: 'text.secondary', mt: 5, lineHeight: 1.4 }}>
           A visualization dashboard for tracking the modernization progress of the Jenkins plugin modernizer tool.
         </Box>
       </Box>
 
-      <List sx={{ flex: 1, pt: 1, borderTop: `1px solid ${colors.border.default}` }}>
+      <List sx={{ flex: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
         {navItems.map((item) => {
           const active = location.pathname === item.path;
           return (
             <ListItemButton
               key={item.path}
+              selected={active}
               onClick={() => handleNav(item.path)}
               sx={{
                 mx: 1,
                 borderRadius: 1,
                 mb: 0.5,
-                color: active ? colors.white : colors.text.secondary,
-                bgcolor: active ? colors.primary.main : 'transparent',
+                color: active ? 'common.white' : 'text.secondary',
+                bgcolor: active ? 'primary.main' : 'transparent',
                 '&:hover': {
-                  bgcolor: active ? colors.primary.dark : colors.bg.hoverSubtle,
+                  bgcolor: active ? 'primary.dark' : 'action.hover',
                 },
               }}
             >
@@ -115,8 +117,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 justifyContent: 'space-between',
                 px: 2,
                 py: 1,
-                bgcolor: colors.bg.paper,
-                borderBottom: `1px solid ${colors.border.default}`,
+                bgcolor: 'background.paper',
+                borderBottom: 1,
+                borderColor: 'divider',
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -126,11 +129,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   alt="Jenkins"
                   sx={{ width: 32, height: 40 }}
                 />
-                <Box sx={{ fontWeight: 700, fontSize: '1rem', color: colors.text.primary }}>
-                  Plugin Modernizer Stats
-                </Box>
+                <Box sx={{ fontWeight: 700, fontSize: '1rem', color: 'text.primary' }}>Plugin Modernizer Stats</Box>
               </Box>
-              <IconButton onClick={() => setMobileOpen(true)} sx={{ color: colors.text.primary }}>
+              <IconButton
+                aria-label="Open navigation menu"
+                onClick={() => setMobileOpen(true)}
+                sx={{ color: 'text.primary' }}
+              >
                 <MenuIcon />
               </IconButton>
             </Box>
