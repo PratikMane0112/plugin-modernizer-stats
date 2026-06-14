@@ -100,12 +100,21 @@ export default function Layout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <jio-navbar property="https://plugins.jenkins.io/" theme="dark" />
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 1100, flexShrink: 0 }}>
+        <jio-navbar property="https://plugins.jenkins.io/" theme="dark" />
+      </Box>
 
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flex: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flex: 1, overflow: 'hidden' }}>
         {isDesktop ? (
-          <Box component="nav" sx={{ width: 240, flexShrink: 0 }}>
+          <Box
+            component="nav"
+            sx={{
+              width: 240,
+              flexShrink: 0,
+              overflowY: 'auto',
+            }}
+          >
             {sidebar}
           </Box>
         ) : (
@@ -120,6 +129,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 bgcolor: 'background.paper',
                 borderBottom: 1,
                 borderColor: 'divider',
+                flexShrink: 0,
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -133,7 +143,10 @@ export default function Layout({ children }: { children: ReactNode }) {
               </Box>
               <IconButton
                 aria-label="Open navigation menu"
-                onClick={() => setMobileOpen(true)}
+                onClick={(e) => {
+                  (e.currentTarget as HTMLElement).blur();
+                  setMobileOpen(true);
+                }}
                 sx={{ color: 'text.primary' }}
               >
                 <MenuIcon />
@@ -151,16 +164,17 @@ export default function Layout({ children }: { children: ReactNode }) {
           </>
         )}
 
-        <Box component="main" sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 3 } }}>
+        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 3 } }}>
           {children}
+          <Box sx={{ mt: 3 }}>
+            <jio-footer
+              property="https://plugins.jenkins.io/"
+              githubRepo="jenkins-infra/plugin-modernizer-stats"
+              githubBranch="main"
+            />
+          </Box>
         </Box>
       </Box>
-
-      <jio-footer
-        property="https://plugins.jenkins.io/"
-        githubRepo="jenkins-infra/plugin-modernizer-stats"
-        githubBranch="main"
-      />
     </Box>
   );
 }

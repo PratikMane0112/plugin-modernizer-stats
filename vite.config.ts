@@ -5,10 +5,18 @@ export default defineConfig({
   plugins: [react()],
   base: '/plugin-modernizer-stats/',
   build: {
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       onwarn(warning, defaultHandler) {
         if (warning.code === 'COMMONJS_VARIABLE_IN_ESM') return;
         defaultHandler(warning);
+      },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/echarts') || id.includes('echarts-for-react')) {
+            return 'echarts';
+          }
+        },
       },
     },
   },
