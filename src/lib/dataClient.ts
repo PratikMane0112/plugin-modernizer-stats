@@ -25,7 +25,7 @@ async function fetchJson<T>(url: string): Promise<Result<T>> {
     const data: T = await res.json();
     return { ok: true, data };
   } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
+    if (err instanceof Error && err.name === 'AbortError') {
       return { ok: false, error: `Request timed out after ${TIMEOUT_MS}ms` };
     }
     return {
@@ -39,22 +39,26 @@ async function fetchJson<T>(url: string): Promise<Result<T>> {
 
 function getReport(): Promise<Result<ReportJson>> {
   if (!reportPromise) {
-    reportPromise = fetchJson<ReportJson>(REPORT_URL);
+    reportPromise = fetchJson<ReportJson>(REPORT_URL).then((result) => {
+      if (!result.ok) reportPromise = null;
+      return result;
+    });
   }
   return reportPromise;
 }
 
 function buildPluginReport(pluginId: string, pluginData: PluginData): PluginReport {
   const migrations = pluginData.aggregatedMigrations?.migrations ?? [];
-  const successCount = migrations.filter((m) => m.migrationStatus === 'success').length;
-  const failCount = migrations.filter((m) => m.migrationStatus === 'failure').length;
-
+  let successCount = 0;
+  let failCount = 0;
   let latestMigration: string | null = null;
-  if (migrations.length > 0) {
-    latestMigration = migrations.reduce(
-      (latest, m) => (m.timestamp > latest ? m.timestamp : latest),
-      migrations[0].timestamp
-    );
+
+  for (const m of migrations) {
+    if (m.migrationStatus === 'success') successCount++;
+    else if (m.migrationStatus === 'failure') failCount++;
+    if (latestMigration === null || m.timestamp > latestMigration) {
+      latestMigration = m.timestamp;
+    }
   }
 
   return {
@@ -119,14 +123,14 @@ export const dataClient = {
     };
   },
 
-  async getRecipe(recipeName: string): Promise<Result<RecipeReport>> {
+  async getRecipe(recipeId: string): Promise<Result<RecipeReport>> {
     const result = await getReport();
     if (!result.ok) return result as { ok: false; error: string };
     const report = result.data;
 
-    const recipe = report.recipes[recipeName];
+    const recipe = report.recipes[recipeId];
     if (!recipe) {
-      return { ok: false, error: `Recipe '${recipeName}' not found` };
+      return { ok: false, error: `Recipe '${recipeId}' not found` };
     }
 
     const data: RecipeReport = {
@@ -139,27 +143,27 @@ export const dataClient = {
     return { ok: true, data };
   },
 
-  async getPluginReport(pluginName: string): Promise<Result<PluginReport>> {
+  async getPluginReport(pluginId: string): Promise<Result<PluginReport>> {
     const result = await getReport();
     if (!result.ok) return result as { ok: false; error: string };
     const report = result.data;
 
-    const pluginData = report.plugins[pluginName];
+    const pluginData = report.plugins[pluginId];
     if (!pluginData) {
-      return { ok: false, error: `Plugin '${pluginName}' not found` };
+      return { ok: false, error: `Plugin '${pluginId}' not found` };
     }
 
-    return { ok: true, data: buildPluginReport(pluginName, pluginData) };
+    return { ok: true, data: buildPluginReport(pluginId, pluginData) };
   },
 
-  async getPluginFailedMigrations(pluginName: string): Promise<Result<string>> {
+  async getPluginFailedMigrations(pluginId: string): Promise<Result<string>> {
     const result = await getReport();
     if (!result.ok) return result as { ok: false; error: string };
     const report = result.data;
 
-    const pluginData = report.plugins[pluginName];
+    const pluginData = report.plugins[pluginId];
     if (!pluginData) {
-      return { ok: false, error: `Plugin '${pluginName}' not found` };
+      return { ok: false, error: `Plugin '${pluginId}' not found` };
     }
 
     const migrations = pluginData.aggregatedMigrations?.migrations ?? [];
@@ -167,10 +171,17 @@ export const dataClient = {
 
     const headers = ['migrationId', 'migrationName', 'migrationStatus', 'pluginVersion', 'timestamp', 'pullRequestUrl'];
 
+    const escapeCsv = (value: string): string => {
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
     const rows = failed.map((m) =>
-      [m.migrationId, m.migrationName, m.migrationStatus, m.pluginVersion, m.timestamp, m.pullRequestUrl ?? ''].join(
-        ','
-      )
+      [m.migrationId, m.migrationName, m.migrationStatus, m.pluginVersion, m.timestamp, m.pullRequestUrl ?? '']
+        .map(escapeCsv)
+        .join(',')
     );
 
     return { ok: true, data: [headers.join(','), ...rows].join('\n') };
