@@ -194,6 +194,7 @@ export const dataClient = {
 
     const plugins: PluginReport[] = Object.entries(report.plugins)
       .filter(([, pd]) => pd.aggregatedMigrations !== null)
+      .sort(([a], [b]) => a.localeCompare(b))
       .map(([id, pd]) => buildPluginReport(id, pd));
 
     return { ok: true, data: plugins };
@@ -204,6 +205,7 @@ export const dataClient = {
     if (!result.ok) return result as { ok: false; error: string };
     const report = result.data;
 
-    return { ok: true, data: Object.values(report.recipes) };
+    const recipes = Object.values(report.recipes).sort((a, b) => a.recipeId.localeCompare(b.recipeId));
+    return { ok: true, data: recipes };
   },
 };
