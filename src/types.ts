@@ -1,5 +1,9 @@
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
+export type PluginStatus = 'success' | 'fail';
+
+export type PluginStatusColor = 'green' | 'red' | 'blue' | 'yellow' | 'white';
+
 export interface Migration {
   pluginVersion: string;
   jenkinsBaseline?: string;
@@ -10,7 +14,7 @@ export interface Migration {
   migrationDescription?: string;
   tags?: string[];
   migrationId: string;
-  migrationStatus: 'success' | 'failure' | '';
+  migrationStatus?: 'success' | 'fail';
   pullRequestUrl?: string;
   pullRequestStatus?: 'open' | 'closed' | 'merged' | '';
   dryRun?: boolean;
@@ -35,8 +39,8 @@ export interface PluginReport {
   latestMigration: string | null;
   migrations: Migration[];
   sourceUrls?: PluginSourceUrls;
-  rawAggregatedMigrations?: AggregatedMigrations | null;
-  rawFailedMigrations?: Record<string, string>[];
+  rawAggregatedMigrations?: Migration[];
+  rawFailedMigrations?: FailedMigration[];
 }
 
 export interface RecipeStats {
@@ -107,21 +111,15 @@ export type SummaryJson = Omit<ReportJson, 'plugins' | 'recipes'> & {
   recipes: RecipeStats[];
 };
 
-export interface AggregatedMigrations {
-  pluginName: string;
-  pluginRepository: string;
-  migrations: Migration[];
-}
-
 export interface PluginSourceUrls {
-  aggregatedMigrations: string;
-  failedMigrations: string;
+  repository: string;
+  upstreamMetadata: string;
 }
 
 export interface PluginData {
   sourceUrls?: PluginSourceUrls;
-  aggregatedMigrations: AggregatedMigrations | null;
-  failedMigrations: Record<string, string>[];
+  aggregatedMigrations: Migration[];
+  failedMigrations: FailedMigration[];
   modernizationMetadata: unknown[];
 }
 
@@ -131,8 +129,6 @@ export interface PluginRecipesIndex {
   plugins: string[];
   recipes: string[];
 }
-
-export type PluginStatus = 'success' | 'partial' | 'failed' | 'pending';
 
 export interface FailedMigration {
   migrationId: string;

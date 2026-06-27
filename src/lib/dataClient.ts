@@ -48,22 +48,22 @@ function getReport(): Promise<Result<ReportJson>> {
 }
 
 function buildPluginReport(pluginId: string, pluginData: PluginData): PluginReport {
-  const migrations = pluginData.aggregatedMigrations?.migrations ?? [];
+  const migrations = pluginData.aggregatedMigrations ?? [];
   let successCount = 0;
   let failCount = 0;
   let latestMigration: string | null = null;
 
   for (const m of migrations) {
     if (m.migrationStatus === 'success') successCount++;
-    else if (m.migrationStatus === 'failure') failCount++;
+    else if (m.migrationStatus === 'fail') failCount++;
     if (latestMigration === null || m.timestamp > latestMigration) {
       latestMigration = m.timestamp;
     }
   }
 
   return {
-    pluginName: pluginData.aggregatedMigrations?.pluginName ?? pluginId,
-    pluginRepository: pluginData.aggregatedMigrations?.pluginRepository ?? '',
+    pluginName: pluginId,
+    pluginRepository: pluginData.sourceUrls?.repository ?? '',
     totalMigrations: migrations.length,
     successCount,
     failCount,
@@ -166,8 +166,8 @@ export const dataClient = {
       return { ok: false, error: `Plugin '${pluginId}' not found` };
     }
 
-    const migrations = pluginData.aggregatedMigrations?.migrations ?? [];
-    const failed = migrations.filter((m) => m.migrationStatus === 'failure');
+    const migrations = pluginData.aggregatedMigrations ?? [];
+    const failed = migrations.filter((m) => m.migrationStatus === 'fail');
 
     const headers = ['migrationId', 'migrationName', 'migrationStatus', 'pluginVersion', 'timestamp', 'pullRequestUrl'];
 
@@ -179,7 +179,7 @@ export const dataClient = {
     };
 
     const rows = failed.map((m) =>
-      [m.migrationId, m.migrationName, m.migrationStatus, m.pluginVersion, m.timestamp, m.pullRequestUrl ?? '']
+      [m.migrationId, m.migrationName, m.migrationStatus ?? '', m.pluginVersion, m.timestamp, m.pullRequestUrl ?? '']
         .map(escapeCsv)
         .join(',')
     );
@@ -193,7 +193,7 @@ export const dataClient = {
     const report = result.data;
 
     const plugins: PluginReport[] = Object.entries(report.plugins)
-      .filter(([, pd]) => pd.aggregatedMigrations !== null)
+      .filter(([, pd]) => pd.aggregatedMigrations.length > 0)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([id, pd]) => buildPluginReport(id, pd));
 
