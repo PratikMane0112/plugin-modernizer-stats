@@ -51,10 +51,7 @@ describe('deriveStatus', () => {
   // --- blue: mixed results, fail < 50% ---
 
   it('returns "blue" — e.g. absint-a3 (7 success, 1 fail = 12.5% fail)', () => {
-    const migrations = [
-      ...Array.from({ length: 7 }, () => makeMigration('success')),
-      makeMigration('fail'),
-    ];
+    const migrations = [...Array.from({ length: 7 }, () => makeMigration('success')), makeMigration('fail')];
     const result = deriveStatus(migrations);
     expect(result).toBe('blue');
     console.log(`  mock data : 7 success, 1 fail (12.5% fail)`);
@@ -78,10 +75,7 @@ describe('deriveStatus', () => {
   });
 
   it('returns "yellow" — e.g. kryptowire (1 success, 8 fail = 89% fail)', () => {
-    const migrations = [
-      makeMigration('success'),
-      ...Array.from({ length: 8 }, () => makeMigration('fail')),
-    ];
+    const migrations = [makeMigration('success'), ...Array.from({ length: 8 }, () => makeMigration('fail'))];
     const result = deriveStatus(migrations);
     expect(result).toBe('yellow');
     console.log(`  mock data : 1 success, 8 fail (89% fail)`);

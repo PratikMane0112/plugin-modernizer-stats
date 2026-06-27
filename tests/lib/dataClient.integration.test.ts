@@ -22,7 +22,7 @@ describe('dataClient validated against actual report.json', () => {
       vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(realReport),
-      }),
+      })
     );
   });
 
@@ -43,7 +43,9 @@ describe('dataClient validated against actual report.json', () => {
     expect(totalFromClient).toBe(totalFromJson);
     expect(totalFromClient).toBe(realReport.overview.totalMigrations);
     console.log(`  dataClient : ${result.data.length} plugins, ${totalFromClient} migrations`);
-    console.log(`  report.json: ${Object.keys(realReport.plugins).length} plugins, ${totalFromJson} migrations (overview: ${realReport.overview.totalMigrations})`);
+    console.log(
+      `  report.json: ${Object.keys(realReport.plugins).length} plugins, ${totalFromJson} migrations (overview: ${realReport.overview.totalMigrations})`
+    );
   });
 
   it('getAllPlugins success+fail counts match manual count from report.json', async () => {
@@ -68,7 +70,9 @@ describe('dataClient validated against actual report.json', () => {
     expect(clientSuccess).toBe(jsonSuccess);
     expect(clientFail).toBe(jsonFail);
     console.log(`  dataClient : success=${clientSuccess}, fail=${clientFail}`);
-    console.log(`  report.json: success=${jsonSuccess}, fail=${jsonFail} (overview: ${realReport.overview.successfulMigrations}s/${realReport.overview.failedMigrations}f)`);
+    console.log(
+      `  report.json: success=${jsonSuccess}, fail=${jsonFail} (overview: ${realReport.overview.successfulMigrations}s/${realReport.overview.failedMigrations}f)`
+    );
   });
 
   it('getPluginReport returns correct data for a known mixed plugin', async () => {
@@ -94,7 +98,9 @@ describe('dataClient validated against actual report.json', () => {
     expect(result.data.successCount).toBe(expectedSuccess);
     expect(result.data.failCount).toBe(expectedFail);
     expect(result.data.pluginRepository).toBe(realReport.plugins[pluginId!].sourceUrls?.repository ?? '');
-    console.log(`  dataClient : ${pluginId} -> ${result.data.totalMigrations} migrations, ${result.data.successCount}s/${result.data.failCount}f`);
+    console.log(
+      `  dataClient : ${pluginId} -> ${result.data.totalMigrations} migrations, ${result.data.successCount}s/${result.data.failCount}f`
+    );
     console.log(`  report.json: ${pluginId} -> ${rawAgg.length} migrations, ${expectedSuccess}s/${expectedFail}f`);
   });
 
@@ -105,8 +111,12 @@ describe('dataClient validated against actual report.json', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.data.overview).toEqual(realReport.overview);
-    console.log(`  dataClient : totalPlugins=${result.data.overview.totalPlugins}, totalMigrations=${result.data.overview.totalMigrations}, successRate=${result.data.overview.successRate}%`);
-    console.log(`  report.json: totalPlugins=${realReport.overview.totalPlugins}, totalMigrations=${realReport.overview.totalMigrations}, successRate=${realReport.overview.successRate}%`);
+    console.log(
+      `  dataClient : totalPlugins=${result.data.overview.totalPlugins}, totalMigrations=${result.data.overview.totalMigrations}, successRate=${result.data.overview.successRate}%`
+    );
+    console.log(
+      `  report.json: totalPlugins=${realReport.overview.totalPlugins}, totalMigrations=${realReport.overview.totalMigrations}, successRate=${realReport.overview.successRate}%`
+    );
   });
 
   it('getIndex plugin/recipe counts match Object.keys lengths', async () => {
@@ -118,6 +128,8 @@ describe('dataClient validated against actual report.json', () => {
     expect(result.data.plugins).toHaveLength(Object.keys(realReport.plugins).length);
     expect(result.data.recipes).toHaveLength(Object.keys(realReport.recipes).length);
     console.log(`  dataClient : ${result.data.plugins.length} plugins, ${result.data.recipes.length} recipes`);
-    console.log(`  report.json: ${Object.keys(realReport.plugins).length} plugins, ${Object.keys(realReport.recipes).length} recipes`);
+    console.log(
+      `  report.json: ${Object.keys(realReport.plugins).length} plugins, ${Object.keys(realReport.recipes).length} recipes`
+    );
   });
 });

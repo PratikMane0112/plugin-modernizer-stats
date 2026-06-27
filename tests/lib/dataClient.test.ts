@@ -45,9 +45,7 @@ function makeReport(overrides: Partial<ReportJson> = {}): ReportJson {
         successCount: 2,
         failureCount: 1,
         pending: 0,
-        plugins: [
-          { pluginName: 'BlazeMeterJenkinsPlugin', status: 'success', timestamp: '2025-09-03T08-05-48' },
-        ],
+        plugins: [{ pluginName: 'BlazeMeterJenkinsPlugin', status: 'success', timestamp: '2025-09-03T08-05-48' }],
       },
     },
     plugins: {
@@ -308,7 +306,7 @@ function mockFetchSuccess(report: ReportJson) {
     vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(report),
-    }),
+    })
   );
 }
 
@@ -319,7 +317,7 @@ function mockFetchFailure(status: number, statusText: string) {
       ok: false,
       status,
       statusText,
-    }),
+    })
   );
 }
 
@@ -355,8 +353,12 @@ describe('dataClient', () => {
         fail: 1,
         pending: 0,
       });
-      console.log(`  mock data : totalPlugins=${report.overview.totalPlugins}, totalMigrations=${report.overview.totalMigrations}, recipes=${Object.keys(report.recipes).length}`);
-      console.log(`  dataClient: totalPlugins=${result.data.overview.totalPlugins}, totalMigrations=${result.data.overview.totalMigrations}, recipes=${result.data.recipes.length}`);
+      console.log(
+        `  mock data : totalPlugins=${report.overview.totalPlugins}, totalMigrations=${report.overview.totalMigrations}, recipes=${Object.keys(report.recipes).length}`
+      );
+      console.log(
+        `  dataClient: totalPlugins=${result.data.overview.totalPlugins}, totalMigrations=${result.data.overview.totalMigrations}, recipes=${result.data.recipes.length}`
+      );
     });
 
     it('returns error on fetch failure', async () => {
@@ -410,7 +412,9 @@ describe('dataClient', () => {
       expect(result.data.totalApplications).toBe(2);
       expect(result.data.successRate).toBe(50);
       console.log(`  mock data : recipeId=AddCodeOwner, totalApplications=2, successCount=1, failureCount=1`);
-      console.log(`  dataClient: recipeId=${result.data.recipeId}, totalApplications=${result.data.totalApplications}, successRate=${result.data.successRate}%`);
+      console.log(
+        `  dataClient: recipeId=${result.data.recipeId}, totalApplications=${result.data.totalApplications}, successRate=${result.data.successRate}%`
+      );
     });
 
     it('returns error for unknown recipe', async () => {
@@ -444,7 +448,9 @@ describe('dataClient', () => {
       expect(result.data.failCount).toBe(3);
       expect(result.data.latestMigration).toBe('2025-09-03T08-13-07');
       console.log(`  mock data : TestFairy -> 5 migrations (2s/3f), repo=testfairy-plugin.git`);
-      console.log(`  dataClient: ${result.data.pluginName} -> ${result.data.totalMigrations} migrations (${result.data.successCount}s/${result.data.failCount}f), latest=${result.data.latestMigration}`);
+      console.log(
+        `  dataClient: ${result.data.pluginName} -> ${result.data.totalMigrations} migrations (${result.data.successCount}s/${result.data.failCount}f), latest=${result.data.latestMigration}`
+      );
     });
 
     it('BlazeMeterJenkinsPlugin: 2 migrations, 2 success, 0 fail (all success)', async () => {
@@ -460,7 +466,9 @@ describe('dataClient', () => {
       expect(result.data.successCount).toBe(2);
       expect(result.data.failCount).toBe(0);
       console.log(`  mock data : BlazeMeterJenkinsPlugin -> 2 migrations (2s/0f), repo=blazemeter-plugin.git`);
-      console.log(`  dataClient: ${result.data.pluginName} -> ${result.data.totalMigrations} migrations (${result.data.successCount}s/${result.data.failCount}f)`);
+      console.log(
+        `  dataClient: ${result.data.pluginName} -> ${result.data.totalMigrations} migrations (${result.data.successCount}s/${result.data.failCount}f)`
+      );
     });
 
     it('CustomHistory: 2 migrations, 0 success, 2 fail (all fail)', async () => {
@@ -476,7 +484,9 @@ describe('dataClient', () => {
       expect(result.data.successCount).toBe(0);
       expect(result.data.failCount).toBe(2);
       console.log(`  mock data : CustomHistory -> 2 migrations (0s/2f), repo=custom-history-plugin.git`);
-      console.log(`  dataClient: ${result.data.pluginName} -> ${result.data.totalMigrations} migrations (${result.data.successCount}s/${result.data.failCount}f)`);
+      console.log(
+        `  dataClient: ${result.data.pluginName} -> ${result.data.totalMigrations} migrations (${result.data.successCount}s/${result.data.failCount}f)`
+      );
     });
 
     it('returns error for unknown plugin', async () => {
