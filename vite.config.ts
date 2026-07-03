@@ -7,8 +7,8 @@ export default defineConfig({
   base: '/plugin-modernizer-stats/',
   test: {
     globals: true,
-    environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    environment: 'jsdom',
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
   build: {
     chunkSizeWarningLimit: 1200,
