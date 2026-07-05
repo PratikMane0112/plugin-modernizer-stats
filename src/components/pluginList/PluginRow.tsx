@@ -43,26 +43,28 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
         sx={{
           flex: 1,
           color: colors.text.primary,
-          fontSize: { xs: '0.85rem', sm: '0.95rem' },
+          fontSize: { xs: '0.8rem', sm: '0.95rem' },
           fontWeight: 500,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
-          minWidth: 0,
+          minWidth: { xs: 80, sm: 120 },
         }}
       >
         {plugin.pluginName}
       </Typography>
 
-      <StatusBadge status={status} size="small" />
+      <Box sx={{ flexShrink: 0 }}>
+        <StatusBadge status={status} size="small" />
+      </Box>
 
       <Typography
         sx={{
           color: colors.success.main,
-          fontSize: { xs: '0.8rem', sm: '0.9rem' },
+          fontSize: { xs: '0.75rem', sm: '0.9rem' },
           fontWeight: 600,
-          minWidth: { xs: 'auto', sm: 60 },
           flexShrink: 0,
+          whiteSpace: 'nowrap',
         }}
       >
         {plugin.successCount}

@@ -24,7 +24,7 @@ export default function StatCard({ value, label, description, icon, color, onCli
         cursor: isClickable ? 'pointer' : 'default',
         boxSizing: 'border-box',
         bgcolor: colors.bg.paper,
-        p: { xs: 1.5, sm: 2 },
+        p: { xs: 1, sm: 2 },
         borderRadius: '12px',
         border: `1px solid ${active ? color : colors.border.default}`,
         display: 'flex',
@@ -74,10 +74,11 @@ export default function StatCard({ value, label, description, icon, color, onCli
         {description && (
           <Typography
             sx={{
-              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
               color: colors.text.secondary,
-              lineHeight: 1.4,
-              mt: 0.6,
+              lineHeight: 1.3,
+              mt: 0.25,
+              display: { xs: 'none', sm: 'block' },
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',

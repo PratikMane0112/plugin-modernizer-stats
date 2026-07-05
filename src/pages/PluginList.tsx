@@ -47,7 +47,9 @@ export default function PluginList() {
   if (error) return <ErrorBanner message={error} onRetry={() => window.location.reload()} />;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 2.5 }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: { xs: 1.5, sm: 2.5 }, overflow: 'hidden' }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
         <Typography
           variant="h5"

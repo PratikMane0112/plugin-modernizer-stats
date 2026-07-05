@@ -26,7 +26,7 @@ export default function PluginVirtualList({ plugins, onClearFilters }: PluginVir
     <Box
       sx={{
         flex: 1,
-        minHeight: 200,
+        minHeight: { xs: 350, sm: 200 },
         bgcolor: colors.bg.paper,
         borderRadius: '12px',
         border: `1px solid ${colors.border.default}`,

@@ -26,17 +26,22 @@ interface PluginStatusCardsProps {
 
 export default function PluginStatusCards({ statusCounts, activeFilter, onFilterChange }: PluginStatusCardsProps) {
   return (
-    <Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' },
-          gap: { xs: 1, sm: 1.5 },
-        }}
-      >
-        {STATUS_CARD_DEFS.map(({ key, label, desc }) => (
+    <Box
+      sx={{
+        display: { xs: 'flex', sm: 'grid' },
+        gridTemplateColumns: { sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' },
+        gap: { xs: 1, sm: 1.5 },
+        overflowX: { xs: 'auto', sm: 'visible' },
+        mx: { xs: -2, sm: 0 },
+        px: { xs: 2, sm: 0 },
+        pb: { xs: 0.5, sm: 0 },
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
+    >
+      {STATUS_CARD_DEFS.map(({ key, label, desc }) => (
+        <Box key={key} sx={{ minWidth: { xs: 140, sm: 'auto' }, flexShrink: 0 }}>
           <StatCard
-            key={key}
             value={statusCounts[key]}
             label={label}
             description={desc}
@@ -45,8 +50,8 @@ export default function PluginStatusCards({ statusCounts, activeFilter, onFilter
             active={activeFilter === key}
             onClick={() => onFilterChange(activeFilter === key ? 'all' : key)}
           />
-        ))}
-      </Box>
+        </Box>
+      ))}
     </Box>
   );
 }
