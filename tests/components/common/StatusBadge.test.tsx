@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import StatusBadge from '../../../src/components/pluginPage/StatusBadge';
+import StatusBadge from '../../../src/components/common/StatusBadge';
 import type { PluginStatusColor } from '../../../src/types';
 
 const statusEntries: { status: PluginStatusColor; defaultLabel: string }[] = [
@@ -9,7 +9,7 @@ const statusEntries: { status: PluginStatusColor; defaultLabel: string }[] = [
   { status: 'red', defaultLabel: 'Fail' },
   { status: 'blue', defaultLabel: 'Mostly Success' },
   { status: 'yellow', defaultLabel: 'Mostly Fail' },
-  { status: 'white', defaultLabel: 'Unknown' },
+  { status: 'white', defaultLabel: 'Not Reported' },
 ];
 
 describe('StatusBadge', () => {

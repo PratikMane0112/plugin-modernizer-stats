@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import type { PluginStatusColor, StatusCardDef } from './types';
 
 /**
  * Single source of truth for all colors used across the application.
@@ -68,6 +69,30 @@ export const colors = {
     tagsPalette: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#06b6d4', '#ec4899', '#84cc16'],
   },
 } as const;
+
+export const statusColorMap: Record<PluginStatusColor, string> = {
+  green: colors.success.main,
+  red: colors.error.main,
+  blue: colors.primary.main,
+  yellow: colors.warning.main,
+  white: colors.accent.cyan,
+};
+
+export const statusDefaultLabels: Record<PluginStatusColor, string> = {
+  green: 'Success',
+  red: 'Fail',
+  blue: 'Mostly Success',
+  yellow: 'Mostly Fail',
+  white: 'Not Reported',
+};
+
+export const STATUS_CARD_DEFS: StatusCardDef[] = [
+  { key: 'green', label: 'All Passed', desc: 'Every migration succeeded' },
+  { key: 'red', label: 'All Failed', desc: 'Every migration failed' },
+  { key: 'blue', label: 'Mostly Passed', desc: 'Migration failures are under 50%' },
+  { key: 'yellow', label: 'Mostly Failed', desc: 'Migration failures at 50% or more' },
+  { key: 'white', label: 'No Data', desc: 'At least one migration not reported' },
+];
 
 export const theme = createTheme({
   palette: {
