@@ -21,6 +21,7 @@ export default function StatCard({ value, label, description, icon, color, onCli
       onClick={onClick}
       sx={{
         all: isClickable ? 'unset' : undefined,
+        width: '100%',
         cursor: isClickable ? 'pointer' : 'default',
         boxSizing: 'border-box',
         bgcolor: colors.bg.paper,

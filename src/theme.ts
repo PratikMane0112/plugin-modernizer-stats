@@ -91,7 +91,6 @@ export const STATUS_CARD_DEFS: StatusCardDef[] = [
   { key: 'red', label: 'All Failed', desc: 'Every migration failed' },
   { key: 'blue', label: 'Mostly Passed', desc: 'Migration failures are under 50%' },
   { key: 'yellow', label: 'Mostly Failed', desc: 'Migration failures at 50% or more' },
-  { key: 'white', label: 'No Data', desc: 'At least one migration not reported' },
 ];
 
 export const theme = createTheme({

@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import CancelOutlined from '@mui/icons-material/CancelOutlined';
 import AdjustOutlined from '@mui/icons-material/AdjustOutlined';
-import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import type { PluginStatusColor, StatusCounts } from '../../types';
 import { statusColorMap, STATUS_CARD_DEFS } from '../../theme';
@@ -10,12 +9,11 @@ import StatCard from '../common/StatCard';
 
 const ICON_SIZE = 24;
 
-const icons: Record<PluginStatusColor, React.ReactNode> = {
+const icons: Record<string, React.ReactNode> = {
   green: <CheckCircleOutlined sx={{ fontSize: ICON_SIZE }} />,
   red: <CancelOutlined sx={{ fontSize: ICON_SIZE }} />,
   blue: <AdjustOutlined sx={{ fontSize: ICON_SIZE }} />,
   yellow: <WarningAmberOutlined sx={{ fontSize: ICON_SIZE }} />,
-  white: <HelpOutlineOutlined sx={{ fontSize: ICON_SIZE }} />,
 };
 
 interface PluginStatusCardsProps {
@@ -29,8 +27,8 @@ export default function PluginStatusCards({ statusCounts, activeFilter, onFilter
     <Box
       sx={{
         display: { xs: 'flex', sm: 'grid' },
-        gridTemplateColumns: { sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' },
-        gap: { xs: 1, sm: 1.5 },
+        gridTemplateColumns: { sm: 'repeat(4, 1fr)' },
+        gap: 1,
         overflowX: { xs: 'auto', sm: 'visible' },
         mx: { xs: -2, sm: 0 },
         px: { xs: 2, sm: 0 },

@@ -92,12 +92,23 @@ describe('PluginRow', () => {
     console.log(`  PluginRow  : GitHub icon link rendered with correct href`);
   });
 
-  it('hides GitHub link when no sourceUrls', () => {
+  it('shows Jenkins plugin page link for every plugin', () => {
+    renderRow();
+    const link = screen.getByLabelText('Jenkins plugin page for BlazeMeterJenkinsPlugin');
+    expect(link).toBeDefined();
+    expect(link.getAttribute('href')).toBe('https://plugins.jenkins.io/BlazeMeterJenkinsPlugin/');
+    expect(link.getAttribute('target')).toBe('_blank');
+    console.log(`  mock data  : pluginName="BlazeMeterJenkinsPlugin"`);
+    console.log(`  PluginRow  : Jenkins plugin page link rendered with correct href`);
+  });
+
+  it('hides GitHub link when no sourceUrls but keeps Jenkins link', () => {
     const noUrlPlugin: PluginReport = { ...blazemeterPlugin, sourceUrls: undefined };
     renderRow(noUrlPlugin);
     expect(screen.queryByLabelText('GitHub repository for BlazeMeterJenkinsPlugin')).toBeNull();
+    expect(screen.getByLabelText('Jenkins plugin page for BlazeMeterJenkinsPlugin')).toBeDefined();
     console.log(`  mock data  : sourceUrls=undefined`);
-    console.log(`  PluginRow  : no GitHub icon rendered`);
+    console.log(`  PluginRow  : no GitHub icon, but Jenkins plugin link still rendered`);
   });
 
   it('navigates to plugin detail page on click', () => {

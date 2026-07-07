@@ -1,12 +1,15 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useNavigate } from 'react-router-dom';
 import { FaGithub } from 'react-icons/fa';
 import type { PluginReport } from '../../types';
 import { colors } from '../../theme';
 import { deriveStatus } from '../../util/pluginStatus';
 import StatusBadge from '../common/StatusBadge';
+
+const JENKINS_PLUGINS_BASE = 'https://plugins.jenkins.io';
 
 interface PluginRowProps {
   plugin: PluginReport;
@@ -61,10 +64,11 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
       <Typography
         sx={{
           color: colors.success.main,
-          fontSize: { xs: '0.75rem', sm: '0.9rem' },
+          fontSize: { xs: '0.8rem', sm: '0.9rem' },
           fontWeight: 600,
           flexShrink: 0,
           whiteSpace: 'nowrap',
+          ml: 'auto',
         }}
       >
         {plugin.successCount}
@@ -76,7 +80,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
       <Typography
         sx={{
           color: colors.text.secondary,
-          fontSize: { xs: '0.8rem', sm: '0.9rem' },
+          fontSize: '0.9rem',
           minWidth: 90,
           textAlign: 'right',
           display: { xs: 'none', sm: 'block' },
@@ -86,8 +90,20 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
         {formatDate(plugin.latestMigration)}
       </Typography>
 
-      <Box sx={{ display: { xs: 'none', sm: 'flex' }, flexShrink: 0 }}>
-        {plugin.sourceUrls?.repository ? (
+      <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+        <IconButton
+          component="a"
+          href={`${JENKINS_PLUGINS_BASE}/${plugin.pluginName}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          size="small"
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          sx={{ color: colors.primary.light, '&:hover': { color: colors.primary.main }, p: 0.5 }}
+          aria-label={`Jenkins plugin page for ${plugin.pluginName}`}
+        >
+          <OpenInNewIcon sx={{ fontSize: 16 }} />
+        </IconButton>
+        {plugin.sourceUrls?.repository && (
           <IconButton
             component="a"
             href={plugin.sourceUrls.repository}
@@ -95,13 +111,11 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
             rel="noopener noreferrer"
             size="small"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            sx={{ color: colors.text.secondary, '&:hover': { color: colors.text.primary } }}
+            sx={{ color: colors.text.secondary, '&:hover': { color: colors.text.primary }, p: 0.5 }}
             aria-label={`GitHub repository for ${plugin.pluginName}`}
           >
             <FaGithub size={16} />
           </IconButton>
-        ) : (
-          <Box sx={{ width: 34 }} />
         )}
       </Box>
     </Box>

@@ -113,21 +113,21 @@ describe('PluginList integration (real report.json)', () => {
     const renderedRows = virtualList.children.length;
     expect(renderedRows).toBe(expectedPlugins.length);
 
-    for (const [status, count] of Object.entries(expectedCounts)) {
+    const cardStatuses: PluginStatusColor[] = ['green', 'red', 'blue', 'yellow'];
+    for (const status of cardStatuses) {
+      const count = expectedCounts[status];
       if (count > 0) {
         const countElements = screen.getAllByText(String(count));
-        const found = countElements.some((el) => {
-          const card = el.closest('button');
-          return card !== null;
-        });
+        const found = countElements.some((el) => el.closest('button') !== null);
         expect(found).toBe(true);
       }
       console.log(`  status=${status} : expected=${count}`);
     }
+    console.log(`  status=white : expected=${expectedCounts.white} (no card, plugins still listed)`);
 
     const total = Object.values(expectedCounts).reduce((a, b) => a + b, 0);
     expect(total).toBe(expectedPlugins.length);
-    console.log(`  total        : ${total} (sum of status counts = plugin count)`);
+    console.log(`  total        : ${total} (sum of all statuses = plugin count)`);
   });
 
   it('all plugin names from real data appear in the rendered list', async () => {
@@ -175,7 +175,7 @@ describe('PluginList integration (real report.json)', () => {
     await renderAndWait();
 
     const statusWithPlugins = (Object.entries(expectedCounts) as [PluginStatusColor, number][]).find(
-      ([, count]) => count > 0 && count < expectedPlugins.length
+      ([status, count]) => count > 0 && count < expectedPlugins.length && status !== 'white'
     );
 
     if (!statusWithPlugins) {
@@ -185,12 +185,11 @@ describe('PluginList integration (real report.json)', () => {
 
     const [targetStatus, targetCount] = statusWithPlugins;
 
-    const labelMap: Record<PluginStatusColor, string> = {
+    const labelMap: Record<string, string> = {
       green: 'All Passed',
       red: 'All Failed',
       blue: 'Mostly Passed',
       yellow: 'Mostly Failed',
-      white: 'No Data',
     };
 
     const filterButton = screen.getAllByText(labelMap[targetStatus]).find((el) => el.closest('button'));
@@ -212,7 +211,7 @@ describe('PluginList integration (real report.json)', () => {
     await renderAndWait();
 
     const statusWithPlugins = (Object.entries(expectedCounts) as [PluginStatusColor, number][]).find(
-      ([, count]) => count > 2
+      ([status, count]) => count > 2 && status !== 'white'
     );
 
     if (!statusWithPlugins) {
@@ -223,12 +222,11 @@ describe('PluginList integration (real report.json)', () => {
     const [targetStatus] = statusWithPlugins;
     const pluginsOfStatus = expectedPlugins.filter((p) => deriveStatus(p.migrations) === targetStatus);
 
-    const labelMap: Record<PluginStatusColor, string> = {
+    const labelMap: Record<string, string> = {
       green: 'All Passed',
       red: 'All Failed',
       blue: 'Mostly Passed',
       yellow: 'Mostly Failed',
-      white: 'No Data',
     };
 
     const filterButton = screen.getAllByText(labelMap[targetStatus]).find((el) => el.closest('button'));
@@ -254,7 +252,7 @@ describe('PluginList integration (real report.json)', () => {
     await renderAndWait();
 
     const statusWithPlugins = (Object.entries(expectedCounts) as [PluginStatusColor, number][]).find(
-      ([, count]) => count > 0 && count < expectedPlugins.length
+      ([status, count]) => count > 0 && count < expectedPlugins.length && status !== 'white'
     );
 
     if (!statusWithPlugins) {
@@ -264,12 +262,11 @@ describe('PluginList integration (real report.json)', () => {
 
     const [targetStatus, targetCount] = statusWithPlugins;
 
-    const labelMap: Record<PluginStatusColor, string> = {
+    const labelMap: Record<string, string> = {
       green: 'All Passed',
       red: 'All Failed',
       blue: 'Mostly Passed',
       yellow: 'Mostly Failed',
-      white: 'No Data',
     };
 
     const filterButton = screen.getAllByText(labelMap[targetStatus]).find((el) => el.closest('button'));
