@@ -51,6 +51,7 @@ export default function PluginVirtualList({ plugins, onClearFilters }: PluginVir
           </Typography>
           <Typography
             component="button"
+            type="button"
             onClick={onClearFilters}
             sx={{
               all: 'unset',
@@ -58,6 +59,7 @@ export default function PluginVirtualList({ plugins, onClearFilters }: PluginVir
               color: colors.primary.light,
               fontSize: { xs: '0.8rem', sm: '0.9rem' },
               '&:hover': { textDecoration: 'underline' },
+              '&:focus-visible': { outline: `2px solid ${colors.primary.light}`, outlineOffset: 2 },
             }}
           >
             Clear filters

@@ -67,6 +67,7 @@ describe('PluginList integration (real report.json)', () => {
     vi.restoreAllMocks();
 
     const res = await fetch(REPORT_URL);
+    if (!res.ok) throw new Error(`Failed to fetch report.json: ${res.status} ${res.statusText}`);
     realReport = (await res.json()) as ReportJson;
 
     expectedPlugins = Object.entries(realReport.plugins)

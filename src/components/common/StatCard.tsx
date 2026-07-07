@@ -18,6 +18,7 @@ export default function StatCard({ value, label, description, icon, color, onCli
   return (
     <Box
       component={isClickable ? 'button' : 'div'}
+      type={isClickable ? 'button' : undefined}
       onClick={onClick}
       sx={{
         all: isClickable ? 'unset' : undefined,
@@ -37,6 +38,7 @@ export default function StatCard({ value, label, description, icon, color, onCli
           borderColor: isClickable ? alpha(color, 0.6) : colors.border.hover,
           transform: isClickable ? 'translateY(-1px)' : 'scale(1.02)',
         },
+        '&:focus-visible': isClickable ? { outline: `2px solid ${color}`, outlineOffset: 2 } : undefined,
       }}
     >
       <Box

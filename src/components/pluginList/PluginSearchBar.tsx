@@ -57,6 +57,7 @@ export default function PluginSearchBar({
       {statusFilter !== 'all' && (
         <Box
           component="button"
+          type="button"
           onClick={onClearFilter}
           sx={{
             all: 'unset',
@@ -71,6 +72,10 @@ export default function PluginSearchBar({
             border: `1px solid ${alpha(statusColorMap[statusFilter], 0.3)}`,
             transition: 'background-color 0.15s',
             '&:hover': { bgcolor: alpha(statusColorMap[statusFilter], 0.2) },
+            '&:focus-visible': {
+              outline: `2px solid ${statusColorMap[statusFilter]}`,
+              outlineOffset: 2,
+            },
           }}
         >
           <Typography

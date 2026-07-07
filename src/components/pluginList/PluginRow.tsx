@@ -30,8 +30,16 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
 
   return (
     <Box
+      role="button"
+      tabIndex={0}
       style={style}
-      onClick={() => navigate(`/plugins/${plugin.pluginName}`)}
+      onClick={() => navigate(`/plugins/${encodeURIComponent(plugin.pluginName)}`)}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/plugins/${encodeURIComponent(plugin.pluginName)}`);
+        }
+      }}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -40,6 +48,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
         cursor: 'pointer',
         borderBottom: `1px solid ${colors.border.default}`,
         '&:hover': { bgcolor: colors.bg.hoverSubtle },
+        '&:focus-visible': { outline: `2px solid ${colors.primary.main}`, outlineOffset: -2 },
       }}
     >
       <Typography
