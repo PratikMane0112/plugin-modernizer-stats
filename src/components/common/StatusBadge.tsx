@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import type { PluginStatusColor } from '../../types';
-import { colors } from '../../theme';
+import { statusColorMap, statusDefaultLabels } from '../../theme';
 
 interface StatusBadgeProps {
   status: PluginStatusColor;
@@ -10,25 +10,9 @@ interface StatusBadgeProps {
   size?: 'small' | 'medium';
 }
 
-const defaultLabels: Record<PluginStatusColor, string> = {
-  green: 'Success',
-  red: 'Fail',
-  blue: 'Mostly Success',
-  yellow: 'Mostly Fail',
-  white: 'Unknown',
-};
-
-const statusColors: Record<PluginStatusColor, string> = {
-  green: colors.success.main,
-  red: colors.error.main,
-  blue: colors.primary.main,
-  yellow: colors.warning.main,
-  white: colors.text.disabled,
-};
-
 export default function StatusBadge({ status, label, size = 'medium' }: StatusBadgeProps) {
-  const color = statusColors[status];
-  const displayLabel = label ?? defaultLabels[status];
+  const color = statusColorMap[status];
+  const displayLabel = label ?? statusDefaultLabels[status];
   const isSmall = size === 'small';
 
   return (
@@ -47,7 +31,7 @@ export default function StatusBadge({ status, label, size = 'medium' }: StatusBa
       <Typography
         component="span"
         sx={{
-          fontSize: isSmall ? '0.7rem' : '0.8rem',
+          fontSize: isSmall ? '0.75rem' : '0.875rem',
           fontWeight: 600,
           color,
           lineHeight: 1.4,

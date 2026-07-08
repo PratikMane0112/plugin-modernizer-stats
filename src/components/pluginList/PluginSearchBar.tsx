@@ -1,0 +1,98 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
+import { alpha } from '@mui/material/styles';
+import type { PluginStatusColor } from '../../types';
+import { colors, statusColorMap, STATUS_CARD_DEFS } from '../../theme';
+
+interface PluginSearchBarProps {
+  search: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: 'all' | PluginStatusColor;
+  onClearFilter: () => void;
+  resultCount: number;
+}
+
+export default function PluginSearchBar({
+  search,
+  onSearchChange,
+  statusFilter,
+  onClearFilter,
+  resultCount,
+}: PluginSearchBarProps) {
+  return (
+    <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, flexWrap: 'wrap', alignItems: 'center' }}>
+      <TextField
+        size="small"
+        placeholder="Search a plugin…"
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: colors.text.muted, fontSize: 20 }} />
+              </InputAdornment>
+            ),
+          },
+        }}
+        sx={{
+          flex: 1,
+          minWidth: { xs: 0, sm: 200 },
+          maxWidth: { xs: '100%', sm: 360 },
+          '& .MuiOutlinedInput-root': {
+            color: colors.text.primary,
+            bgcolor: colors.bg.paper,
+            borderRadius: '10px',
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            '& fieldset': { borderColor: colors.border.default },
+            '&:hover fieldset': { borderColor: colors.border.hover },
+            '&.Mui-focused fieldset': { borderColor: colors.primary.main },
+          },
+        }}
+      />
+
+      {statusFilter !== 'all' && (
+        <Box
+          component="button"
+          type="button"
+          onClick={onClearFilter}
+          sx={{
+            all: 'unset',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.75,
+            px: 1.5,
+            py: 0.5,
+            borderRadius: '8px',
+            bgcolor: alpha(statusColorMap[statusFilter], 0.12),
+            border: `1px solid ${alpha(statusColorMap[statusFilter], 0.3)}`,
+            transition: 'background-color 0.15s',
+            '&:hover': { bgcolor: alpha(statusColorMap[statusFilter], 0.2) },
+            '&:focus-visible': {
+              outline: `2px solid ${statusColorMap[statusFilter]}`,
+              outlineOffset: 2,
+            },
+          }}
+        >
+          <Typography
+            component="span"
+            sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' }, fontWeight: 600, color: statusColorMap[statusFilter] }}
+          >
+            {STATUS_CARD_DEFS.find((s) => s.key === statusFilter)?.label}
+          </Typography>
+          <Typography component="span" sx={{ fontSize: '0.85rem', color: colors.text.muted }}>
+            ✕
+          </Typography>
+        </Box>
+      )}
+
+      <Typography sx={{ color: colors.text.muted, fontSize: { xs: '0.8rem', sm: '0.9rem' }, ml: 'auto' }}>
+        {resultCount} {resultCount === 1 ? 'result' : 'results'}
+      </Typography>
+    </Box>
+  );
+}

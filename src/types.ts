@@ -140,3 +140,11 @@ export interface AppData {
   plugins: PluginReport[];
   recipes: RecipeReport[];
 }
+
+export type StatusCounts = Record<PluginStatusColor, number>;
+
+export interface StatusCardDef {
+  key: PluginStatusColor;
+  label: string;
+  desc: string;
+}
