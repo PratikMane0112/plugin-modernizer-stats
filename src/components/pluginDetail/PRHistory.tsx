@@ -71,7 +71,7 @@ export default function PRHistory({ migrations }: PRHistoryProps) {
         entries.push({
           url: m.pullRequestUrl,
           prNumber: extractPRNumber(m.pullRequestUrl),
-          recipe: m.migrationName.split('.').pop() ?? m.migrationName,
+          recipe: m.migrationName,
           status: m.pullRequestStatus || 'unknown',
           date: m.timestamp,
         });
