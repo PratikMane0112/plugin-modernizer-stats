@@ -7,7 +7,6 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PluginList = lazy(() => import('./pages/PluginList'));
-const PluginDetail = lazy(() => import('./pages/PluginDetail'));
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -28,7 +27,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/plugins" element={<PluginList />} />
-              <Route path="/plugins/:name" element={<PluginDetail />} />
             </Routes>
           </Suspense>
         </ErrorBoundary>
