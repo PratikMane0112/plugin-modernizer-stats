@@ -76,7 +76,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
     link.href = url;
     link.download = `${plugin.pluginName}-aggregated-migrations.json`;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   }, [jsonPreview, plugin.pluginName]);
 
   const handleDownloadCsv = useCallback(() => {
@@ -87,7 +87,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
     link.href = url;
     link.download = `${plugin.pluginName}-failed-migrations.csv`;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   }, [csvData, plugin.pluginName]);
 
   return (

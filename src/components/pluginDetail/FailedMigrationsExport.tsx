@@ -24,7 +24,7 @@ export default function FailedMigrationsExport({ pluginName, failCount }: Failed
     link.href = url;
     link.download = `${pluginName}-failed-migrations.csv`;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   }, [csvData, pluginName]);
 
   if (failCount === 0) return null;

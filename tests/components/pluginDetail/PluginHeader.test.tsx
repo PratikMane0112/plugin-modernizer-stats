@@ -79,13 +79,17 @@ describe('PluginHeader', () => {
 
   it('displays stat boxes with correct values', () => {
     renderHeader();
-    expect(screen.getByText('Migrations')).toBeDefined();
-    expect(screen.getByText('Success')).toBeDefined();
+    const migrationsBox = screen.getByTestId('stat-migrations');
+    expect(migrationsBox.textContent).toContain('3');
+    expect(migrationsBox.textContent).toContain('Migrations');
 
-    const pageText = document.body.textContent ?? '';
-    expect(pageText).toContain('3');
-    expect(pageText).toContain('2');
-    expect(pageText).toContain('1');
+    const successBox = screen.getByTestId('stat-success');
+    expect(successBox.textContent).toContain('2');
+    expect(successBox.textContent).toContain('Success');
+
+    const failedBox = screen.getByTestId('stat-failed');
+    expect(failedBox.textContent).toContain('1');
+    expect(failedBox.textContent).toContain('Failed');
   });
 
   it('shows branch chip when defaultBranch exists', () => {
@@ -100,9 +104,9 @@ describe('PluginHeader', () => {
 
   it('shows merged PR count', () => {
     renderHeader();
-    const pageText = document.body.textContent ?? '';
-    expect(pageText).toContain('Merged PRs:');
-    expect(pageText).toContain('2');
+    const mergedBox = screen.getByTestId('merged-prs');
+    expect(mergedBox.textContent).toContain('Merged PRs:');
+    expect(mergedBox.textContent).toContain('2');
   });
 
   it('shows last updated date', () => {

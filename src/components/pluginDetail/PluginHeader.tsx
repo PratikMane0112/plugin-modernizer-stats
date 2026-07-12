@@ -34,7 +34,7 @@ interface PluginHeaderProps {
 
 export default function PluginHeader({ plugin }: PluginHeaderProps) {
   const status = deriveStatus(plugin.migrations);
-  const statusInfo = statusLabelMap[status];
+  const statusInfo = statusLabelMap[status] ?? statusLabelMap['white'];
 
   const { mergedPRs, version, branch } = useMemo(() => {
     let merged = 0;
@@ -155,6 +155,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
               </Typography>
             </Box>
             <Box
+              data-testid="merged-prs"
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -174,6 +175,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
         {/* Right side: stat boxes */}
         <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
           <Box
+            data-testid="stat-migrations"
             sx={{
               bgcolor: alpha(colors.primary.main, 0.12),
               border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
@@ -192,6 +194,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
             </Typography>
           </Box>
           <Box
+            data-testid="stat-success"
             sx={{
               bgcolor: alpha(colors.success.main, 0.12),
               border: `1px solid ${alpha(colors.success.main, 0.3)}`,
@@ -208,6 +211,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
             <Typography sx={{ fontSize: '0.75rem', color: colors.success.main, fontWeight: 500 }}>Success</Typography>
           </Box>
           <Box
+            data-testid="stat-failed"
             sx={{
               bgcolor: alpha(colors.error.main, 0.12),
               border: `1px solid ${alpha(colors.error.main, 0.3)}`,

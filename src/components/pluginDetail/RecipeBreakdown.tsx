@@ -101,7 +101,9 @@ export default function RecipeBreakdown({ migrations }: RecipeBreakdownProps) {
           </TableHead>
           <TableBody>
             {recipes.map((r) => {
-              const isModernized = r.fail === 0;
+              const hasUnknown = r.applied > r.success + r.fail;
+              const statusLabel = r.fail > 0 ? '\u2717 Failed' : hasUnknown ? '? Unknown' : '\u2713 Modernized';
+              const statusColor = r.fail > 0 ? colors.error.main : hasUnknown ? colors.text.muted : colors.success.main;
               return (
                 <TableRow key={r.fullId} sx={{ '&:hover': { bgcolor: colors.bg.hoverSubtle } }}>
                   <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{r.name}</TableCell>
@@ -123,12 +125,12 @@ export default function RecipeBreakdown({ migrations }: RecipeBreakdownProps) {
                   </TableCell>
                   <TableCell sx={cellSx} align="right">
                     <Chip
-                      label={isModernized ? '\u2713 Modernized' : '\u2717 Failed'}
+                      label={statusLabel}
                       size="small"
                       sx={{
-                        bgcolor: alpha(isModernized ? colors.success.main : colors.error.main, 0.15),
-                        color: isModernized ? colors.success.main : colors.error.main,
-                        border: `1px solid ${alpha(isModernized ? colors.success.main : colors.error.main, 0.3)}`,
+                        bgcolor: alpha(statusColor, 0.15),
+                        color: statusColor,
+                        border: `1px solid ${alpha(statusColor, 0.3)}`,
                         fontWeight: 600,
                         fontSize: '0.75rem',
                       }}
