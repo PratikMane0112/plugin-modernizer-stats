@@ -1,0 +1,72 @@
+import { useParams, useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ArrowBackOutlined from '@mui/icons-material/ArrowBackOutlined';
+import { usePluginData } from '../hooks/useMetadata';
+import { colors } from '../theme';
+import { SkeletonDetail } from '../components/common/Skeleton';
+import ErrorBanner from '../components/common/ErrorBanner';
+import {
+  PluginHeader,
+  MigrationTimeline,
+  RecipeBreakdown,
+  PRHistory,
+  FailedMigrationsTable,
+  MigrationTable,
+  RawDataSection,
+} from '../components/pluginDetail';
+
+export default function PluginDetail() {
+  const { name } = useParams<{ name: string }>();
+  const navigate = useNavigate();
+  const pluginName = decodeURIComponent(name ?? '');
+  const { data: plugin, error, loading } = usePluginData(pluginName);
+
+  const backButton = (
+    <Button
+      startIcon={<ArrowBackOutlined />}
+      onClick={() => navigate('/plugins')}
+      sx={{
+        color: colors.text.secondary,
+        textTransform: 'none',
+        fontWeight: 500,
+        fontSize: '0.9rem',
+        pl: 0.5,
+        '&:hover': { color: colors.text.primary, bgcolor: 'transparent' },
+      }}
+    >
+      Back to Plugins
+    </Button>
+  );
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {backButton}
+        <SkeletonDetail />
+      </Box>
+    );
+  }
+
+  if (error || !plugin) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {backButton}
+        <ErrorBanner message={error ?? `Plugin "${pluginName}" not found`} onRetry={() => window.location.reload()} />
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 2.5 } }}>
+      {backButton}
+      <PluginHeader plugin={plugin} />
+      <MigrationTimeline migrations={plugin.migrations} />
+      <RecipeBreakdown migrations={plugin.migrations} />
+      <PRHistory migrations={plugin.migrations} />
+      <FailedMigrationsTable migrations={plugin.migrations} />
+      <MigrationTable migrations={plugin.migrations} />
+      <RawDataSection plugin={plugin} />
+    </Box>
+  );
+}
