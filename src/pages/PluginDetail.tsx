@@ -16,10 +16,18 @@ import {
   RawDataSection,
 } from '../components/pluginDetail';
 
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export default function PluginDetail() {
   const { name } = useParams<{ name: string }>();
   const navigate = useNavigate();
-  const pluginName = decodeURIComponent(name ?? '');
+  const pluginName = safeDecode(name ?? '');
   const { data: plugin, error, loading } = usePluginData(pluginName);
 
   const backButton = (
