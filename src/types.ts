@@ -56,7 +56,7 @@ export interface RecipeReport {
   totalApplications: number;
   successCount: number;
   failureCount: number;
-  successRate?: number;
+  successRate: number;
   pending: number;
   plugins: {
     pluginName: string;

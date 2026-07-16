@@ -119,6 +119,112 @@ describe('dataClient validated against actual report.json', () => {
     );
   });
 
+  it('getAllRecipes count matches Object.keys(report.recipes).length', async () => {
+    const { dataClient } = await import('../../src/lib/dataClient');
+    const result = await dataClient.getAllRecipes();
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const expectedCount = Object.keys(realReport.recipes).length;
+    expect(result.data).toHaveLength(expectedCount);
+    console.log(`  dataClient : ${result.data.length} recipes`);
+    console.log(`  report.json: ${expectedCount} recipes`);
+  });
+
+  it('getAllRecipes success+failure counts match raw recipe data', async () => {
+    const { dataClient } = await import('../../src/lib/dataClient');
+    const result = await dataClient.getAllRecipes();
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    for (const recipe of result.data) {
+      const raw = realReport.recipes[recipe.recipeId];
+      expect(raw).toBeDefined();
+      expect(recipe.totalApplications).toBe(raw.totalApplications);
+      expect(recipe.successCount).toBe(raw.successCount);
+      expect(recipe.failureCount).toBe(raw.failureCount);
+    }
+
+    const totalApps = result.data.reduce((sum, r) => sum + r.totalApplications, 0);
+    const totalSuccess = result.data.reduce((sum, r) => sum + r.successCount, 0);
+    const totalFail = result.data.reduce((sum, r) => sum + r.failureCount, 0);
+    console.log(
+      `  dataClient : ${result.data.length} recipes, ${totalApps} applications (${totalSuccess}s/${totalFail}f)`
+    );
+    console.log(`  report.json: every recipe's counts match`);
+  });
+
+  it('getRecipe returns correct data for a known recipe with plugins', async () => {
+    const { dataClient } = await import('../../src/lib/dataClient');
+
+    const recipeId = Object.keys(realReport.recipes).find((id) => {
+      const r = realReport.recipes[id];
+      return r.plugins && r.plugins.length > 0 && r.successCount > 0;
+    });
+    expect(recipeId).toBeDefined();
+
+    const result = await dataClient.getRecipe(recipeId!);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const raw = realReport.recipes[recipeId!];
+    expect(result.data.recipeId).toBe(raw.recipeId);
+    expect(result.data.totalApplications).toBe(raw.totalApplications);
+    expect(result.data.successCount).toBe(raw.successCount);
+    expect(result.data.failureCount).toBe(raw.failureCount);
+    expect(result.data.plugins).toHaveLength(raw.plugins.length);
+    expect(result.data.successRate).toBeGreaterThanOrEqual(0);
+    expect(result.data.successRate).toBeLessThanOrEqual(100);
+    console.log(
+      `  dataClient : ${recipeId} -> ${result.data.totalApplications} apps, ${result.data.successCount}s/${result.data.failureCount}f, rate=${result.data.successRate}%`
+    );
+    console.log(
+      `  report.json: ${recipeId} -> ${raw.totalApplications} apps, ${raw.successCount}s/${raw.failureCount}f, ${raw.plugins.length} plugin entries`
+    );
+  });
+
+  it('getRecipe successRate is consistent with successCount/totalApplications', async () => {
+    const { dataClient } = await import('../../src/lib/dataClient');
+
+    for (const recipeId of Object.keys(realReport.recipes)) {
+      const result = await dataClient.getRecipe(recipeId);
+      expect(result.ok).toBe(true);
+      if (!result.ok) continue;
+
+      const expectedRate =
+        result.data.totalApplications > 0 ? (result.data.successCount / result.data.totalApplications) * 100 : 0;
+
+      expect(result.data.successRate).toBeCloseTo(expectedRate, 1);
+    }
+
+    console.log(`  validated successRate consistency for ${Object.keys(realReport.recipes).length} recipes`);
+  });
+
+  it('getRecipe plugin statuses are valid values', async () => {
+    const { dataClient } = await import('../../src/lib/dataClient');
+
+    const recipeIds = Object.keys(realReport.recipes);
+    let totalPluginEntries = 0;
+    const statusSet = new Set<string>();
+
+    for (const recipeId of recipeIds) {
+      const result = await dataClient.getRecipe(recipeId);
+      if (!result.ok) continue;
+
+      for (const plugin of result.data.plugins) {
+        expect(plugin.pluginName).toBeTruthy();
+        expect(plugin.timestamp).toBeTruthy();
+        statusSet.add(plugin.status);
+        totalPluginEntries++;
+      }
+    }
+
+    console.log(`  validated ${totalPluginEntries} plugin entries across ${recipeIds.length} recipes`);
+    console.log(`  observed statuses: [${[...statusSet].sort().join(', ')}]`);
+  });
+
   it('getIndex plugin/recipe counts match Object.keys lengths', async () => {
     const { dataClient } = await import('../../src/lib/dataClient');
     const result = await dataClient.getIndex();

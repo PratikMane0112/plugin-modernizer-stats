@@ -123,6 +123,38 @@ export function useAllPlugins(): HookState<PluginReport[]> {
   return state;
 }
 
+export function useRecipeData(recipeId: string): HookState<RecipeReport> {
+  const [state, setState] = useState<KeyedState<RecipeReport>>({
+    key: recipeId,
+    data: null,
+    error: null,
+    loading: true,
+  });
+
+  let current = state;
+  if (state.key !== recipeId) {
+    current = { key: recipeId, data: null, error: null, loading: true };
+    setState(current);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    dataClient.getRecipe(recipeId).then((r) => {
+      if (cancelled) return;
+      if (r.ok === true) {
+        setState((prev) => ({ ...prev, data: r.data, error: null, loading: false }));
+      } else {
+        setState((prev) => ({ ...prev, data: null, error: r.error, loading: false }));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [recipeId]);
+
+  return current;
+}
+
 export function useAllRecipes(): HookState<RecipeReport[]> {
   const [state, setState] = useState<HookState<RecipeReport[]>>({
     data: null,
