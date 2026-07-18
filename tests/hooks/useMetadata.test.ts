@@ -7,6 +7,7 @@ vi.mock('../../src/lib/dataClient', () => ({
     getIndex: vi.fn(),
     getPluginReport: vi.fn(),
     getPluginFailedMigrations: vi.fn(),
+    getRecipe: vi.fn(),
     getAllPlugins: vi.fn(),
     getAllRecipes: vi.fn(),
     getSummary: vi.fn(),
@@ -18,6 +19,7 @@ import {
   useIndex,
   usePluginData,
   useFailedMigrations,
+  useRecipeData,
   useAllPlugins,
   useAllRecipes,
   useAppData,
@@ -47,6 +49,7 @@ const mockRecipe: RecipeReport = {
   totalApplications: 2,
   successCount: 1,
   failureCount: 1,
+  successRate: 50,
   pending: 0,
   plugins: [],
 };
@@ -147,6 +150,38 @@ describe('useFailedMigrations', () => {
     expect(result.current.error).toBeNull();
     console.log(`  mock data          : CSV with ${csv.split('\n').length - 1} data rows`);
     console.log(`  useFailedMigrations: received ${result.current.data?.split('\n').length} lines`);
+  });
+});
+
+describe('useRecipeData', () => {
+  it('returns recipe report on success', async () => {
+    mockClient.getRecipe.mockResolvedValue({ ok: true, data: mockRecipe });
+
+    const { result } = renderHook(() => useRecipeData('io.jenkins.tools.pluginmodernizer.SetupJenkinsfile'));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data).toEqual(mockRecipe);
+    expect(result.current.error).toBeNull();
+    console.log(
+      `  mock data    : SetupJenkinsfile -> ${mockRecipe.totalApplications} applications (${mockRecipe.successCount}s/${mockRecipe.failureCount}f)`
+    );
+    console.log(
+      `  useRecipeData: ${result.current.data?.recipeId} -> ${result.current.data?.totalApplications} applications`
+    );
+  });
+
+  it('returns error for unknown recipe', async () => {
+    mockClient.getRecipe.mockResolvedValue({ ok: false, error: "Recipe 'unknown.recipe' not found" });
+
+    const { result } = renderHook(() => useRecipeData('unknown.recipe'));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toContain('unknown.recipe');
+    console.log(`  mock data    : recipe "unknown.recipe" does not exist`);
+    console.log(`  useRecipeData: error="${result.current.error}"`);
   });
 });
 

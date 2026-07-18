@@ -205,7 +205,12 @@ export const dataClient = {
     if (!result.ok) return result as { ok: false; error: string };
     const report = result.data;
 
-    const recipes = Object.values(report.recipes).sort((a, b) => a.recipeId.localeCompare(b.recipeId));
+    const recipes = Object.values(report.recipes)
+      .map((r) => ({
+        ...r,
+        successRate: r.successRate ?? (r.totalApplications > 0 ? (r.successCount / r.totalApplications) * 100 : 0),
+      }))
+      .sort((a, b) => a.recipeId.localeCompare(b.recipeId));
     return { ok: true, data: recipes };
   },
 };

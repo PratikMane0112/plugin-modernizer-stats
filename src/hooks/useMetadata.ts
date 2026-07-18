@@ -47,20 +47,14 @@ export function usePluginData(pluginId: string): HookState<PluginReport> {
     loading: true,
   });
 
-  let current = state;
-  if (state.key !== pluginId) {
-    current = { key: pluginId, data: null, error: null, loading: true };
-    setState(current);
-  }
-
   useEffect(() => {
     let cancelled = false;
     dataClient.getPluginReport(pluginId).then((r) => {
       if (cancelled) return;
       if (r.ok === true) {
-        setState((prev) => ({ ...prev, data: r.data, error: null, loading: false }));
+        setState({ key: pluginId, data: r.data, error: null, loading: false });
       } else {
-        setState((prev) => ({ ...prev, data: null, error: r.error, loading: false }));
+        setState({ key: pluginId, data: null, error: r.error, loading: false });
       }
     });
     return () => {
@@ -68,7 +62,8 @@ export function usePluginData(pluginId: string): HookState<PluginReport> {
     };
   }, [pluginId]);
 
-  return current;
+  if (state.key !== pluginId) return { data: null, error: null, loading: true };
+  return state;
 }
 
 export function useFailedMigrations(pluginId: string): HookState<string> {
@@ -79,20 +74,14 @@ export function useFailedMigrations(pluginId: string): HookState<string> {
     loading: true,
   });
 
-  let current = state;
-  if (state.key !== pluginId) {
-    current = { key: pluginId, data: null, error: null, loading: true };
-    setState(current);
-  }
-
   useEffect(() => {
     let cancelled = false;
     dataClient.getPluginFailedMigrations(pluginId).then((r) => {
       if (cancelled) return;
       if (r.ok === true) {
-        setState((prev) => ({ ...prev, data: r.data, error: null, loading: false }));
+        setState({ key: pluginId, data: r.data, error: null, loading: false });
       } else {
-        setState((prev) => ({ ...prev, data: null, error: r.error, loading: false }));
+        setState({ key: pluginId, data: null, error: r.error, loading: false });
       }
     });
     return () => {
@@ -100,7 +89,8 @@ export function useFailedMigrations(pluginId: string): HookState<string> {
     };
   }, [pluginId]);
 
-  return current;
+  if (state.key !== pluginId) return { data: null, error: null, loading: true };
+  return state;
 }
 
 export function useAllPlugins(): HookState<PluginReport[]> {
@@ -120,6 +110,33 @@ export function useAllPlugins(): HookState<PluginReport[]> {
     };
   }, []);
 
+  return state;
+}
+
+export function useRecipeData(recipeId: string): HookState<RecipeReport> {
+  const [state, setState] = useState<KeyedState<RecipeReport>>({
+    key: recipeId,
+    data: null,
+    error: null,
+    loading: true,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    dataClient.getRecipe(recipeId).then((r) => {
+      if (cancelled) return;
+      if (r.ok === true) {
+        setState({ key: recipeId, data: r.data, error: null, loading: false });
+      } else {
+        setState({ key: recipeId, data: null, error: r.error, loading: false });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [recipeId]);
+
+  if (state.key !== recipeId) return { data: null, error: null, loading: true };
   return state;
 }
 
