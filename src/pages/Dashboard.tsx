@@ -53,7 +53,6 @@ export default function Dashboard() {
       total: r.totalApplications,
       success: r.successCount,
       fail: r.failureCount,
-      pending: 0,
     }));
   }, [recipesArray]);
 

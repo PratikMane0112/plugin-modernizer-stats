@@ -1,4 +1,10 @@
+import type { RecipeReport } from '../types';
+
 export type RateTier = 'high' | 'medium' | 'low' | 'none';
+
+export function computeSuccessRate(recipe: RecipeReport): number {
+  return recipe.totalApplications > 0 ? (recipe.successCount / recipe.totalApplications) * 100 : 0;
+}
 
 /**
  * Classify a recipe's success rate percentage into a tier.
@@ -14,3 +20,18 @@ export function getRateTier(rate: number): RateTier {
   if (rate > 0) return 'low';
   return 'none';
 }
+
+/**
+ * Extract the trailing class-style name from a fully-qualified recipe ID.
+ * e.g. "io.jenkins.tools.pluginmodernizer.SetupJenkinsfile" → "SetupJenkinsfile"
+ */
+export function shortRecipeName(recipeId: string): string {
+  return recipeId.split('.').pop() ?? recipeId;
+}
+
+export const RATE_CARD_DEFS: { key: RateTier; label: string; desc: string }[] = [
+  { key: 'high', label: 'High Rate', desc: 'Success rate 80% or above' },
+  { key: 'medium', label: 'Medium Rate', desc: 'Success rate 50–79%' },
+  { key: 'low', label: 'Low Rate', desc: 'Success rate under 50%' },
+  { key: 'none', label: 'No Data', desc: 'No successful applications' },
+];
