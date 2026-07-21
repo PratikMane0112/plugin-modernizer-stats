@@ -30,14 +30,13 @@ function makeReport(overrides: Partial<ReportJson> = {}): ReportJson {
     recipes: {
       'io.jenkins.tools.pluginmodernizer.AddCodeOwner': {
         recipeId: 'io.jenkins.tools.pluginmodernizer.AddCodeOwner',
-        totalApplications: 2,
+        totalApplications: 3,
         successCount: 1,
         failureCount: 1,
-        successRate: 50,
-        pending: 0,
         plugins: [
           { pluginName: 'BlazeMeterJenkinsPlugin', status: 'success', timestamp: '2025-09-03T08-05-48' },
           { pluginName: 'TestFairy', status: 'fail', timestamp: '2025-09-03T08-13-07' },
+          { pluginName: 'CustomHistory', status: '', timestamp: '2025-07-24T08-42-24' },
         ],
       },
       'io.jenkins.tools.pluginmodernizer.SetupJenkinsfile': {
@@ -45,9 +44,11 @@ function makeReport(overrides: Partial<ReportJson> = {}): ReportJson {
         totalApplications: 3,
         successCount: 2,
         failureCount: 1,
-        successRate: 66.67,
-        pending: 0,
-        plugins: [{ pluginName: 'BlazeMeterJenkinsPlugin', status: 'success', timestamp: '2025-09-03T08-05-48' }],
+        plugins: [
+          { pluginName: 'BlazeMeterJenkinsPlugin', status: 'success', timestamp: '2025-09-03T08-05-48' },
+          { pluginName: 'TestFairy', status: 'fail', timestamp: '2025-09-03T08-13-07' },
+          { pluginName: 'CustomHistory', status: 'success', timestamp: '2025-07-23T07-55-02' },
+        ],
       },
     },
     plugins: {
@@ -350,10 +351,9 @@ describe('dataClient', () => {
       expect(result.data.recipes).toHaveLength(2);
       expect(result.data.recipes[0]).toEqual({
         recipeId: 'io.jenkins.tools.pluginmodernizer.AddCodeOwner',
-        total: 2,
+        total: 3,
         success: 1,
         fail: 1,
-        pending: 0,
       });
       console.log(
         `  mock data : totalPlugins=${report.overview.totalPlugins}, totalMigrations=${report.overview.totalMigrations}, recipes=${Object.keys(report.recipes).length}`
@@ -401,7 +401,7 @@ describe('dataClient', () => {
   });
 
   describe('getRecipe', () => {
-    it('returns recipe details with computed successRate', async () => {
+    it('returns recipe details with correct counts', async () => {
       const report = makeReport();
       mockFetchSuccess(report);
       const client = await loadClient();
@@ -411,12 +411,11 @@ describe('dataClient', () => {
       expect(result.ok).toBe(true);
       if (!result.ok) return;
       expect(result.data.recipeId).toBe('io.jenkins.tools.pluginmodernizer.AddCodeOwner');
-      expect(result.data.totalApplications).toBe(2);
-      expect(result.data.successRate).toBe(50);
-      console.log(`  mock data : recipeId=AddCodeOwner, totalApplications=2, successCount=1, failureCount=1`);
-      console.log(
-        `  dataClient: recipeId=${result.data.recipeId}, totalApplications=${result.data.totalApplications}, successRate=${result.data.successRate}%`
-      );
+      expect(result.data.totalApplications).toBe(3);
+      expect(result.data.successCount).toBe(1);
+      expect(result.data.failureCount).toBe(1);
+      console.log(`  mock data : recipeId=AddCodeOwner, totalApplications=3, successCount=1, failureCount=1`);
+      console.log(`  dataClient: recipeId=${result.data.recipeId}, totalApplications=${result.data.totalApplications}`);
     });
 
     it('returns error for unknown recipe', async () => {
@@ -617,7 +616,7 @@ describe('dataClient', () => {
       expect(result.ok).toBe(true);
       if (!result.ok) return;
 
-      expect(result.data.plugins).toHaveLength(2);
+      expect(result.data.plugins).toHaveLength(3);
       const successPlugins = result.data.plugins.filter((p) => p.status === 'success');
       const failPlugins = result.data.plugins.filter((p) => p.status === 'fail');
       expect(successPlugins).toHaveLength(result.data.successCount);
@@ -627,7 +626,7 @@ describe('dataClient', () => {
       );
     });
 
-    it('SetupJenkinsfile: successRate is computed correctly', async () => {
+    it('SetupJenkinsfile: counts are returned correctly', async () => {
       mockFetchSuccess(makeReport());
       const client = await loadClient();
 
@@ -636,9 +635,12 @@ describe('dataClient', () => {
       expect(result.ok).toBe(true);
       if (!result.ok) return;
 
-      const expectedRate = (result.data.successCount / result.data.totalApplications) * 100;
-      expect(result.data.successRate).toBeCloseTo(expectedRate, 1);
-      console.log(`  SetupJenkinsfile: successRate=${result.data.successRate}%, expected=${expectedRate.toFixed(2)}%`);
+      expect(result.data.successCount).toBe(2);
+      expect(result.data.failureCount).toBe(1);
+      expect(result.data.totalApplications).toBe(3);
+      console.log(
+        `  SetupJenkinsfile: ${result.data.successCount}s/${result.data.failureCount}f of ${result.data.totalApplications} total`
+      );
     });
 
     it('each plugin entry has non-empty pluginName and timestamp', async () => {
@@ -653,9 +655,11 @@ describe('dataClient', () => {
       for (const plugin of result.data.plugins) {
         expect(plugin.pluginName).toBeTruthy();
         expect(plugin.timestamp).toBeTruthy();
-        expect(plugin.status).toBeTruthy();
+        expect(typeof plugin.status).toBe('string');
       }
-      console.log(`  validated ${result.data.plugins.length} plugin entries: all have name, status, and timestamp`);
+      console.log(
+        `  validated ${result.data.plugins.length} plugin entries: all have name, timestamp, and string status`
+      );
     });
   });
 

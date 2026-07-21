@@ -175,31 +175,12 @@ describe('dataClient validated against actual report.json', () => {
     expect(result.data.successCount).toBe(raw.successCount);
     expect(result.data.failureCount).toBe(raw.failureCount);
     expect(result.data.plugins).toHaveLength(raw.plugins.length);
-    expect(result.data.successRate).toBeGreaterThanOrEqual(0);
-    expect(result.data.successRate).toBeLessThanOrEqual(100);
     console.log(
-      `  dataClient : ${recipeId} -> ${result.data.totalApplications} apps, ${result.data.successCount}s/${result.data.failureCount}f, rate=${result.data.successRate}%`
+      `  dataClient : ${recipeId} -> ${result.data.totalApplications} apps, ${result.data.successCount}s/${result.data.failureCount}f`
     );
     console.log(
       `  report.json: ${recipeId} -> ${raw.totalApplications} apps, ${raw.successCount}s/${raw.failureCount}f, ${raw.plugins.length} plugin entries`
     );
-  });
-
-  it('getRecipe successRate is consistent with successCount/totalApplications', async () => {
-    const { dataClient } = await import('../../src/lib/dataClient');
-
-    for (const recipeId of Object.keys(realReport.recipes)) {
-      const result = await dataClient.getRecipe(recipeId);
-      expect(result.ok).toBe(true);
-      if (!result.ok) continue;
-
-      const expectedRate =
-        result.data.totalApplications > 0 ? (result.data.successCount / result.data.totalApplications) * 100 : 0;
-
-      expect(result.data.successRate).toBeCloseTo(expectedRate, 1);
-    }
-
-    console.log(`  validated successRate consistency for ${Object.keys(realReport.recipes).length} recipes`);
   });
 
   it('getRecipe plugin statuses are valid values', async () => {

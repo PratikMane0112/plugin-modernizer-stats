@@ -86,7 +86,6 @@ export const dataClient = {
       total: r.totalApplications,
       success: r.successCount,
       fail: r.failureCount,
-      pending: r.pending,
     }));
 
     return {
@@ -133,14 +132,7 @@ export const dataClient = {
       return { ok: false, error: `Recipe '${recipeId}' not found` };
     }
 
-    const data: RecipeReport = {
-      ...recipe,
-      successRate:
-        recipe.successRate ??
-        (recipe.totalApplications > 0 ? (recipe.successCount / recipe.totalApplications) * 100 : 0),
-    };
-
-    return { ok: true, data };
+    return { ok: true, data: recipe };
   },
 
   async getPluginReport(pluginId: string): Promise<Result<PluginReport>> {
@@ -205,12 +197,7 @@ export const dataClient = {
     if (!result.ok) return result as { ok: false; error: string };
     const report = result.data;
 
-    const recipes = Object.values(report.recipes)
-      .map((r) => ({
-        ...r,
-        successRate: r.successRate ?? (r.totalApplications > 0 ? (r.successCount / r.totalApplications) * 100 : 0),
-      }))
-      .sort((a, b) => a.recipeId.localeCompare(b.recipeId));
+    const recipes = Object.values(report.recipes).sort((a, b) => a.recipeId.localeCompare(b.recipeId));
     return { ok: true, data: recipes };
   },
 };

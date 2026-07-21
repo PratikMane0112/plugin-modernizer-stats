@@ -1,5 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import type { PluginStatusColor, StatusCardDef } from './types';
+import type { RateTier } from './util/recipeStatus';
 
 /**
  * Single source of truth for all colors used across the application.
@@ -84,6 +85,13 @@ export const statusDefaultLabels: Record<PluginStatusColor, string> = {
   blue: 'Mostly Success',
   yellow: 'Mostly Fail',
   white: 'Not Reported',
+};
+
+export const rateTierColorMap: Record<RateTier, string> = {
+  high: colors.success.main,
+  medium: colors.warning.main,
+  low: colors.error.main,
+  none: colors.text.muted,
 };
 
 export const STATUS_CARD_DEFS: StatusCardDef[] = [

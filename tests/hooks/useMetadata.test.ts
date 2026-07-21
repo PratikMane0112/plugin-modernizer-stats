@@ -46,12 +46,14 @@ const mockPlugin: PluginReport = {
 
 const mockRecipe: RecipeReport = {
   recipeId: 'io.jenkins.tools.pluginmodernizer.SetupJenkinsfile',
-  totalApplications: 2,
-  successCount: 1,
+  totalApplications: 3,
+  successCount: 2,
   failureCount: 1,
-  successRate: 50,
-  pending: 0,
-  plugins: [],
+  plugins: [
+    { pluginName: 'BlazeMeterJenkinsPlugin', status: 'success', timestamp: '2025-09-03T08-05-48' },
+    { pluginName: 'CustomHistory', status: 'fail', timestamp: '2025-09-03T08-08-19' },
+    { pluginName: 'TestFairy', status: 'success', timestamp: '2025-07-28T18-02-28' },
+  ],
 };
 
 const mockSummary: SummaryJson = {
@@ -65,9 +67,7 @@ const mockSummary: SummaryJson = {
   pluginsWithFailedMigrations: ['TestFairy'],
   timeline: [],
   tags: [],
-  recipes: [
-    { recipeId: 'io.jenkins.tools.pluginmodernizer.SetupJenkinsfile', total: 2, success: 1, fail: 1, pending: 0 },
-  ],
+  recipes: [{ recipeId: 'io.jenkins.tools.pluginmodernizer.SetupJenkinsfile', total: 2, success: 1, fail: 1 }],
 };
 
 beforeEach(() => {
