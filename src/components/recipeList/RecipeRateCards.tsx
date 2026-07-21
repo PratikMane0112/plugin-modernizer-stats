@@ -25,7 +25,7 @@ export default function RecipeRateCards({ tierCounts, activeFilter, onFilterChan
     <Box
       sx={{
         display: { xs: 'flex', sm: 'grid' },
-        gridTemplateColumns: { sm: 'repeat(4, 1fr)' },
+        gridTemplateColumns: { sm: 'repeat(3, 1fr)' },
         gap: 1,
         overflowX: { xs: 'auto', sm: 'visible' },
         mx: { xs: -2, sm: 0 },

@@ -7,22 +7,21 @@ import RecipeRateCards from '../../../src/components/recipeList/RecipeRateCards'
 const tierCounts: Record<RateTier, number> = { high: 10, medium: 5, low: 3, none: 2 };
 
 describe('RecipeRateCards', () => {
-  it('renders all four tier cards with correct counts', () => {
+  it('renders three tier cards with correct counts', () => {
     render(<RecipeRateCards tierCounts={tierCounts} activeFilter="all" onFilterChange={() => {}} />);
     expect(screen.getByText('10')).toBeDefined();
     expect(screen.getByText('5')).toBeDefined();
     expect(screen.getByText('3')).toBeDefined();
-    expect(screen.getByText('2')).toBeDefined();
-    console.log(`  RecipeRateCards : all four tier counts rendered (10, 5, 3, 2)`);
+    console.log(`  RecipeRateCards : three tier counts rendered (10, 5, 3)`);
   });
 
-  it('renders tier labels', () => {
+  it('renders tier labels without No Data', () => {
     render(<RecipeRateCards tierCounts={tierCounts} activeFilter="all" onFilterChange={() => {}} />);
     expect(screen.getByText('High Rate')).toBeDefined();
     expect(screen.getByText('Medium Rate')).toBeDefined();
     expect(screen.getByText('Low Rate')).toBeDefined();
-    expect(screen.getByText('No Data')).toBeDefined();
-    console.log(`  RecipeRateCards : all four tier labels rendered`);
+    expect(screen.queryByText('No Data')).toBeNull();
+    console.log(`  RecipeRateCards : three tier labels rendered, no "No Data" card`);
   });
 
   it('calls onFilterChange when a card is clicked', () => {

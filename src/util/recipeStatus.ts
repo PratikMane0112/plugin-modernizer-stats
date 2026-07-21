@@ -33,5 +33,4 @@ export const RATE_CARD_DEFS: { key: RateTier; label: string; desc: string }[] = 
   { key: 'high', label: 'High Rate', desc: 'Success rate 80% or above' },
   { key: 'medium', label: 'Medium Rate', desc: 'Success rate 50–79%' },
   { key: 'low', label: 'Low Rate', desc: 'Success rate under 50%' },
-  { key: 'none', label: 'No Data', desc: 'No successful applications' },
 ];

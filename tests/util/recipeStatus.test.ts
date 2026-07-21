@@ -84,13 +84,13 @@ describe('computeSuccessRate', () => {
 });
 
 describe('RATE_CARD_DEFS', () => {
-  it('has exactly four tier definitions', () => {
-    expect(RATE_CARD_DEFS).toHaveLength(4);
+  it('has exactly three tier definitions', () => {
+    expect(RATE_CARD_DEFS).toHaveLength(3);
     console.log(`  RATE_CARD_DEFS has ${RATE_CARD_DEFS.length} entries`);
   });
 
-  it('covers all four tiers in order', () => {
-    expect(RATE_CARD_DEFS.map((d) => d.key)).toEqual(['high', 'medium', 'low', 'none']);
-    console.log('  tiers in order: high, medium, low, none');
+  it('covers three visible tiers in order', () => {
+    expect(RATE_CARD_DEFS.map((d) => d.key)).toEqual(['high', 'medium', 'low']);
+    console.log('  tiers in order: high, medium, low');
   });
 });
