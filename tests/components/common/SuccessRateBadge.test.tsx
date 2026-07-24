@@ -22,10 +22,10 @@ describe('SuccessRateBadge', () => {
     console.log('  rate=23.7 -> "Low (23.7%)"');
   });
 
-  it('renders "No data" tier for rate = 0', () => {
+  it('renders "Low" tier for rate = 0', () => {
     render(<SuccessRateBadge rate={0} />);
-    expect(screen.getByText('No data (0.0%)')).toBeDefined();
-    console.log('  rate=0 -> "No data (0.0%)"');
+    expect(screen.getByText('Low (0.0%)')).toBeDefined();
+    console.log('  rate=0 -> "Low (0.0%)"');
   });
 
   it('renders at boundary: 80% is "High"', () => {

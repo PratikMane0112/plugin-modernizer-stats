@@ -16,7 +16,7 @@ type TierFilter = 'all' | RateTier;
 type SortKey = 'name' | 'rate-desc' | 'rate-asc' | 'total-desc';
 
 function countByTier(recipes: RecipeReport[]): Record<RateTier, number> {
-  const counts: Record<RateTier, number> = { high: 0, medium: 0, low: 0, none: 0 };
+  const counts: Record<RateTier, number> = { high: 0, medium: 0, low: 0 };
   for (const r of recipes) {
     counts[getRateTier(computeSuccessRate(r))]++;
   }

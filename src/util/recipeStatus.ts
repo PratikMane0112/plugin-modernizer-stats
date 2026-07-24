@@ -1,6 +1,6 @@
 import type { RecipeReport } from '../types';
 
-export type RateTier = 'high' | 'medium' | 'low' | 'none';
+export type RateTier = 'high' | 'medium' | 'low';
 
 export function computeSuccessRate(recipe: RecipeReport): number {
   return recipe.totalApplications > 0 ? (recipe.successCount / recipe.totalApplications) * 100 : 0;
@@ -11,14 +11,12 @@ export function computeSuccessRate(recipe: RecipeReport): number {
  *
  *  - 'high'   : >= 80%  — recipe applies successfully to most plugins
  *  - 'medium' : 50–79%  — mixed results, needs investigation
- *  - 'low'    : > 0%    — recipe fails on the majority of plugins
- *  - 'none'   : 0%      — no successful applications recorded
+ *  - 'low'    : < 50%   — recipe fails on the majority of plugins (includes 0%)
  */
 export function getRateTier(rate: number): RateTier {
   if (rate >= 80) return 'high';
   if (rate >= 50) return 'medium';
-  if (rate > 0) return 'low';
-  return 'none';
+  return 'low';
 }
 
 /**

@@ -16,7 +16,6 @@ const TIER_LABELS: Record<ReturnType<typeof getRateTier>, string> = {
   high: 'High',
   medium: 'Medium',
   low: 'Low',
-  none: 'No data',
 };
 
 function pluginEntry(name: string, status: string, ts: string) {
@@ -204,7 +203,7 @@ describe('RecipeRow — noDataRecipe', () => {
     console.log(`  RecipeRow  : short name "${expected}" rendered`);
   });
 
-  it('renders SuccessRateBadge with none tier', () => {
+  it('renders SuccessRateBadge with low tier', () => {
     renderRow(noDataRecipe);
     const badge = expectedBadgeText(noDataRecipe);
     expect(screen.getByText(badge)).toBeDefined();

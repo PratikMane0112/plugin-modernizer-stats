@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import type { RateTier } from '../../../src/util/recipeStatus';
 import RecipeRateCards from '../../../src/components/recipeList/RecipeRateCards';
 
-const tierCounts: Record<RateTier, number> = { high: 10, medium: 5, low: 3, none: 2 };
+const tierCounts: Record<RateTier, number> = { high: 10, medium: 5, low: 3 };
 
 describe('RecipeRateCards', () => {
   it('renders three tier cards with correct counts', () => {
