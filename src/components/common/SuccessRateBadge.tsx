@@ -9,7 +9,6 @@ const TIER_CONFIG: Record<RateTier, { label: string; color: string }> = {
   high: { label: 'High', color: colors.success.main },
   medium: { label: 'Medium', color: colors.warning.main },
   low: { label: 'Low', color: colors.error.main },
-  none: { label: 'No data', color: colors.text.muted },
 };
 
 interface SuccessRateBadgeProps {

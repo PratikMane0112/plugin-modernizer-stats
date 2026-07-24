@@ -24,19 +24,19 @@ describe('getRateTier', () => {
     console.log('  0.1, 25, 49.9 -> "low"');
   });
 
-  it('returns "none" for rate = 0', () => {
-    expect(getRateTier(0)).toBe('none');
-    console.log('  0 -> "none"');
+  it('returns "low" for rate = 0', () => {
+    expect(getRateTier(0)).toBe('low');
+    console.log('  0 -> "low"');
   });
 
   it('handles boundary values correctly', () => {
-    expect(getRateTier(0)).toBe('none');
+    expect(getRateTier(0)).toBe('low');
     expect(getRateTier(0.01)).toBe('low');
     expect(getRateTier(49.99)).toBe('low');
     expect(getRateTier(50)).toBe('medium');
     expect(getRateTier(79.99)).toBe('medium');
     expect(getRateTier(80)).toBe('high');
-    console.log('  boundaries: 0=none, 0.01=low, 50=medium, 80=high');
+    console.log('  boundaries: 0=low, 0.01=low, 50=medium, 80=high');
   });
 });
 
@@ -84,13 +84,13 @@ describe('computeSuccessRate', () => {
 });
 
 describe('RATE_CARD_DEFS', () => {
-  it('has exactly four tier definitions', () => {
-    expect(RATE_CARD_DEFS).toHaveLength(4);
+  it('has exactly three tier definitions', () => {
+    expect(RATE_CARD_DEFS).toHaveLength(3);
     console.log(`  RATE_CARD_DEFS has ${RATE_CARD_DEFS.length} entries`);
   });
 
-  it('covers all four tiers in order', () => {
-    expect(RATE_CARD_DEFS.map((d) => d.key)).toEqual(['high', 'medium', 'low', 'none']);
-    console.log('  tiers in order: high, medium, low, none');
+  it('covers three visible tiers in order', () => {
+    expect(RATE_CARD_DEFS.map((d) => d.key)).toEqual(['high', 'medium', 'low']);
+    console.log('  tiers in order: high, medium, low');
   });
 });

@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { CheckCircleOutlined, TrendingUp, TrendingDown, HelpOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, TrendingUp, TrendingDown } from '@mui/icons-material';
 import type { RateTier } from '../../util/recipeStatus';
 import { RATE_CARD_DEFS } from '../../util/recipeStatus';
 import { rateTierColorMap } from '../../theme';
@@ -11,7 +11,6 @@ const icons: Record<RateTier, React.ReactNode> = {
   high: <CheckCircleOutlined sx={{ fontSize: ICON_SIZE }} />,
   medium: <TrendingUp sx={{ fontSize: ICON_SIZE }} />,
   low: <TrendingDown sx={{ fontSize: ICON_SIZE }} />,
-  none: <HelpOutlined sx={{ fontSize: ICON_SIZE }} />,
 };
 
 interface RecipeRateCardsProps {
@@ -25,7 +24,7 @@ export default function RecipeRateCards({ tierCounts, activeFilter, onFilterChan
     <Box
       sx={{
         display: { xs: 'flex', sm: 'grid' },
-        gridTemplateColumns: { sm: 'repeat(4, 1fr)' },
+        gridTemplateColumns: { sm: 'repeat(3, 1fr)' },
         gap: 1,
         overflowX: { xs: 'auto', sm: 'visible' },
         mx: { xs: -2, sm: 0 },

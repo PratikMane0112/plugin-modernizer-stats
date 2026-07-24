@@ -91,7 +91,6 @@ export const rateTierColorMap: Record<RateTier, string> = {
   high: colors.success.main,
   medium: colors.warning.main,
   low: colors.error.main,
-  none: colors.text.muted,
 };
 
 export const STATUS_CARD_DEFS: StatusCardDef[] = [
