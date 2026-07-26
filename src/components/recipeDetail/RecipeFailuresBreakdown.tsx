@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,Typography } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import type { RecipeReport } from '../../types';
@@ -38,11 +38,8 @@ export default function RecipeFailuresBreakdown({ recipe }: RecipeFailuresBreakd
   const navigate = useNavigate();
 
   const failed = useMemo(
-    () =>
-      recipe.plugins
-        .filter((p) => p.status === 'fail')
-        .sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
-    [recipe.plugins],
+    () => recipe.plugins.filter((p) => p.status === 'fail').sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+    [recipe.plugins]
   );
 
   if (failed.length === 0) return null;
@@ -79,9 +76,7 @@ export default function RecipeFailuresBreakdown({ recipe }: RecipeFailuresBreakd
                 onClick={() => navigate(`/plugins/${encodeURIComponent(p.pluginName)}`)}
                 sx={{ cursor: 'pointer', '&:hover': { bgcolor: colors.bg.hoverSubtle } }}
               >
-                <TableCell sx={{ ...cellSx, color: colors.error.light, fontWeight: 500 }}>
-                  {p.pluginName}
-                </TableCell>
+                <TableCell sx={{ ...cellSx, color: colors.error.light, fontWeight: 500 }}>{p.pluginName}</TableCell>
                 <TableCell sx={{ ...cellSx, fontFamily: 'monospace' }} align="right">
                   {formatTimestamp(p.timestamp)}
                 </TableCell>

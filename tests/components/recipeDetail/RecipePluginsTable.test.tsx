@@ -31,7 +31,7 @@ function renderTable(recipe: RecipeReport = addCodeOwnerRecipe) {
   return render(
     <MemoryRouter>
       <RecipePluginsTable recipe={recipe} />
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 }
 

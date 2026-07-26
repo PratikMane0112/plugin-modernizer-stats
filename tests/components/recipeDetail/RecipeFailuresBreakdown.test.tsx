@@ -42,7 +42,7 @@ function renderBreakdown(recipe: RecipeReport = migrateToJUnit5) {
   return render(
     <MemoryRouter>
       <RecipeFailuresBreakdown recipe={recipe} />
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 }
 

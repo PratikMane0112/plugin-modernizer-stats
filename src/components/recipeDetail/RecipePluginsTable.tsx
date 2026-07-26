@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,Typography,Chip } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Chip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { RecipeReport } from '../../types';
 import { colors } from '../../theme';
@@ -44,7 +44,7 @@ export default function RecipePluginsTable({ recipe }: RecipePluginsTableProps) 
 
   const sorted = useMemo(
     () => [...recipe.plugins].sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
-    [recipe.plugins],
+    [recipe.plugins]
   );
 
   if (sorted.length === 0) return null;
@@ -85,9 +85,7 @@ export default function RecipePluginsTable({ recipe }: RecipePluginsTableProps) 
                   onClick={() => navigate(`/plugins/${encodeURIComponent(p.pluginName)}`)}
                   sx={{ cursor: 'pointer', '&:hover': { bgcolor: colors.bg.hoverSubtle } }}
                 >
-                  <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>
-                    {p.pluginName}
-                  </TableCell>
+                  <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{p.pluginName}</TableCell>
                   <TableCell sx={cellSx} align="center">
                     <Chip
                       label={label}
