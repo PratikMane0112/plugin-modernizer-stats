@@ -27,7 +27,7 @@ describe('formatTimestamp', () => {
     console.log('  "" -> "—"');
   });
 
-  it('returns raw input for unparseable string', () => {
+  it('returns raw input for invalid string', () => {
     expect(formatTimestamp('not-a-date')).toBe('not-a-date');
     console.log('  "not-a-date" -> "not-a-date"');
   });
