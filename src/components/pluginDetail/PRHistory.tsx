@@ -15,6 +15,7 @@ import { FaCodeBranch } from 'react-icons/fa';
 import CalendarTodayOutlined from '@mui/icons-material/CalendarTodayOutlined';
 import type { Migration } from '../../types';
 import { colors } from '../../theme';
+import { formatTimestamp } from '../../util/format';
 
 interface PREntry {
   url: string;
@@ -22,13 +23,6 @@ interface PREntry {
   recipe: string;
   status: string;
   date: string;
-}
-
-function formatDate(dateStr: string): string {
-  const normalized = dateStr.replace(/T(\d{2})-(\d{2})-(\d{2})$/, 'T$1:$2:$3');
-  const date = new Date(normalized);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-CA');
 }
 
 function extractPRNumber(url: string): string {
@@ -152,7 +146,7 @@ export default function PRHistory({ migrations }: PRHistoryProps) {
                 <TableCell sx={cellSx} align="right">
                   <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
                     <CalendarTodayOutlined sx={{ fontSize: 13, color: colors.text.muted }} />
-                    {formatDate(pr.date)}
+                    {formatTimestamp(pr.date)}
                   </Box>
                 </TableCell>
               </TableRow>

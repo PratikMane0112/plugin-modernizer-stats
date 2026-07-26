@@ -1,9 +1,18 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Chip } from '@mui/material';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Chip from '@mui/material/Chip';
 import { alpha } from '@mui/material/styles';
 import type { RecipeReport } from '../../types';
 import { colors } from '../../theme';
+import { formatTimestamp } from '../../util/format';
 
 const cellSx = {
   color: colors.text.secondary,
@@ -21,13 +30,6 @@ const headerCellSx = {
   borderColor: colors.border.default,
   bgcolor: colors.bg.paper,
 } as const;
-
-function formatTimestamp(ts: string): string {
-  const normalized = ts.replace(/T(\d{2})-(\d{2})-(\d{2})$/, 'T$1:$2:$3');
-  const date = new Date(normalized);
-  if (isNaN(date.getTime())) return ts;
-  return date.toLocaleDateString('en-CA');
-}
 
 function statusConfig(status: string): { label: string; color: string } {
   if (status === 'success') return { label: '\u2713 Success', color: colors.success.main };
@@ -79,11 +81,24 @@ export default function RecipePluginsTable({ recipe }: RecipePluginsTableProps) 
           <TableBody>
             {sorted.map((p, i) => {
               const { label, color } = statusConfig(p.status);
+              const dest = `/plugins/${encodeURIComponent(p.pluginName)}`;
               return (
                 <TableRow
                   key={`${p.pluginName}-${i}`}
-                  onClick={() => navigate(`/plugins/${encodeURIComponent(p.pluginName)}`)}
-                  sx={{ cursor: 'pointer', '&:hover': { bgcolor: colors.bg.hoverSubtle } }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(dest)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(dest);
+                    }
+                  }}
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: colors.bg.hoverSubtle },
+                    '&:focus-visible': { outline: `2px solid ${colors.primary.main}`, outlineOffset: -2 },
+                  }}
                 >
                   <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{p.pluginName}</TableCell>
                   <TableCell sx={cellSx} align="center">

@@ -70,8 +70,7 @@ describe('RecipePluginsTable', () => {
 
   it('sorts plugins by timestamp descending (newest first)', () => {
     renderTable();
-    const rows = screen.getAllByRole('row');
-    const dataRows = rows.slice(1);
+    const dataRows = screen.getAllByRole('button');
     expect(dataRows[0].textContent).toContain('build-blocker-plugin');
     expect(dataRows[1].textContent).toContain('probely-security');
     expect(dataRows[2].textContent).toContain('ec2-fleet');
@@ -86,6 +85,32 @@ describe('RecipePluginsTable', () => {
     fireEvent.click(screen.getByText('build-blocker-plugin'));
     expect(mockNavigate).toHaveBeenCalledWith('/plugins/build-blocker-plugin');
     console.log('  RecipePluginsTable : row click navigates to /plugins/build-blocker-plugin');
+  });
+
+  it('navigates on Enter key press', () => {
+    mockNavigate.mockClear();
+    renderTable();
+    const row = screen.getByText('build-blocker-plugin').closest('tr')!;
+    fireEvent.keyDown(row, { key: 'Enter' });
+    expect(mockNavigate).toHaveBeenCalledWith('/plugins/build-blocker-plugin');
+    console.log('  RecipePluginsTable : Enter key triggers navigation');
+  });
+
+  it('navigates on Space key press', () => {
+    mockNavigate.mockClear();
+    renderTable();
+    const row = screen.getByText('syslog-logger').closest('tr')!;
+    fireEvent.keyDown(row, { key: ' ' });
+    expect(mockNavigate).toHaveBeenCalledWith('/plugins/syslog-logger');
+    console.log('  RecipePluginsTable : Space key triggers navigation');
+  });
+
+  it('rows have role="button" and tabIndex for keyboard accessibility', () => {
+    renderTable();
+    const row = screen.getByText('build-blocker-plugin').closest('tr')!;
+    expect(row.getAttribute('role')).toBe('button');
+    expect(row.getAttribute('tabindex')).toBe('0');
+    console.log('  RecipePluginsTable : rows have role="button" and tabIndex=0');
   });
 
   it('returns null when plugins array is empty', () => {

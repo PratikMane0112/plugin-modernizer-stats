@@ -10,13 +10,7 @@ import { FaCodeBranch } from 'react-icons/fa';
 import { FiExternalLink } from 'react-icons/fi';
 import type { Migration } from '../../types';
 import { colors } from '../../theme';
-
-function formatDate(dateStr: string): string {
-  const normalized = dateStr.replace(/T(\d{2})-(\d{2})-(\d{2})$/, 'T$1:$2:$3');
-  const date = new Date(normalized);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-CA');
-}
+import { formatTimestamp } from '../../util/format';
 
 const statusColors: Record<string, string> = {
   merged: colors.success.main,
@@ -80,7 +74,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: colors.text.muted, fontSize: '0.8rem' }}>
             <CalendarTodayOutlined sx={{ fontSize: 13 }} />
             <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.muted }}>
-              {formatDate(m.timestamp)}
+              {formatTimestamp(m.timestamp)}
             </Typography>
           </Box>
         </Box>

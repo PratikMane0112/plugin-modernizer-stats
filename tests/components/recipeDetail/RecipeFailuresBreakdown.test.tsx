@@ -72,8 +72,7 @@ describe('RecipeFailuresBreakdown', () => {
 
   it('sorts failed plugins by timestamp descending', () => {
     renderBreakdown();
-    const rows = screen.getAllByRole('row');
-    const dataRows = rows.slice(1);
+    const dataRows = screen.getAllByRole('button');
     expect(dataRows[0].textContent).toContain('pipeline-multibranch-defaults');
     expect(dataRows[1].textContent).toContain('absint-a3');
     expect(dataRows[2].textContent).toContain('buildtriggerbadge');
@@ -87,6 +86,32 @@ describe('RecipeFailuresBreakdown', () => {
     fireEvent.click(screen.getAllByText('pipeline-multibranch-defaults')[0]);
     expect(mockNavigate).toHaveBeenCalledWith('/plugins/pipeline-multibranch-defaults');
     console.log('  RecipeFailuresBreakdown : row click navigates to /plugins/pipeline-multibranch-defaults');
+  });
+
+  it('navigates on Enter key press', () => {
+    mockNavigate.mockClear();
+    renderBreakdown();
+    const row = screen.getAllByText('pipeline-multibranch-defaults')[0].closest('tr')!;
+    fireEvent.keyDown(row, { key: 'Enter' });
+    expect(mockNavigate).toHaveBeenCalledWith('/plugins/pipeline-multibranch-defaults');
+    console.log('  RecipeFailuresBreakdown : Enter key triggers navigation');
+  });
+
+  it('navigates on Space key press', () => {
+    mockNavigate.mockClear();
+    renderBreakdown();
+    const row = screen.getAllByText('absint-a3')[0].closest('tr')!;
+    fireEvent.keyDown(row, { key: ' ' });
+    expect(mockNavigate).toHaveBeenCalledWith('/plugins/absint-a3');
+    console.log('  RecipeFailuresBreakdown : Space key triggers navigation');
+  });
+
+  it('rows have role="button" and tabIndex for keyboard accessibility', () => {
+    renderBreakdown();
+    const row = screen.getAllByText('pipeline-multibranch-defaults')[0].closest('tr')!;
+    expect(row.getAttribute('role')).toBe('button');
+    expect(row.getAttribute('tabindex')).toBe('0');
+    console.log('  RecipeFailuresBreakdown : rows have role="button" and tabIndex=0');
   });
 
   it('shows single-failure recipe (SetupDependabot has 1 failure: syslog-logger)', () => {
