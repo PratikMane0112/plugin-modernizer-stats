@@ -11,14 +11,7 @@ import { FaCodeBranch } from 'react-icons/fa';
 import type { PluginReport } from '../../types';
 import { colors } from '../../theme';
 import { deriveStatus } from '../../util/pluginStatus';
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—';
-  const normalized = dateStr.replace(/T(\d{2})-(\d{2})-(\d{2})$/, 'T$1:$2:$3');
-  const date = new Date(normalized);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-CA');
-}
+import { formatTimestamp } from '../../util/format';
 
 const statusLabelMap: Record<string, { label: string; color: string; icon: string }> = {
   green: { label: 'Modernized', color: colors.success.main, icon: '\u2713' },
@@ -151,7 +144,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
               <CalendarTodayOutlined sx={{ fontSize: 15 }} />
               <Typography component="span" sx={{ fontSize: '0.85rem', color: colors.text.secondary }}>
                 Last Updated:{' '}
-                <strong style={{ color: colors.text.primary }}>{formatDate(plugin.latestMigration)}</strong>
+                <strong style={{ color: colors.text.primary }}>{formatTimestamp(plugin.latestMigration)}</strong>
               </Typography>
             </Box>
             <Box

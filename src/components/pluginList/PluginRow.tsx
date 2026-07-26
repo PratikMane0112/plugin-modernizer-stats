@@ -8,20 +8,13 @@ import type { PluginReport } from '../../types';
 import { colors } from '../../theme';
 import { deriveStatus } from '../../util/pluginStatus';
 import StatusBadge from '../common/StatusBadge';
+import { formatTimestamp } from '../../util/format';
 
 const JENKINS_PLUGINS_BASE = 'https://plugins.jenkins.io';
 
 interface PluginRowProps {
   plugin: PluginReport;
   style: React.CSSProperties;
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—';
-  const normalized = dateStr.replace(/T(\d{2})-(\d{2})-(\d{2})$/, 'T$1:$2:$3');
-  const date = new Date(normalized);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-CA');
 }
 
 export default function PluginRow({ plugin, style }: PluginRowProps) {
@@ -96,7 +89,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
           flexShrink: 0,
         }}
       >
-        {formatDate(plugin.latestMigration)}
+        {formatTimestamp(plugin.latestMigration)}
       </Typography>
 
       <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
