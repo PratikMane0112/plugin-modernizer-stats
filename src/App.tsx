@@ -9,6 +9,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PluginList = lazy(() => import('./pages/PluginList'));
 const PluginDetail = lazy(() => import('./pages/PluginDetail'));
 const RecipeList = lazy(() => import('./pages/RecipeList'));
+const RecipeDetail = lazy(() => import('./pages/RecipeDetail'));
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -31,6 +32,7 @@ function AppRoutes() {
             <Route path="/plugins" element={<PluginList />} />
             <Route path="/plugins/:name" element={<PluginDetail key={location.pathname} />} />
             <Route path="/recipes" element={<RecipeList />} />
+            <Route path="/recipes/:id" element={<RecipeDetail key={location.pathname} />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
