@@ -227,14 +227,14 @@ describe('RecipeDetail', () => {
     };
     mockClient.getRecipe.mockResolvedValue({ ok: true, data: encodedRecipe });
 
-    const encoded = encodeURIComponent(encodedRecipe.recipeId);
-    renderRecipeDetail(encoded);
+    const doubleEncoded = encodeURIComponent(encodeURIComponent(encodedRecipe.recipeId));
+    renderRecipeDetail(doubleEncoded);
 
     await waitFor(() => {
       expect(mockClient.getRecipe).toHaveBeenCalled();
     });
 
     expect(mockClient.getRecipe).toHaveBeenCalledWith('io.jenkins.tools.pluginmodernizer.Upgrade Parent Version');
-    console.log('  RecipeDetail : URL-encoded characters decoded before calling getRecipe');
+    console.log('  RecipeDetail : double-encoded route param decoded via safeDecode before calling getRecipe');
   });
 });

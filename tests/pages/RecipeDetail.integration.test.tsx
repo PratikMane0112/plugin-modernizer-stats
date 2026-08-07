@@ -15,6 +15,9 @@ describe('RecipeDetail integration (real report.json)', () => {
     vi.restoreAllMocks();
 
     const res = await fetch(REPORT_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch report.json: HTTP ${res.status} ${res.statusText}`);
+    }
     realReport = (await res.json()) as ReportJson;
 
     vi.stubGlobal(

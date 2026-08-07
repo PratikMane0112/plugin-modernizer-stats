@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ErrorBoundary from '../../../src/components/common/ErrorBoundary';
 
@@ -9,6 +9,10 @@ function ThrowingComponent({ error }: { error: Error }): React.ReactNode {
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('ErrorBoundary', () => {
