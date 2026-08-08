@@ -219,4 +219,22 @@ describe('RecipeDetail', () => {
     expect(mockClient.getRecipe).toHaveBeenCalledWith(mockRecipe.recipeId);
     console.log('  RecipeDetail : getRecipe called with decoded recipe ID');
   });
+
+  it('decodes URL-encoded characters in the route param before calling getRecipe', async () => {
+    const encodedRecipe: RecipeReport = {
+      ...mockRecipe,
+      recipeId: 'io.jenkins.tools.pluginmodernizer.Upgrade Parent Version',
+    };
+    mockClient.getRecipe.mockResolvedValue({ ok: true, data: encodedRecipe });
+
+    const doubleEncoded = encodeURIComponent(encodeURIComponent(encodedRecipe.recipeId));
+    renderRecipeDetail(doubleEncoded);
+
+    await waitFor(() => {
+      expect(mockClient.getRecipe).toHaveBeenCalled();
+    });
+
+    expect(mockClient.getRecipe).toHaveBeenCalledWith('io.jenkins.tools.pluginmodernizer.Upgrade Parent Version');
+    console.log('  RecipeDetail : double-encoded route param decoded via safeDecode before calling getRecipe');
+  });
 });
