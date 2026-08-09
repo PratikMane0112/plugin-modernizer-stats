@@ -42,4 +42,3 @@ Open <http://localhost:5173/plugin-modernizer-stats/> in your browser.
 - [Plugin Modernizer Tool](https://github.com/jenkinsci/plugin-modernizer-tool) the CLI that modernizes plugins.
 - [metadata-plugin-modernizer](https://github.com/jenkins-infra/metadata-plugin-modernizer) the data repository this site reads from.
 - [OpenRewrite Documentation](https://docs.openrewrite.org/) the refactoring engine behind the modernizer tool.
-
