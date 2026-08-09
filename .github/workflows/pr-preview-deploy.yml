@@ -1,0 +1,64 @@
+name: Deploy PR Preview
+
+on:
+  workflow_run:
+    workflows: ["Build PR Preview"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency: preview-deploy-${{ github.event.workflow_run.head_branch }}
+
+jobs:
+  deploy-preview:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download PR metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-metadata
+          path: pr-metadata/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Read PR metadata
+        id: pr-info
+        run: |
+          echo "pr-number=$(cat pr-metadata/pr-number)" >> "$GITHUB_OUTPUT"
+          echo "pr-action=$(cat pr-metadata/pr-action)" >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifact
+        if: steps.pr-info.outputs.pr-action != 'closed'
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-preview-build
+          path: dist/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Deploy preview
+        if: steps.pr-info.outputs.pr-action != 'closed'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./dist/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          pr-number: ${{ steps.pr-info.outputs.pr-number }}
+          action: deploy
+          qr-code: true
+
+      - name: Remove preview
+        if: steps.pr-info.outputs.pr-action == 'closed'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          pr-number: ${{ steps.pr-info.outputs.pr-number }}
+          action: remove
