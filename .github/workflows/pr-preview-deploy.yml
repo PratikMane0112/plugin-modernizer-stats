@@ -100,10 +100,16 @@ jobs:
           header: pr-preview
           number: ${{ steps.pr-info.outputs.pr-number }}
           message: |
-            | [PR Preview Action](https://github.com/rossjrw/pr-preview-action) |
-            | :---: |
-            | :rocket: View preview at <br> ${{ steps.deploy-preview.outputs.preview-url }} |
-            | Preview will be ready when the [GitHub Pages deployment](${{ github.server_url }}/${{ github.repository }}/deployments) is complete. |
+            <h3><img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" height="20" align="top"> &nbsp;Plugin Modernizer Stats — PR Preview</h3>
+
+            | | |
+            | :--- | :--- |
+            | **Status** | :white_check_mark: Preview Deployed successfully :tada: !!! |
+            | **Preview URL** | ${{ steps.deploy-preview.outputs.preview-url }} :rocket:|
+            | **Commit Message** | ${{ github.event.workflow_run.head_commit.message }} :memo: |
+            | **Commit** | ${{ github.event.workflow_run.head_sha }} :hash: |
+
+            > :hourglass: _This preview is automatically updated on each commit push..._
 
       - name: Remove preview
         if: steps.pr-info.outputs.pr-action == 'closed'
@@ -122,6 +128,10 @@ jobs:
           header: pr-preview
           number: ${{ steps.pr-info.outputs.pr-number }}
           message: |
-            | [PR Preview Action](https://github.com/rossjrw/pr-preview-action) |
-            | :---: |
-            | Preview removed because the pull request was closed. |
+            <h3><img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" height="20" align="top"> &nbsp;Plugin Modernizer Stats — PR Preview</h3>
+
+            | | |
+            | :--- | :--- |
+            | **Status** | :wastebasket: Preview removed |
+
+            > :wastebasket: _The preview for this PR has been cleaned up because the pull request has been closed!_
