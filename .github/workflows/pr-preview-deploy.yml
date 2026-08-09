@@ -78,6 +78,7 @@ jobs:
 
       - name: Deploy preview
         if: steps.pr-info.outputs.pr-action != 'closed'
+        id: deploy-preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./dist/
@@ -85,7 +86,24 @@ jobs:
           umbrella-dir: pr-preview
           pr-number: ${{ steps.pr-info.outputs.pr-number }}
           action: deploy
-          qr-code: true
+          comment: false
+
+      # Workaround: pr-preview-action's built-in comment does not work under
+      # workflow_run because it never forwards pr-number to sticky-pull-request-comment.
+      # See: https://github.com/rossjrw/pr-preview-action/pull/131
+      # Pattern adopted from: meshery/meshery#20996, zowe/zowe-pli-language-support,
+      # InseeFrLab/ssphub, gl-transitions/gl-transitions#262
+      - name: Comment preview URL on PR
+        if: steps.pr-info.outputs.pr-action != 'closed'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: pr-preview
+          number: ${{ steps.pr-info.outputs.pr-number }}
+          message: |
+            | [PR Preview Action](https://github.com/rossjrw/pr-preview-action) |
+            | :---: |
+            | :rocket: View preview at <br> ${{ steps.deploy-preview.outputs.preview-url }} |
+            | Preview will be ready when the [GitHub Pages deployment](${{ github.server_url }}/${{ github.repository }}/deployments) is complete. |
 
       - name: Remove preview
         if: steps.pr-info.outputs.pr-action == 'closed'
@@ -95,3 +113,15 @@ jobs:
           umbrella-dir: pr-preview
           pr-number: ${{ steps.pr-info.outputs.pr-number }}
           action: remove
+          comment: false
+
+      - name: Comment preview removed on PR
+        if: steps.pr-info.outputs.pr-action == 'closed'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: pr-preview
+          number: ${{ steps.pr-info.outputs.pr-number }}
+          message: |
+            | [PR Preview Action](https://github.com/rossjrw/pr-preview-action) |
+            | :---: |
+            | Preview removed because the pull request was closed. |
