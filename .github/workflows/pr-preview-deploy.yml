@@ -97,6 +97,8 @@ jobs:
       # Workaround: pr-preview-action's built-in comment does not work under
       # workflow_run because it never forwards pr-number to sticky-pull-request-comment.
       # See: https://github.com/rossjrw/pr-preview-action/pull/131
+      # Pattern adopted from: meshery/meshery#20996, zowe/zowe-pli-language-support,
+      # InseeFrLab/ssphub, gl-transitions/gl-transitions#262
       - name: Comment preview URL on PR
         if: steps.pr-info.outputs.pr-action != 'closed'
         uses: marocchino/sticky-pull-request-comment@v3
