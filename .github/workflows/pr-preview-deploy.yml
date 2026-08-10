@@ -74,6 +74,12 @@ jobs:
         run: |
           echo "pr-number=$(cat pr-metadata/pr-number)" >> "$GITHUB_OUTPUT"
           echo "pr-action=$(cat pr-metadata/pr-action)" >> "$GITHUB_OUTPUT"
+          if [ -f pr-metadata/pr-head-sha ]; then
+            echo "pr-head-sha=$(cat pr-metadata/pr-head-sha)" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -f pr-metadata/pr-commit-message ]; then
+            echo "pr-commit-message=$(cat pr-metadata/pr-commit-message)" >> "$GITHUB_OUTPUT"
+          fi
           echo "PR #$(cat pr-metadata/pr-number), action: $(cat pr-metadata/pr-action)"
 
       - name: Deploy preview
@@ -106,8 +112,8 @@ jobs:
             | :--- | :--- |
             | **Status** | :white_check_mark: Preview Deployed successfully :tada: !!! |
             | **Preview URL** | ${{ steps.deploy-preview.outputs.preview-url }} :rocket:|
-            | **Commit Message** | ${{ github.event.workflow_run.head_commit.message }} :memo: |
-            | **Commit** | ${{ github.event.workflow_run.head_sha }} :hash: |
+            | **Commit** | `${{ steps.pr-info.outputs.pr-head-sha }}` :hash: |
+            | **Message** | ${{ steps.pr-info.outputs.pr-commit-message }} :memo: |
 
             > :hourglass: _This preview is automatically updated on each commit push..._
 

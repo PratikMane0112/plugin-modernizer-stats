@@ -104,6 +104,10 @@ jobs:
           mkdir -p pr-metadata
           echo "${{ steps.pr-info.outputs.pr-number }}" > pr-metadata/pr-number
           echo "${{ steps.pr-info.outputs.pr-action }}" > pr-metadata/pr-action
+          if [ "${{ steps.pr-info.outputs.pr-action }}" != "closed" ]; then
+            git rev-parse HEAD > pr-metadata/pr-head-sha
+            git log -1 --format='%s' > pr-metadata/pr-commit-message
+          fi
 
       - name: Upload PR metadata
         uses: actions/upload-artifact@v4
