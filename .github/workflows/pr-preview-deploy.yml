@@ -74,10 +74,17 @@ jobs:
         run: |
           echo "pr-number=$(cat pr-metadata/pr-number)" >> "$GITHUB_OUTPUT"
           echo "pr-action=$(cat pr-metadata/pr-action)" >> "$GITHUB_OUTPUT"
+          if [ -f pr-metadata/pr-head-sha ]; then
+            echo "pr-head-sha=$(cat pr-metadata/pr-head-sha)" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -f pr-metadata/pr-commit-message ]; then
+            echo "pr-commit-message=$(cat pr-metadata/pr-commit-message)" >> "$GITHUB_OUTPUT"
+          fi
           echo "PR #$(cat pr-metadata/pr-number), action: $(cat pr-metadata/pr-action)"
 
       - name: Deploy preview
         if: steps.pr-info.outputs.pr-action != 'closed'
+        id: deploy-preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./dist/
@@ -85,7 +92,30 @@ jobs:
           umbrella-dir: pr-preview
           pr-number: ${{ steps.pr-info.outputs.pr-number }}
           action: deploy
-          qr-code: true
+          comment: false
+
+      # Workaround: pr-preview-action's built-in comment does not work under
+      # workflow_run because it never forwards pr-number to sticky-pull-request-comment.
+      # See: https://github.com/rossjrw/pr-preview-action/pull/131
+      # Pattern adopted from: meshery/meshery#20996, zowe/zowe-pli-language-support,
+      # InseeFrLab/ssphub, gl-transitions/gl-transitions#262
+      - name: Comment preview URL on PR
+        if: steps.pr-info.outputs.pr-action != 'closed'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: pr-preview
+          number: ${{ steps.pr-info.outputs.pr-number }}
+          message: |
+            <h3><img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" height="20" align="top"> &nbsp;Plugin Modernizer Stats — PR Preview</h3>
+
+            | | |
+            | :--- | :--- |
+            | **Status** | :white_check_mark: Preview Deployed successfully :tada: !!! |
+            | **Preview URL** | ${{ steps.deploy-preview.outputs.preview-url }} :rocket:|
+            | **Commit** | `${{ steps.pr-info.outputs.pr-head-sha }}` :hash: |
+            | **Message** | ${{ steps.pr-info.outputs.pr-commit-message }} :memo: |
+
+            > :hourglass: _This preview is automatically updated on each commit push..._
 
       - name: Remove preview
         if: steps.pr-info.outputs.pr-action == 'closed'
@@ -95,3 +125,19 @@ jobs:
           umbrella-dir: pr-preview
           pr-number: ${{ steps.pr-info.outputs.pr-number }}
           action: remove
+          comment: false
+
+      - name: Comment preview removed on PR
+        if: steps.pr-info.outputs.pr-action == 'closed'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: pr-preview
+          number: ${{ steps.pr-info.outputs.pr-number }}
+          message: |
+            <h3><img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" height="20" align="top"> &nbsp;Plugin Modernizer Stats — PR Preview</h3>
+
+            | | |
+            | :--- | :--- |
+            | **Status** | :wastebasket: Preview removed |
+
+            > :wastebasket: _The preview for this PR has been cleaned up because the pull request has been closed!_
