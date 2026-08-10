@@ -2,11 +2,12 @@ name: Deploy PR Preview
 
 on:
   workflow_run:
-    workflows: ["Build PR Preview"]
+    workflows: ['Build PR Preview']
     types:
       - completed
 
 permissions:
+  actions: read
   contents: write
   pull-requests: write
 
@@ -20,31 +21,70 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Download PR metadata
-        uses: actions/download-artifact@v4
+      - name: Download artifacts from build run
+        uses: actions/github-script@v7
         with:
-          name: pr-metadata
-          path: pr-metadata/
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ github.token }}
+          script: |
+            const runId = context.payload.workflow_run.id;
+            console.log(`Downloading artifacts from workflow run ${runId}`);
+
+            const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId,
+            });
+
+            console.log(`Found ${artifacts.length} artifact(s):`);
+            artifacts.forEach(a => console.log(`  - ${a.name} (id: ${a.id}, size: ${a.size_in_bytes})`));
+
+            for (const name of ['pr-metadata', 'pr-preview-build']) {
+              const match = artifacts.find(a => a.name === name);
+              if (!match) {
+                if (name === 'pr-preview-build') {
+                  console.log(`Artifact '${name}' not found (may be a closed PR cleanup)`);
+                  continue;
+                }
+                core.setFailed(`Required artifact '${name}' not found in run ${runId}`);
+                return;
+              }
+
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: match.id,
+                archive_format: 'zip',
+              });
+
+              const fs = require('fs');
+              fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/${name}.zip`, Buffer.from(download.data));
+              console.log(`Downloaded ${name}.zip`);
+            }
+
+      - name: Unzip artifacts
+        run: |
+          mkdir -p pr-metadata
+          unzip -o pr-metadata.zip -d pr-metadata
+          if [ -f pr-preview-build.zip ]; then
+            mkdir -p dist
+            unzip -o pr-preview-build.zip -d dist
+          fi
 
       - name: Read PR metadata
         id: pr-info
         run: |
           echo "pr-number=$(cat pr-metadata/pr-number)" >> "$GITHUB_OUTPUT"
           echo "pr-action=$(cat pr-metadata/pr-action)" >> "$GITHUB_OUTPUT"
-
-      - name: Download build artifact
-        if: steps.pr-info.outputs.pr-action != 'closed'
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-preview-build
-          path: dist/
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ github.token }}
+          if [ -f pr-metadata/pr-head-sha ]; then
+            echo "pr-head-sha=$(cat pr-metadata/pr-head-sha)" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -f pr-metadata/pr-commit-message ]; then
+            echo "pr-commit-message=$(cat pr-metadata/pr-commit-message)" >> "$GITHUB_OUTPUT"
+          fi
+          echo "PR #$(cat pr-metadata/pr-number), action: $(cat pr-metadata/pr-action)"
 
       - name: Deploy preview
         if: steps.pr-info.outputs.pr-action != 'closed'
+        id: deploy-preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./dist/
@@ -52,7 +92,28 @@ jobs:
           umbrella-dir: pr-preview
           pr-number: ${{ steps.pr-info.outputs.pr-number }}
           action: deploy
-          qr-code: true
+          comment: false
+
+      # Workaround: pr-preview-action's built-in comment does not work under
+      # workflow_run because it never forwards pr-number to sticky-pull-request-comment.
+      # See: https://github.com/rossjrw/pr-preview-action/pull/131
+      - name: Comment preview URL on PR
+        if: steps.pr-info.outputs.pr-action != 'closed'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: pr-preview
+          number: ${{ steps.pr-info.outputs.pr-number }}
+          message: |
+            <h3><img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" height="20" align="top"> &nbsp;Plugin Modernizer Stats — PR Preview</h3>
+
+            | | |
+            | :--- | :--- |
+            | **Status** | :white_check_mark: Preview Deployed successfully :tada: !!! |
+            | **Preview URL** | ${{ steps.deploy-preview.outputs.preview-url }} :rocket:|
+            | **Commit** | `${{ steps.pr-info.outputs.pr-head-sha }}` :hash: |
+            | **Message** | ${{ steps.pr-info.outputs.pr-commit-message }} :memo: |
+
+            > :hourglass: _This preview is automatically updated on each commit push..._
 
       - name: Remove preview
         if: steps.pr-info.outputs.pr-action == 'closed'
@@ -62,3 +123,19 @@ jobs:
           umbrella-dir: pr-preview
           pr-number: ${{ steps.pr-info.outputs.pr-number }}
           action: remove
+          comment: false
+
+      - name: Comment preview removed on PR
+        if: steps.pr-info.outputs.pr-action == 'closed'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: pr-preview
+          number: ${{ steps.pr-info.outputs.pr-number }}
+          message: |
+            <h3><img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" height="20" align="top"> &nbsp;Plugin Modernizer Stats — PR Preview</h3>
+
+            | | |
+            | :--- | :--- |
+            | **Status** | :wastebasket: Preview removed |
+
+            > :wastebasket: _The preview for this PR has been cleaned up because the pull request has been closed!_

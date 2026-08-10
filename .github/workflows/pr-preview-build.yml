@@ -2,21 +2,28 @@ name: Build PR Preview
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ['CI']
     types:
       - completed
   pull_request:
     types:
       - closed
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: 'PR number to build and deploy preview for'
+        required: true
+        type: string
 
-concurrency: preview-build-${{ github.event.workflow_run.head_branch || github.head_ref }}
+concurrency: preview-build-${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
 
 jobs:
   build-preview:
     if: >
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
-      (github.event_name == 'pull_request' && github.event.action == 'closed')
+      (github.event_name == 'pull_request' && github.event.action == 'closed') ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Get PR number from workflow run
@@ -48,16 +55,13 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "pr-number=${{ github.event.number }}" >> "$GITHUB_OUTPUT"
             echo "pr-action=closed" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pr-number=${{ inputs.pr-number }}" >> "$GITHUB_OUTPUT"
+            echo "pr-action=deploy" >> "$GITHUB_OUTPUT"
           else
             echo "pr-number=${{ steps.pr-info-wr.outputs.pr-number }}" >> "$GITHUB_OUTPUT"
             echo "pr-action=deploy" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Save PR metadata
-        run: |
-          mkdir -p pr-metadata
-          echo "${{ steps.pr-info.outputs.pr-number }}" > pr-metadata/pr-number
-          echo "${{ steps.pr-info.outputs.pr-action }}" > pr-metadata/pr-action
 
       - name: Checkout PR code
         if: steps.pr-info.outputs.pr-action != 'closed'
@@ -93,9 +97,21 @@ jobs:
         with:
           name: pr-preview-build
           path: dist/
+          if-no-files-found: error
+
+      - name: Save PR metadata
+        run: |
+          mkdir -p pr-metadata
+          echo "${{ steps.pr-info.outputs.pr-number }}" > pr-metadata/pr-number
+          echo "${{ steps.pr-info.outputs.pr-action }}" > pr-metadata/pr-action
+          if [ "${{ steps.pr-info.outputs.pr-action }}" != "closed" ]; then
+            git rev-parse HEAD > pr-metadata/pr-head-sha
+            git log -1 --format='%s' > pr-metadata/pr-commit-message
+          fi
 
       - name: Upload PR metadata
         uses: actions/upload-artifact@v4
         with:
           name: pr-metadata
           path: pr-metadata/
+          if-no-files-found: error
