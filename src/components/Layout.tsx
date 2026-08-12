@@ -139,7 +139,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   alt="Jenkins"
                   sx={{ width: 32, height: 40 }}
                 />
-                <Box sx={{ fontWeight: 700, fontSize: '1rem', color: 'text.primary' }}>Preview Plugin Modernizer Stats</Box>
+                <Box sx={{ fontWeight: 700, fontSize: '1rem', color: 'text.primary' }}>Plugin Modernizer Stat</Box>
               </Box>
               <IconButton
                 aria-label="Open navigation menu"
