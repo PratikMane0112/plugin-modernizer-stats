@@ -49,16 +49,40 @@ jobs:
             const prs = context.payload.workflow_run.pull_requests;
             if (prs && prs.length > 0) {
               core.setOutput('pr-number', prs[0].number.toString());
+              console.log(`Found PR #${prs[0].number} from workflow_run.pull_requests`);
               return;
             }
+
+            // For fork PRs, pull_requests is always empty.
+            // Use head_sha to find the associated PR (works for both forks and same-repo).
+            const headSha = context.payload.workflow_run.head_sha;
+            console.log(`pull_requests is empty, searching by head_sha: ${headSha}`);
+            const { data: commitPrs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: headSha
+            });
+            const openPr = commitPrs.find(pr => pr.state === 'open');
+            if (openPr) {
+              core.setOutput('pr-number', openPr.number.toString());
+              console.log(`Found PR #${openPr.number} from commit SHA lookup`);
+              return;
+            }
+
+            // Final fallback: search by head owner and branch.
+            // API expects "owner:branch", not "owner/repo:branch".
+            const headOwner = context.payload.workflow_run.head_repository.owner.login;
+            const headBranch = context.payload.workflow_run.head_branch;
+            console.log(`Commit lookup found no open PR, searching by head: ${headOwner}:${headBranch}`);
             const { data: pulls } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `${context.payload.workflow_run.head_repository.full_name}:${context.payload.workflow_run.head_branch}`,
+              head: `${headOwner}:${headBranch}`,
               state: 'open'
             });
             if (pulls.length > 0) {
               core.setOutput('pr-number', pulls[0].number.toString());
+              console.log(`Found PR #${pulls[0].number} from branch lookup`);
             } else {
               core.setFailed('No open PR found for this workflow run');
             }
