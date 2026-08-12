@@ -10,7 +10,21 @@ on:
       - closed
     branches: [main]
 
-concurrency: preview-build-${{ github.event.workflow_run.head_branch || github.head_ref }}
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: >-
+    preview-build-${{
+      github.event_name == 'workflow_dispatch' && inputs.pr-number ||
+      github.event_name == 'pull_request' && github.event.number ||
+      format('{0}-{1}',
+        github.event.workflow_run.head_repository.full_name,
+        github.event.workflow_run.head_branch)
+    }}
+  cancel-in-progress: true
 
 jobs:
   build-preview:
