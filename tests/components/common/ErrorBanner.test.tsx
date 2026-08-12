@@ -4,11 +4,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ErrorBanner from '../../../src/components/common/ErrorBanner';
 
 describe('ErrorBanner', () => {
-  it('displays the error message', () => {
-    render(<ErrorBanner message="Something went wrong" />);
-    expect(screen.getByText('Something went wrong')).toBeDefined();
-    console.log(`  mock data   : message="Something went wrong"`);
-    console.log(`  ErrorBanner : rendered message text`);
+  it('displays the error message and default title', () => {
+    render(<ErrorBanner message="Failed to load plugin data" />);
+    expect(screen.getByText('Failed to load plugin data')).toBeDefined();
+    expect(screen.getByText('Unable to fetch data')).toBeDefined();
+    console.log(`  mock data   : message="Failed to load plugin data"`);
+    console.log(`  ErrorBanner : rendered title and message text`);
   });
 
   it('shows retry button when onRetry is provided', () => {

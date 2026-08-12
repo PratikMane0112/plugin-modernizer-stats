@@ -60,7 +60,11 @@ export default function PluginDetail() {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {backButton}
-        <ErrorBanner message={error ?? `Plugin "${pluginName}" not found`} onRetry={() => window.location.reload()} />
+        <ErrorBanner
+          title="Plugin not found"
+          message="The plugin you are searching for does not exist."
+          onRetry={() => window.location.reload()}
+        />
       </Box>
     );
   }

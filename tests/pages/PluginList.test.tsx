@@ -178,12 +178,12 @@ describe('PluginList', () => {
     renderPluginList();
 
     await waitFor(() => {
-      expect(screen.getByText('Network error')).toBeDefined();
+      expect(screen.getByText('Unable to fetch data')).toBeDefined();
     });
 
     expect(screen.getByText('Retry')).toBeDefined();
     console.log(`  mock data    : getAllPlugins returns error`);
-    console.log(`  PluginList   : ErrorBanner displayed with "Network error"`);
+    console.log(`  PluginList   : ErrorBanner displayed with "Unable to fetch data"`);
   });
 
   it('shows "No plugins found" when filters match nothing', async () => {

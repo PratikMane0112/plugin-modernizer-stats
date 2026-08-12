@@ -104,7 +104,7 @@ describe('PluginDetail', () => {
     renderPluginDetail();
 
     await waitFor(() => {
-      expect(screen.getByText('Network error')).toBeDefined();
+      expect(screen.getByText('Plugin not found')).toBeDefined();
     });
 
     expect(screen.getByText('Retry')).toBeDefined();
@@ -116,8 +116,9 @@ describe('PluginDetail', () => {
     renderPluginDetail('nonexistent');
 
     await waitFor(() => {
-      expect(screen.getByText("Plugin 'nonexistent' not found")).toBeDefined();
+      expect(screen.getByText('Plugin not found')).toBeDefined();
     });
+    expect(screen.getByText('The plugin you are searching for does not exist.')).toBeDefined();
   });
 
   it('displays header stat boxes with correct values', async () => {

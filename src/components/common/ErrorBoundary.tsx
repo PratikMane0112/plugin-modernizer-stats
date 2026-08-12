@@ -5,7 +5,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import { colors } from '../../theme';
-import ErrorBanner from './ErrorBanner';
 
 interface Props {
   children: ReactNode;
@@ -25,6 +24,15 @@ function isChunkLoadError(error: Error): boolean {
   );
 }
 
+function isNetworkError(error: Error): boolean {
+  return (
+    error.message.includes('Failed to fetch') ||
+    error.message.includes('NetworkError') ||
+    error.message.includes('Network request failed') ||
+    error.name === 'TypeError'
+  );
+}
+
 export default class ErrorBoundary extends Component<Props, State> {
   override state: State = { hasError: false, error: null };
 
@@ -35,6 +43,10 @@ export default class ErrorBoundary extends Component<Props, State> {
   override componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('ErrorBoundary caught:', error, info.componentStack);
   }
+
+  private handleReset = () => {
+    this.setState({ hasError: false, error: null });
+  };
 
   override render() {
     if (!this.state.hasError) return this.props.children;
@@ -77,6 +89,108 @@ export default class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return <ErrorBanner message={this.state.error?.message ?? 'An unexpected error occurred'} />;
+    if (this.state.error && isNetworkError(this.state.error)) {
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            p: 4,
+            borderRadius: '12px',
+            bgcolor: alpha(colors.error.main, 0.1),
+            border: `1px solid ${colors.error.light}`,
+          }}
+        >
+          <Box
+            component="img"
+            src={`${import.meta.env.BASE_URL}fire-jenkins.svg`}
+            alt="Error"
+            sx={{ width: 120, height: 'auto' }}
+          />
+          <Typography sx={{ color: colors.text.primary, fontWeight: 600, fontSize: '1.1rem' }}>
+            Unable to load data
+          </Typography>
+          <Typography sx={{ color: colors.text.secondary, textAlign: 'center', maxWidth: 400 }}>
+            There was a problem connecting to the server. Please check your internet connection and try again.
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={this.handleReset}
+            sx={{
+              color: colors.primary.light,
+              borderColor: colors.primary.light,
+              '&:hover': {
+                bgcolor: alpha(colors.primary.main, 0.2),
+                borderColor: colors.primary.light,
+              },
+            }}
+          >
+            Try again
+          </Button>
+        </Box>
+      );
+    }
+
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2,
+          p: 4,
+          borderRadius: '12px',
+          bgcolor: alpha(colors.error.main, 0.1),
+          border: `1px solid ${colors.error.light}`,
+        }}
+      >
+        <Box
+          component="img"
+          src={`${import.meta.env.BASE_URL}fire-jenkins.svg`}
+          alt="Error"
+          sx={{ width: 120, height: 'auto' }}
+        />
+        <Typography sx={{ color: colors.text.primary, fontWeight: 600, fontSize: '1.1rem' }}>
+          Something went wrong
+        </Typography>
+        <Typography sx={{ color: colors.text.secondary, textAlign: 'center', maxWidth: 400 }}>
+          An unexpected error occurred while rendering this page. Please try again or navigate back to the homepage.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={this.handleReset}
+            sx={{
+              color: colors.primary.light,
+              borderColor: colors.primary.light,
+              '&:hover': {
+                bgcolor: alpha(colors.primary.main, 0.2),
+                borderColor: colors.primary.light,
+              },
+            }}
+          >
+            Try again
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              window.location.href = import.meta.env.BASE_URL;
+            }}
+            sx={{
+              color: colors.text.secondary,
+              borderColor: colors.border.default,
+              '&:hover': {
+                bgcolor: alpha(colors.primary.main, 0.1),
+                borderColor: colors.border.hover,
+              },
+            }}
+          >
+            Go to homepage
+          </Button>
+        </Box>
+      </Box>
+    );
   }
 }

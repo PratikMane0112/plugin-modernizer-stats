@@ -167,12 +167,12 @@ describe('RecipeList', () => {
     renderRecipeList();
 
     await waitFor(() => {
-      expect(screen.getByText('Network error')).toBeDefined();
+      expect(screen.getByText('Unable to fetch data')).toBeDefined();
     });
 
     expect(screen.getByText('Retry')).toBeDefined();
     console.log(`  mock data    : getAllRecipes returns error`);
-    console.log(`  RecipeList   : ErrorBanner displayed with "Network error"`);
+    console.log(`  RecipeList   : ErrorBanner displayed with "Unable to fetch data"`);
   });
 
   it('shows "No recipes found" when filters match nothing', async () => {

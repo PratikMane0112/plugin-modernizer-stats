@@ -184,7 +184,11 @@ export default function RecipeDetail() {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {backButton}
-        <ErrorBanner message={error ?? `Recipe "${recipeId}" not found`} onRetry={() => window.location.reload()} />
+        <ErrorBanner
+          title="Recipe not found"
+          message="The recipe you are searching for does not exist."
+          onRetry={() => window.location.reload()}
+        />
       </Box>
     );
   }

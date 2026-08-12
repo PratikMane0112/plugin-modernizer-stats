@@ -139,7 +139,7 @@ describe('Dashboard', () => {
     renderDashboard();
 
     await waitFor(() => {
-      expect(screen.getByText(/HTTP 500/)).toBeDefined();
+      expect(screen.getByText('Unable to fetch data')).toBeDefined();
     });
 
     expect(screen.getByText('Retry')).toBeDefined();
@@ -155,7 +155,7 @@ describe('Dashboard', () => {
     renderDashboard();
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch')).toBeDefined();
+      expect(screen.getByText('Unable to fetch data')).toBeDefined();
     });
     console.log('  Dashboard : network error message displayed');
   });

@@ -92,11 +92,11 @@ describe('RecipeDetail', () => {
     renderRecipeDetail();
 
     await waitFor(() => {
-      expect(screen.getByText('Network error')).toBeDefined();
+      expect(screen.getByText('Recipe not found')).toBeDefined();
     });
 
     expect(screen.getByText('Retry')).toBeDefined();
-    console.log('  RecipeDetail : error banner with "Network error" and Retry button');
+    console.log('  RecipeDetail : error banner with "Recipe not found" and Retry button');
   });
 
   it('shows not-found message when recipe does not exist', async () => {
@@ -106,8 +106,9 @@ describe('RecipeDetail', () => {
     renderRecipeDetail(encodeURIComponent(fakeId));
 
     await waitFor(() => {
-      expect(screen.getByText(`Recipe '${fakeId}' not found`)).toBeDefined();
+      expect(screen.getByText('Recipe not found')).toBeDefined();
     });
+    expect(screen.getByText('The recipe you are searching for does not exist.')).toBeDefined();
     console.log('  RecipeDetail : not-found error message displayed');
   });
 
