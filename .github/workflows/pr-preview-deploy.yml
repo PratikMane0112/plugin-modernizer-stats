@@ -11,7 +11,9 @@ permissions:
   contents: write
   pull-requests: write
 
-concurrency: preview-deploy-${{ github.event.workflow_run.head_branch }}
+concurrency:
+  group: preview-deploy-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
 
 jobs:
   deploy-preview:
@@ -111,7 +113,7 @@ jobs:
             | **Status** | :white_check_mark: Preview Deployed successfully :tada: !!! |
             | **Preview URL** | ${{ steps.deploy-preview.outputs.preview-url }} :rocket:|
             | **Commit** | `${{ steps.pr-info.outputs.pr-head-sha }}` :hash: |
-            | **Message** | ${{ steps.pr-info.outputs.pr-commit-message }} :memo: |
+            | **Message** | `${{ steps.pr-info.outputs.pr-commit-message }}` :memo: |
 
             > :hourglass: _This preview is automatically updated on each commit push..._
 
