@@ -86,30 +86,31 @@ describe('RecipeDetail', () => {
     console.log('  RecipeDetail : full recipe ID displayed');
   });
 
-  it('shows error banner on fetch error', async () => {
+  it('shows data-load failure banner on fetch error', async () => {
     mockClient.getRecipe.mockResolvedValue({ ok: false, error: 'Network error' });
 
     renderRecipeDetail();
 
     await waitFor(() => {
-      expect(screen.getByText('Recipe not found')).toBeDefined();
+      expect(screen.getByText('Unable to load recipe data')).toBeDefined();
     });
 
+    expect(screen.getByText('Network error')).toBeDefined();
     expect(screen.getByText('Retry')).toBeDefined();
-    console.log('  RecipeDetail : error banner with "Recipe not found" and Retry button');
+    console.log('  RecipeDetail : data-load failure banner with "Unable to load recipe data" and Retry button');
   });
 
   it('shows not-found message when recipe does not exist', async () => {
-    const fakeId = 'io.jenkins.tools.pluginmodernizer.NonExistent';
-    mockClient.getRecipe.mockResolvedValue({ ok: false, error: `Recipe '${fakeId}' not found` });
+    mockClient.getRecipe.mockResolvedValue({ ok: true, data: null as unknown as RecipeReport });
 
-    renderRecipeDetail(encodeURIComponent(fakeId));
+    renderRecipeDetail(encodeURIComponent('io.jenkins.tools.pluginmodernizer.NonExistent'));
 
     await waitFor(() => {
       expect(screen.getByText('Recipe not found')).toBeDefined();
     });
     expect(screen.getByText('The recipe you are searching for does not exist.')).toBeDefined();
-    console.log('  RecipeDetail : not-found error message displayed');
+    expect(screen.queryByText('Retry')).toBeNull();
+    console.log('  RecipeDetail : not-found error message displayed without Retry');
   });
 
   it('displays stat boxes with real AddCodeOwner values', async () => {

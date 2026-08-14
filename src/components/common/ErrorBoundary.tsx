@@ -28,8 +28,7 @@ function isNetworkError(error: Error): boolean {
   return (
     error.message.includes('Failed to fetch') ||
     error.message.includes('NetworkError') ||
-    error.message.includes('Network request failed') ||
-    error.name === 'TypeError'
+    error.message.includes('Network request failed')
   );
 }
 

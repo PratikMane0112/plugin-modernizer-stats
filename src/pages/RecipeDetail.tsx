@@ -180,15 +180,20 @@ export default function RecipeDetail() {
     );
   }
 
-  if (error || !recipe) {
+  if (error) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {backButton}
-        <ErrorBanner
-          title="Recipe not found"
-          message="The recipe you are searching for does not exist."
-          onRetry={() => window.location.reload()}
-        />
+        <ErrorBanner title="Unable to load recipe data" message={error} onRetry={() => window.location.reload()} />
+      </Box>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {backButton}
+        <ErrorBanner title="Recipe not found" message="The recipe you are searching for does not exist." />
       </Box>
     );
   }
