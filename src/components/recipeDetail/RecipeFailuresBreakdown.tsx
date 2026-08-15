@@ -50,12 +50,12 @@ export default function RecipeFailuresBreakdown({ recipe }: RecipeFailuresBreakd
       sx={{
         bgcolor: colors.bg.paper,
         borderRadius: '12px',
-        border: `1px solid ${alpha(colors.error.main, 0.3)}`,
+        border: `1px solid ${alpha(colors.error.dark, 0.3)}`,
         overflow: 'hidden',
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <WarningAmberOutlined sx={{ fontSize: 20, color: colors.warning.main }} />
+        <WarningAmberOutlined sx={{ fontSize: 20, color: colors.warning.dark }} />
         <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
           Failed Plugins ({failed.length})
         </Typography>
@@ -88,7 +88,7 @@ export default function RecipeFailuresBreakdown({ recipe }: RecipeFailuresBreakd
                   sx={{
                     cursor: 'pointer',
                     '&:hover': { bgcolor: colors.bg.hoverSubtle },
-                    '&:focus-visible': { outline: `2px solid ${colors.primary.main}`, outlineOffset: -2 },
+                    '&:focus-visible': { outline: `2px solid ${colors.primary.dark}`, outlineOffset: -2 },
                   }}
                 >
                   <TableCell sx={{ ...cellSx, color: colors.error.light, fontWeight: 500 }}>{p.pluginName}</TableCell>

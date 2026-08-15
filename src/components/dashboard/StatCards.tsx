@@ -90,25 +90,25 @@ export default function StatCards({ overview }: StatCardsProps) {
           title: 'Total Plugins',
           value: overview.totalPlugins,
           icon: <Inventory2Outlined />,
-          color: colors.primary.main,
+          color: colors.cyan.dark,
         },
         {
           title: 'Total Migrations',
           value: overview.totalMigrations,
           icon: <AccountTreeOutlined />,
-          color: colors.accent.indigo,
+          color: colors.orange.dark,
         },
         {
           title: 'Successful Migrations',
           value: overview.successfulMigrations,
           icon: <CheckCircleOutlined />,
-          color: colors.success.main,
+          color: colors.success.dark,
         },
         {
           title: 'Failed Migrations',
           value: overview.failedMigrations,
           icon: <CancelOutlined />,
-          color: colors.error.main,
+          color: colors.error.dark,
         },
       ].map((card) => (
         <StatCard key={card.title} {...card} />

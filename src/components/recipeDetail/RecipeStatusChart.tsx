@@ -15,12 +15,12 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
     const other = totalApplications - successCount - failureCount;
 
     const data: { value: number; name: string; itemStyle: { color: string } }[] = [
-      { value: successCount, name: 'Success', itemStyle: { color: colors.success.light } },
-      { value: failureCount, name: 'Failed', itemStyle: { color: colors.error.light } },
+      { value: successCount, name: 'Success', itemStyle: { color: colors.success.dark } },
+      { value: failureCount, name: 'Failed', itemStyle: { color: colors.error.dark } },
     ];
 
     if (other > 0) {
-      data.push({ value: other, name: 'Other', itemStyle: { color: colors.text.muted } });
+      data.push({ value: other, name: 'Other', itemStyle: { color: colors.neutral } });
     }
 
     return {

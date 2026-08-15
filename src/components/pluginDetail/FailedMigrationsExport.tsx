@@ -61,7 +61,7 @@ export default function FailedMigrationsExport({ pluginName, failCount }: Failed
           color: colors.error.light,
           borderColor: colors.error.light,
           '&:hover': {
-            bgcolor: alpha(colors.error.main, 0.1),
+            bgcolor: alpha(colors.error.dark, 0.1),
             borderColor: colors.error.light,
           },
         }}

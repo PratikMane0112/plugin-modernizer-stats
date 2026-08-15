@@ -49,7 +49,7 @@ export default function PluginSearchBar({
             fontSize: { xs: '0.875rem', sm: '1rem' },
             '& fieldset': { borderColor: colors.border.default },
             '&:hover fieldset': { borderColor: colors.border.hover },
-            '&.Mui-focused fieldset': { borderColor: colors.primary.main },
+            '&.Mui-focused fieldset': { borderColor: colors.primary.dark },
           },
         }}
       />

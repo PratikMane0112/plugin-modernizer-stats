@@ -216,7 +216,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
                   {failed.map((m, i) => (
                     <TableRow key={`${m.migrationId}-${i}`}>
                       <TableCell sx={cellSx}>{m.migrationId}</TableCell>
-                      <TableCell sx={{ ...cellSx, color: colors.error.main }} align="right">
+                      <TableCell sx={{ ...cellSx, color: colors.error.dark }} align="right">
                         {m.migrationStatus}
                       </TableCell>
                     </TableRow>

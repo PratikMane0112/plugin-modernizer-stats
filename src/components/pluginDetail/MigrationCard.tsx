@@ -13,9 +13,9 @@ import { colors } from '../../theme';
 import { formatTimestamp } from '../../util/format';
 
 const statusColors: Record<string, string> = {
-  merged: colors.success.main,
-  open: colors.primary.main,
-  closed: colors.error.main,
+  merged: colors.success.dark,
+  open: colors.primary.dark,
+  closed: colors.error.dark,
 };
 
 interface MigrationCardProps {
@@ -37,9 +37,9 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
       {/* Top row: status icon + name + PR badge + date */}
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1 }}>
         {isSuccess ? (
-          <CheckCircleOutlined sx={{ fontSize: 24, color: colors.success.main, mt: 0.25, flexShrink: 0 }} />
+          <CheckCircleOutlined sx={{ fontSize: 24, color: colors.success.dark, mt: 0.25, flexShrink: 0 }} />
         ) : (
-          <CancelOutlined sx={{ fontSize: 24, color: colors.error.main, mt: 0.25, flexShrink: 0 }} />
+          <CancelOutlined sx={{ fontSize: 24, color: colors.error.dark, mt: 0.25, flexShrink: 0 }} />
         )}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontWeight: 700, color: colors.text.primary, fontSize: '1rem', lineHeight: 1.3 }}>
@@ -96,9 +96,9 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
               label={tag}
               size="small"
               sx={{
-                bgcolor: alpha(colors.primary.main, 0.15),
+                bgcolor: alpha(colors.primary.dark, 0.15),
                 color: colors.primary.light,
-                border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+                border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
                 fontWeight: 500,
                 fontSize: '0.75rem',
                 height: 24,
@@ -172,18 +172,18 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
                 sx={{
                   bgcolor: alpha(
                     m.checkRunsSummary === 'success'
-                      ? colors.success.main
+                      ? colors.success.dark
                       : m.checkRunsSummary === 'failure'
-                        ? colors.error.main
-                        : colors.warning.main,
+                        ? colors.error.dark
+                        : colors.warning.dark,
                     0.15
                   ),
                   color:
                     m.checkRunsSummary === 'success'
-                      ? colors.success.main
+                      ? colors.success.dark
                       : m.checkRunsSummary === 'failure'
-                        ? colors.error.main
-                        : colors.warning.main,
+                        ? colors.error.dark
+                        : colors.warning.dark,
                   fontWeight: 600,
                   fontSize: '0.7rem',
                 }}
@@ -210,10 +210,10 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
                     fontWeight: 600,
                     color:
                       status === 'success'
-                        ? colors.success.main
+                        ? colors.success.dark
                         : status === 'failure'
-                          ? colors.error.main
-                          : colors.warning.main,
+                          ? colors.error.dark
+                          : colors.warning.dark,
                   }}
                 >
                   {status ?? 'pending'}
@@ -237,12 +237,12 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
             endIcon={<FiExternalLink size={12} />}
             sx={{
               color: colors.primary.light,
-              bgcolor: alpha(colors.primary.main, 0.12),
-              border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+              bgcolor: alpha(colors.primary.dark, 0.12),
+              border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               textTransform: 'none',
               fontWeight: 600,
               fontSize: '0.8rem',
-              '&:hover': { bgcolor: alpha(colors.primary.main, 0.2) },
+              '&:hover': { bgcolor: alpha(colors.primary.dark, 0.2) },
             }}
           >
             View PR
@@ -283,7 +283,7 @@ function MetaLabel({ label, value, highlight }: { label: string; value: string; 
           size="small"
           sx={{
             height: 20,
-            bgcolor: alpha(colors.primary.main, 0.15),
+            bgcolor: alpha(colors.primary.dark, 0.15),
             color: colors.primary.light,
             fontWeight: 600,
             fontSize: '0.75rem',

@@ -23,8 +23,8 @@ export default function ErrorBanner({ message, title = 'Unable to fetch data', o
         py: 6,
         px: 3,
         borderRadius: '12px',
-        bgcolor: alpha(colors.error.main, 0.05),
-        border: `1px solid ${alpha(colors.error.main, 0.3)}`,
+        bgcolor: alpha(colors.error.dark, 0.05),
+        border: `1px solid ${alpha(colors.error.dark, 0.3)}`,
       }}
     >
       <Box
@@ -45,7 +45,7 @@ export default function ErrorBanner({ message, title = 'Unable to fetch data', o
             color: colors.primary.light,
             borderColor: colors.primary.light,
             '&:hover': {
-              bgcolor: alpha(colors.primary.main, 0.2),
+              bgcolor: alpha(colors.primary.dark, 0.2),
               borderColor: colors.primary.light,
             },
           }}

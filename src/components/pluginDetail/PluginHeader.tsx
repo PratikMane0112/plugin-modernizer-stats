@@ -14,10 +14,10 @@ import { deriveStatus } from '../../util/pluginStatus';
 import { formatTimestamp } from '../../util/format';
 
 const statusLabelMap: Record<string, { label: string; color: string; icon: string }> = {
-  green: { label: 'Modernized', color: colors.success.main, icon: '\u2713' },
-  blue: { label: 'Partial', color: colors.warning.main, icon: '\u26A0' },
-  yellow: { label: 'Partial', color: colors.warning.main, icon: '\u26A0' },
-  red: { label: 'Failed', color: colors.error.main, icon: '\u2717' },
+  green: { label: 'Modernized', color: colors.success.dark, icon: '\u2713' },
+  blue: { label: 'Partial', color: colors.warning.dark, icon: '\u26A0' },
+  yellow: { label: 'Partial', color: colors.warning.dark, icon: '\u26A0' },
+  red: { label: 'Failed', color: colors.error.dark, icon: '\u2717' },
   white: { label: 'Unknown', color: colors.text.muted, icon: '?' },
 };
 
@@ -120,9 +120,9 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
                 label={`v${version}`}
                 size="small"
                 sx={{
-                  bgcolor: alpha(colors.primary.main, 0.15),
+                  bgcolor: alpha(colors.primary.dark, 0.15),
                   color: colors.primary.light,
-                  border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+                  border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
                   fontWeight: 600,
                   fontSize: '0.8rem',
                   fontFamily: 'monospace',
@@ -170,8 +170,8 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
           <Box
             data-testid="stat-migrations"
             sx={{
-              bgcolor: alpha(colors.primary.main, 0.12),
-              border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+              bgcolor: alpha(colors.primary.dark, 0.12),
+              border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -189,8 +189,8 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
           <Box
             data-testid="stat-success"
             sx={{
-              bgcolor: alpha(colors.success.main, 0.12),
-              border: `1px solid ${alpha(colors.success.main, 0.3)}`,
+              bgcolor: alpha(colors.success.dark, 0.12),
+              border: `1px solid ${alpha(colors.success.dark, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -198,16 +198,16 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
               minWidth: 72,
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.success.main, lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.success.dark, lineHeight: 1.2 }}>
               {plugin.successCount}
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: colors.success.main, fontWeight: 500 }}>Success</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: colors.success.dark, fontWeight: 500 }}>Success</Typography>
           </Box>
           <Box
             data-testid="stat-failed"
             sx={{
-              bgcolor: alpha(colors.error.main, 0.12),
-              border: `1px solid ${alpha(colors.error.main, 0.3)}`,
+              bgcolor: alpha(colors.error.dark, 0.12),
+              border: `1px solid ${alpha(colors.error.dark, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -215,10 +215,10 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
               minWidth: 72,
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.error.main, lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.error.dark, lineHeight: 1.2 }}>
               {plugin.failCount}
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: colors.error.main, fontWeight: 500 }}>Failed</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: colors.error.dark, fontWeight: 500 }}>Failed</Typography>
           </Box>
         </Box>
       </Box>

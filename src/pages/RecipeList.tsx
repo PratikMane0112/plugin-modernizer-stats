@@ -112,7 +112,7 @@ export default function RecipeList() {
               fontSize: { xs: '0.875rem', sm: '1rem' },
               '& .MuiOutlinedInput-notchedOutline': { borderColor: colors.border.default },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colors.border.hover },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colors.primary.main },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colors.primary.dark },
             }}
           >
             <MenuItem value="name">Name A–Z</MenuItem>

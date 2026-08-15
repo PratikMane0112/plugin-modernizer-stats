@@ -41,7 +41,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
         cursor: 'pointer',
         borderBottom: `1px solid ${colors.border.default}`,
         '&:hover': { bgcolor: colors.bg.hoverSubtle },
-        '&:focus-visible': { outline: `2px solid ${colors.primary.main}`, outlineOffset: -2 },
+        '&:focus-visible': { outline: `2px solid ${colors.primary.dark}`, outlineOffset: -2 },
       }}
     >
       <Typography
@@ -65,7 +65,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
 
       <Typography
         sx={{
-          color: colors.success.main,
+          color: colors.success.dark,
           fontSize: { xs: '0.8rem', sm: '0.9rem' },
           fontWeight: 600,
           flexShrink: 0,
@@ -100,7 +100,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
           rel="noopener noreferrer"
           size="small"
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
-          sx={{ color: colors.primary.light, '&:hover': { color: colors.primary.main }, p: 0.5 }}
+          sx={{ color: colors.primary.light, '&:hover': { color: colors.primary.dark }, p: 0.5 }}
           aria-label={`Jenkins plugin page for ${plugin.pluginName}`}
         >
           <OpenInNewIcon sx={{ fontSize: 16 }} />

@@ -103,20 +103,20 @@ export default function RecipeBreakdown({ migrations }: RecipeBreakdownProps) {
             {recipes.map((r) => {
               const hasUnknown = r.applied > r.success + r.fail;
               const statusLabel = r.fail > 0 ? '\u2717 Failed' : hasUnknown ? '? Unknown' : '\u2713 Modernized';
-              const statusColor = r.fail > 0 ? colors.error.main : hasUnknown ? colors.text.muted : colors.success.main;
+              const statusColor = r.fail > 0 ? colors.error.dark : hasUnknown ? colors.text.muted : colors.success.dark;
               return (
                 <TableRow key={r.fullId} sx={{ '&:hover': { bgcolor: colors.bg.hoverSubtle } }}>
                   <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{r.name}</TableCell>
                   <TableCell sx={cellSx} align="center">
                     {r.applied}
                   </TableCell>
-                  <TableCell sx={{ ...cellSx, color: colors.success.main, fontWeight: 600 }} align="center">
+                  <TableCell sx={{ ...cellSx, color: colors.success.dark, fontWeight: 600 }} align="center">
                     {r.success}
                   </TableCell>
                   <TableCell
                     sx={{
                       ...cellSx,
-                      color: r.fail > 0 ? colors.error.main : colors.text.secondary,
+                      color: r.fail > 0 ? colors.error.dark : colors.text.secondary,
                       fontWeight: r.fail > 0 ? 600 : 400,
                     }}
                     align="center"

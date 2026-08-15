@@ -46,7 +46,7 @@ export default function TimelineTags({ timelineOption, tagsOption }: TimelineTag
         <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
           <Box sx={cardSx}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <LabelOutlined sx={{ fontSize: 18, color: colors.primary.light }} />
+              <LabelOutlined sx={{ fontSize: 18, color: colors.cyan.dark }} />
               <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
                 Migration Tags
               </Typography>

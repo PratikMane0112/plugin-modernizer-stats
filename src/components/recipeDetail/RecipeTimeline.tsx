@@ -43,14 +43,14 @@ export default function RecipeTimeline({ recipe }: RecipeTimelineProps) {
           type: 'bar',
           stack: 'total',
           data: successData,
-          itemStyle: { color: colors.success.light },
+          itemStyle: { color: colors.success.dark },
         },
         {
           name: 'Failed',
           type: 'bar',
           stack: 'total',
           data: failData,
-          itemStyle: { color: colors.error.light },
+          itemStyle: { color: colors.error.dark },
         },
       ],
     };

@@ -16,8 +16,8 @@ export default function DataFreshnessBanner({ generatedAt }: DataFreshnessBanner
         flexDirection: { xs: 'column', sm: 'row' },
         alignItems: { xs: 'flex-start', sm: 'center' },
         justifyContent: 'space-between',
-        background: `linear-gradient(to right, ${colors.primary.main}1a, ${colors.secondary.main}1a)`,
-        border: `1px solid ${colors.primary.main}33`,
+        background: `linear-gradient(to right, ${colors.cyan.dark}1a, ${colors.primary.dark}1a)`,
+        border: `1px solid ${colors.cyan.dark}33`,
         borderRadius: '12px',
         px: 3,
         py: 1.5,
@@ -25,7 +25,7 @@ export default function DataFreshnessBanner({ generatedAt }: DataFreshnessBanner
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <AccessTimeOutlined sx={{ fontSize: 16, color: colors.primary.light }} />
+        <AccessTimeOutlined sx={{ fontSize: 16, color: colors.cyan.dark }} />
         <Typography sx={{ fontSize: '0.875rem', color: colors.text.body }}>
           Data generated:{' '}
           <Box component="span" sx={{ fontWeight: 600, color: colors.text.primary }}>
@@ -39,7 +39,7 @@ export default function DataFreshnessBanner({ generatedAt }: DataFreshnessBanner
           href="https://github.com/jenkins-infra/metadata-plugin-modernizer"
           target="_blank"
           rel="noopener noreferrer"
-          sx={{ color: colors.primary.light }}
+          sx={{ color: colors.cyan.light }}
         >
           metadata-plugin-modernizer
         </MuiLink>

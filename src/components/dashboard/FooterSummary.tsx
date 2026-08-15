@@ -53,7 +53,7 @@ export default function FooterSummary({
       </Box>
       <Typography sx={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
         Plugins:{' '}
-        <Box component="span" sx={{ color: colors.primary.light, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.cyan.dark, fontWeight: 700 }}>
           {totalPlugins}
         </Box>
       </Typography>
@@ -62,7 +62,7 @@ export default function FooterSummary({
       </Box>
       <Typography sx={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
         Migrations:{' '}
-        <Box component="span" sx={{ color: colors.accent.indigoLight, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.orange.dark, fontWeight: 700 }}>
           {totalMigrations}
         </Box>
       </Typography>
@@ -71,7 +71,7 @@ export default function FooterSummary({
       </Box>
       <Typography sx={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
         Recipes:{' '}
-        <Box component="span" sx={{ color: colors.secondary.light, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.pink.dark, fontWeight: 700 }}>
           {recipesCount}
         </Box>
       </Typography>

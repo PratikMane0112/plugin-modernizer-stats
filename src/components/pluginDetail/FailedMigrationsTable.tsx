@@ -44,12 +44,12 @@ export default function FailedMigrationsTable({ migrations }: FailedMigrationsTa
       sx={{
         bgcolor: colors.bg.paper,
         borderRadius: '12px',
-        border: `1px solid ${alpha(colors.error.main, 0.3)}`,
+        border: `1px solid ${alpha(colors.error.dark, 0.3)}`,
         overflow: 'hidden',
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <WarningAmberOutlined sx={{ fontSize: 20, color: colors.warning.main }} />
+        <WarningAmberOutlined sx={{ fontSize: 20, color: colors.warning.dark }} />
         <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
           Failed Migrations
         </Typography>
@@ -68,7 +68,7 @@ export default function FailedMigrationsTable({ migrations }: FailedMigrationsTa
             {failed.map((m, i) => (
               <TableRow key={`${m.migrationId}-${i}`} sx={{ '&:hover': { bgcolor: colors.bg.hoverSubtle } }}>
                 <TableCell sx={cellSx}>{m.migrationId}</TableCell>
-                <TableCell sx={{ ...cellSx, color: colors.error.main, fontWeight: 600 }} align="right">
+                <TableCell sx={{ ...cellSx, color: colors.error.dark, fontWeight: 600 }} align="right">
                   {m.migrationStatus}
                 </TableCell>
               </TableRow>

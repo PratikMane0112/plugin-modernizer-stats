@@ -6,9 +6,9 @@ import type { RateTier } from '../../util/recipeStatus';
 import { getRateTier } from '../../util/recipeStatus';
 
 const TIER_CONFIG: Record<RateTier, { label: string; color: string }> = {
-  high: { label: 'High', color: colors.success.main },
-  medium: { label: 'Medium', color: colors.warning.main },
-  low: { label: 'Low', color: colors.error.main },
+  high: { label: 'High', color: colors.success.dark },
+  medium: { label: 'Medium', color: colors.warning.dark },
+  low: { label: 'Low', color: colors.error.dark },
 };
 
 interface SuccessRateBadgeProps {

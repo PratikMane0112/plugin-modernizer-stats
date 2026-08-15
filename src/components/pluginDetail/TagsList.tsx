@@ -40,9 +40,9 @@ export default function TagsList({ migrations }: TagsListProps) {
             label={tag}
             size="small"
             sx={{
-              bgcolor: alpha(colors.primary.main, 0.15),
+              bgcolor: alpha(colors.primary.dark, 0.15),
               color: colors.primary.light,
-              border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+              border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               fontWeight: 500,
               fontSize: '0.8rem',
             }}

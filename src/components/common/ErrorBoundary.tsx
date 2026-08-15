@@ -62,7 +62,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             gap: 2,
             p: 4,
             borderRadius: '12px',
-            bgcolor: alpha(colors.warning.main, 0.1),
+            bgcolor: alpha(colors.warning.dark, 0.1),
             border: `1px solid ${colors.warning.light}`,
           }}
         >
@@ -77,7 +77,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               color: colors.warning.light,
               borderColor: colors.warning.light,
               '&:hover': {
-                bgcolor: alpha(colors.warning.main, 0.2),
+                bgcolor: alpha(colors.warning.dark, 0.2),
                 borderColor: colors.warning.light,
               },
             }}
@@ -98,7 +98,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             gap: 2,
             p: 4,
             borderRadius: '12px',
-            bgcolor: alpha(colors.error.main, 0.1),
+            bgcolor: alpha(colors.error.dark, 0.1),
             border: `1px solid ${colors.error.light}`,
           }}
         >
@@ -121,7 +121,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               color: colors.primary.light,
               borderColor: colors.primary.light,
               '&:hover': {
-                bgcolor: alpha(colors.primary.main, 0.2),
+                bgcolor: alpha(colors.primary.dark, 0.2),
                 borderColor: colors.primary.light,
               },
             }}
@@ -141,7 +141,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           gap: 2,
           p: 4,
           borderRadius: '12px',
-          bgcolor: alpha(colors.error.main, 0.1),
+          bgcolor: alpha(colors.error.dark, 0.1),
           border: `1px solid ${colors.error.light}`,
         }}
       >
@@ -165,7 +165,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               color: colors.primary.light,
               borderColor: colors.primary.light,
               '&:hover': {
-                bgcolor: alpha(colors.primary.main, 0.2),
+                bgcolor: alpha(colors.primary.dark, 0.2),
                 borderColor: colors.primary.light,
               },
             }}
@@ -181,7 +181,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               color: colors.text.secondary,
               borderColor: colors.border.default,
               '&:hover': {
-                bgcolor: alpha(colors.primary.main, 0.1),
+                bgcolor: alpha(colors.primary.dark, 0.1),
                 borderColor: colors.border.hover,
               },
             }}

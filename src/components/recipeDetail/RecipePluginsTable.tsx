@@ -32,8 +32,8 @@ const headerCellSx = {
 } as const;
 
 function statusConfig(status: string): { label: string; color: string } {
-  if (status === 'success') return { label: '\u2713 Success', color: colors.success.main };
-  if (status === 'fail') return { label: '\u2717 Failed', color: colors.error.main };
+  if (status === 'success') return { label: '\u2713 Success', color: colors.success.dark };
+  if (status === 'fail') return { label: '\u2717 Failed', color: colors.error.dark };
   return { label: '? Unknown', color: colors.text.muted };
 }
 
@@ -97,7 +97,7 @@ export default function RecipePluginsTable({ recipe }: RecipePluginsTableProps) 
                   sx={{
                     cursor: 'pointer',
                     '&:hover': { bgcolor: colors.bg.hoverSubtle },
-                    '&:focus-visible': { outline: `2px solid ${colors.primary.main}`, outlineOffset: -2 },
+                    '&:focus-visible': { outline: `2px solid ${colors.primary.dark}`, outlineOffset: -2 },
                   }}
                 >
                   <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{p.pluginName}</TableCell>

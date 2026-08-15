@@ -31,9 +31,9 @@ function extractPRNumber(url: string): string {
 }
 
 const statusColors: Record<string, string> = {
-  merged: colors.success.main,
-  open: colors.primary.main,
-  closed: colors.error.main,
+  merged: colors.success.dark,
+  open: colors.primary.dark,
+  closed: colors.error.dark,
 };
 
 const cellSx = {
