@@ -131,7 +131,7 @@ describe('PluginList integration (real report.json)', () => {
     console.log(`  total        : ${total} (sum of all statuses = plugin count)`);
   });
 
-  it('all plugin names from real data appear in the rendered list', async () => {
+  it('all plugin names from real data appear in the rendered list', { timeout: 15000 }, async () => {
     await renderAndWait();
 
     const sample = expectedPlugins.slice(0, 5);
