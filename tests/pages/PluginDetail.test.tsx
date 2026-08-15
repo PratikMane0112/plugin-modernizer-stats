@@ -98,26 +98,29 @@ describe('PluginDetail', () => {
     expect(screen.getByText('Back to Plugins')).toBeDefined();
   });
 
-  it('shows error banner on fetch error', async () => {
+  it('shows data-load failure banner on fetch error', async () => {
     mockClient.getPluginReport.mockResolvedValue({ ok: false, error: 'Network error' });
 
     renderPluginDetail();
 
     await waitFor(() => {
-      expect(screen.getByText('Network error')).toBeDefined();
+      expect(screen.getByText('Unable to load plugin data')).toBeDefined();
     });
 
+    expect(screen.getByText('Network error')).toBeDefined();
     expect(screen.getByText('Retry')).toBeDefined();
   });
 
   it('shows not-found message when plugin does not exist', async () => {
-    mockClient.getPluginReport.mockResolvedValue({ ok: false, error: "Plugin 'nonexistent' not found" });
+    mockClient.getPluginReport.mockResolvedValue({ ok: true, data: null as unknown as PluginReport });
 
     renderPluginDetail('nonexistent');
 
     await waitFor(() => {
-      expect(screen.getByText("Plugin 'nonexistent' not found")).toBeDefined();
+      expect(screen.getByText('Plugin not found')).toBeDefined();
     });
+    expect(screen.getByText('The plugin you are searching for does not exist.')).toBeDefined();
+    expect(screen.queryByText('Retry')).toBeNull();
   });
 
   it('displays header stat boxes with correct values', async () => {

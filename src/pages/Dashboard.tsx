@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import type { ReportJson, RecipeReport, RecipeStats } from '../types';
 import { colors } from '../theme';
+import ErrorBanner from '../components/common/ErrorBanner';
 import {
   DataFreshnessBanner,
   StatCards,
@@ -208,36 +208,11 @@ export default function Dashboard() {
 
   if (error || !data || !overview) {
     return (
-      <Box
-        sx={{
-          bgcolor: colors.bg.paper,
-          border: `1px solid ${colors.error.main}`,
-          borderRadius: '12px',
-          p: 3,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography sx={{ color: colors.error.light }}>{error ?? 'Failed to load data'}</Typography>
-        <Box
-          component="button"
-          onClick={handleRetry}
-          sx={{
-            bgcolor: colors.error.main,
-            color: colors.white,
-            border: 'none',
-            borderRadius: '8px',
-            px: 2,
-            py: 1,
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-          }}
-        >
-          Retry
-        </Box>
-      </Box>
+      <ErrorBanner
+        title="Unable to fetch data"
+        message="The dashboard data could not be loaded."
+        onRetry={handleRetry}
+      />
     );
   }
 

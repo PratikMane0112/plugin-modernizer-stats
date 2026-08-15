@@ -2,40 +2,51 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
-import { FiAlertTriangle, FiRefreshCw } from 'react-icons/fi';
+import { FiRefreshCw } from 'react-icons/fi';
 import { colors } from '../../theme';
 
 interface ErrorBannerProps {
   message: string;
+  title?: string;
   onRetry?: () => void;
 }
 
-export default function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
+export default function ErrorBanner({ message, title = 'Unable to fetch data', onRetry }: ErrorBannerProps) {
   return (
     <Box
       sx={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
+        textAlign: 'center',
         gap: 2,
-        p: 2,
+        py: 6,
+        px: 3,
         borderRadius: '12px',
-        bgcolor: alpha(colors.error.main, 0.1),
-        border: `1px solid ${colors.error.light}`,
+        bgcolor: alpha(colors.error.main, 0.05),
+        border: `1px solid ${alpha(colors.error.main, 0.3)}`,
       }}
     >
-      <FiAlertTriangle size={20} color={colors.error.light} />
-      <Typography sx={{ flex: 1, color: colors.error.detail }}>{message}</Typography>
+      <Box
+        component="img"
+        src={`${import.meta.env.BASE_URL}fire-jenkins.svg`}
+        alt="Error"
+        sx={{ width: 180, height: 'auto' }}
+      />
+      <Typography sx={{ color: colors.text.primary, fontWeight: 700, fontSize: '1.25rem' }}>{title}</Typography>
+      <Typography sx={{ color: colors.text.secondary, fontSize: '0.95rem', maxWidth: 400 }}>{message}</Typography>
       {onRetry && (
         <Button
-          size="small"
+          size="medium"
           onClick={onRetry}
-          startIcon={<FiRefreshCw size={14} />}
+          startIcon={<FiRefreshCw size={16} />}
           sx={{
-            color: colors.error.light,
-            borderColor: colors.error.light,
+            mt: 1,
+            color: colors.primary.light,
+            borderColor: colors.primary.light,
             '&:hover': {
-              bgcolor: alpha(colors.error.main, 0.2),
-              borderColor: colors.error.light,
+              bgcolor: alpha(colors.primary.main, 0.2),
+              borderColor: colors.primary.light,
             },
           }}
           variant="outlined"

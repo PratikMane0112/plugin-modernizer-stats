@@ -56,11 +56,20 @@ export default function PluginDetail() {
     );
   }
 
-  if (error || !plugin) {
+  if (error) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {backButton}
-        <ErrorBanner message={error ?? `Plugin "${pluginName}" not found`} onRetry={() => window.location.reload()} />
+        <ErrorBanner title="Unable to load plugin data" message={error} onRetry={() => window.location.reload()} />
+      </Box>
+    );
+  }
+
+  if (!plugin) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {backButton}
+        <ErrorBanner title="Plugin not found" message="The plugin you are searching for does not exist." />
       </Box>
     );
   }
