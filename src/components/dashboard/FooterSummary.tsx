@@ -34,7 +34,7 @@ export default function FooterSummary({
     >
       <Typography
         sx={{
-          color: colors.text.secondary,
+          color: colors.text.muted,
           fontSize: '0.875rem',
           display: 'flex',
           alignItems: 'center',
@@ -44,34 +44,34 @@ export default function FooterSummary({
       >
         <TrendingUpOutlined sx={{ fontSize: 14 }} />
         Success :{' '}
-        <Box component="span" sx={{ color: colors.text.primary, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.text.dark, fontWeight: 700 }}>
           {successRate}%
         </Box>
       </Typography>
       <Box component="span" sx={{ color: colors.text.disabled, display: { xs: 'none', sm: 'inline' } }}>
         |
       </Box>
-      <Typography sx={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
+      <Typography sx={{ color: colors.text.muted, fontSize: '0.875rem' }}>
         Plugins:{' '}
-        <Box component="span" sx={{ color: colors.primary.light, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.cyan.dark, fontWeight: 700 }}>
           {totalPlugins}
         </Box>
       </Typography>
       <Box component="span" sx={{ color: colors.text.disabled, display: { xs: 'none', sm: 'inline' } }}>
         |
       </Box>
-      <Typography sx={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
+      <Typography sx={{ color: colors.text.muted, fontSize: '0.875rem' }}>
         Migrations:{' '}
-        <Box component="span" sx={{ color: colors.accent.indigoLight, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.orange.light, fontWeight: 700 }}>
           {totalMigrations}
         </Box>
       </Typography>
       <Box component="span" sx={{ color: colors.text.disabled, display: { xs: 'none', sm: 'inline' } }}>
         |
       </Box>
-      <Typography sx={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
+      <Typography sx={{ color: colors.text.muted, fontSize: '0.875rem' }}>
         Recipes:{' '}
-        <Box component="span" sx={{ color: colors.secondary.light, fontWeight: 700 }}>
+        <Box component="span" sx={{ color: colors.pink.dark, fontWeight: 700 }}>
           {recipesCount}
         </Box>
       </Typography>

@@ -34,9 +34,9 @@ export default function RecipeTimeline({ recipe }: RecipeTimelineProps) {
       xAxis: {
         type: 'category',
         data: months,
-        axisLabel: { color: colors.text.secondary, rotate: 45 },
+        axisLabel: { color: colors.text.muted, rotate: 45 },
       },
-      yAxis: { type: 'value', axisLabel: { color: colors.text.secondary } },
+      yAxis: { type: 'value', axisLabel: { color: colors.text.muted } },
       series: [
         {
           name: 'Success',
@@ -67,7 +67,7 @@ export default function RecipeTimeline({ recipe }: RecipeTimelineProps) {
         border: `1px solid ${colors.border.default}`,
       }}
     >
-      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 2 }}>
+      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 2 }}>
         Application Timeline
       </Typography>
       <ReactECharts option={chartOption} style={{ height: '300px' }} theme="dark" />

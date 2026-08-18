@@ -31,13 +31,13 @@ function extractPRNumber(url: string): string {
 }
 
 const statusColors: Record<string, string> = {
-  merged: colors.success.main,
-  open: colors.primary.main,
-  closed: colors.error.main,
+  merged: colors.success.light,
+  open: colors.primary.dark,
+  closed: colors.error.light,
 };
 
 const cellSx = {
-  color: colors.text.secondary,
+  color: colors.text.muted,
   fontSize: '0.85rem',
   borderColor: colors.border.default,
   py: 1.5,
@@ -87,7 +87,7 @@ export default function PRHistory({ migrations }: PRHistoryProps) {
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5 }}>
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
           PR History ({prs.length})
         </Typography>
       </Box>
@@ -114,7 +114,7 @@ export default function PRHistory({ migrations }: PRHistoryProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
-                      color: colors.primary.light,
+                      color: colors.primary.dark,
                       textDecoration: 'none',
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -129,7 +129,7 @@ export default function PRHistory({ migrations }: PRHistoryProps) {
                     <FiExternalLink size={12} />
                   </MuiLink>
                 </TableCell>
-                <TableCell sx={{ ...cellSx, color: colors.text.primary }}>{pr.recipe}</TableCell>
+                <TableCell sx={{ ...cellSx, color: colors.text.dark }}>{pr.recipe}</TableCell>
                 <TableCell sx={cellSx} align="center">
                   <Chip
                     label={pr.status}

@@ -27,7 +27,7 @@ export default function TopFailingRecipes({ recipes }: TopFailingRecipesProps) {
   return (
     <Box sx={cardSx}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
           Recipes with Most Failures
         </Typography>
         <MuiLink
@@ -65,7 +65,7 @@ export default function TopFailingRecipes({ recipes }: TopFailingRecipesProps) {
                   border: `1px solid ${colors.border.default}`,
                   textDecoration: 'none',
                   transition: 'border-color 0.15s, background 0.15s',
-                  '&:hover': { borderColor: `${colors.error.main}66`, bgcolor: colors.bg.hoverSubtle },
+                  '&:hover': { borderColor: `${colors.orange.light}66`, bgcolor: colors.bg.hoverSubtle },
                 }}
               >
                 <Typography
@@ -87,7 +87,7 @@ export default function TopFailingRecipes({ recipes }: TopFailingRecipesProps) {
                   sx={{ width: '100%', height: 6, borderRadius: '9999px', overflow: 'hidden', display: 'flex' }}
                 >
                   <Box sx={{ height: '100%', bgcolor: colors.success.light, width: `${successPct}%` }} />
-                  <Box sx={{ height: '100%', bgcolor: colors.error.main, width: `${failPct}%` }} />
+                  <Box sx={{ height: '100%', bgcolor: colors.error.light, width: `${failPct}%` }} />
                 </Box>
                 <Box
                   sx={{

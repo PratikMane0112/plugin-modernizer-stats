@@ -22,7 +22,7 @@ export default function ChartsRow({ migrationStatusOption, topRecipesOption }: C
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
       <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
         <Box sx={cardSx}>
-          <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 2 }}>
+          <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 2 }}>
             Migration Status
           </Typography>
           <ReactECharts option={migrationStatusOption} style={{ height: '350px' }} theme="dark" />
@@ -31,7 +31,7 @@ export default function ChartsRow({ migrationStatusOption, topRecipesOption }: C
       <Box sx={{ flex: '1 1 340px', minWidth: 0 }}>
         <Box sx={cardSx}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+            <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
               Recipe Performance
             </Typography>
             <MuiLink

@@ -35,12 +35,12 @@ export default function PluginDetail() {
       startIcon={<ArrowBackOutlined />}
       onClick={() => navigate('/plugins')}
       sx={{
-        color: colors.text.secondary,
+        color: colors.text.muted,
         textTransform: 'none',
         fontWeight: 500,
         fontSize: '0.9rem',
         pl: 0.5,
-        '&:hover': { color: colors.text.primary, bgcolor: 'transparent' },
+        '&:hover': { color: colors.text.dark, bgcolor: 'transparent' },
       }}
     >
       Back to Plugins

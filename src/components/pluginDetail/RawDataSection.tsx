@@ -20,7 +20,7 @@ import type { PluginReport, Migration } from '../../types';
 import { colors } from '../../theme';
 
 const cellSx = {
-  color: colors.text.secondary,
+  color: colors.text.muted,
   fontSize: '0.8rem',
   borderColor: colors.border.default,
   fontFamily: 'monospace',
@@ -100,7 +100,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5 }}>
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 1.5 }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 1.5 }}>
           Raw Data
         </Typography>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
@@ -110,7 +110,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
             endIcon={<OpenInNewIcon sx={{ fontSize: 14 }} />}
             onClick={handleDownloadJson}
             sx={{
-              color: colors.text.secondary,
+              color: colors.text.muted,
               bgcolor: alpha(colors.text.muted, 0.1),
               border: `1px solid ${colors.border.default}`,
               textTransform: 'none',
@@ -129,7 +129,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
               onClick={handleDownloadCsv}
               disabled={!csvData}
               sx={{
-                color: colors.text.secondary,
+                color: colors.text.muted,
                 bgcolor: alpha(colors.text.muted, 0.1),
                 border: `1px solid ${colors.border.default}`,
                 textTransform: 'none',
@@ -170,7 +170,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
               component="pre"
               sx={{
                 fontSize: '0.75rem',
-                color: colors.text.secondary,
+                color: colors.text.muted,
                 fontFamily: 'monospace',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-all',
@@ -216,7 +216,7 @@ export default function RawDataSection({ plugin }: RawDataSectionProps) {
                   {failed.map((m, i) => (
                     <TableRow key={`${m.migrationId}-${i}`}>
                       <TableCell sx={cellSx}>{m.migrationId}</TableCell>
-                      <TableCell sx={{ ...cellSx, color: colors.error.main }} align="right">
+                      <TableCell sx={{ ...cellSx, color: colors.error.light }} align="right">
                         {m.migrationStatus}
                       </TableCell>
                     </TableRow>

@@ -44,7 +44,7 @@ export default function FailedMigrationsExport({ pluginName, failCount }: Failed
       }}
     >
       <Box>
-        <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: colors.text.dark }}>
           Failed Migrations Export
         </Typography>
         <Typography sx={{ fontSize: '0.85rem', color: colors.text.muted, mt: 0.25 }}>
@@ -61,7 +61,7 @@ export default function FailedMigrationsExport({ pluginName, failCount }: Failed
           color: colors.error.light,
           borderColor: colors.error.light,
           '&:hover': {
-            bgcolor: alpha(colors.error.main, 0.1),
+            bgcolor: alpha(colors.error.light, 0.1),
             borderColor: colors.error.light,
           },
         }}

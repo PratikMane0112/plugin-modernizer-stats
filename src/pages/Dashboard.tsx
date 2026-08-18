@@ -77,8 +77,8 @@ export default function Dashboard() {
           emphasis: { label: { show: true, fontSize: 18, fontWeight: 'bold' } },
           labelLine: { show: false },
           data: [
-            { value: overview.successfulMigrations, name: 'Success', itemStyle: { color: colors.success.main } },
-            { value: overview.failedMigrations, name: 'Failed', itemStyle: { color: colors.error.main } },
+            { value: overview.successfulMigrations, name: 'Success', itemStyle: { color: colors.success.light } },
+            { value: overview.failedMigrations, name: 'Failed', itemStyle: { color: colors.error.light } },
           ],
         },
       ],
@@ -91,11 +91,11 @@ export default function Dashboard() {
     return {
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'value', axisLabel: { color: colors.text.secondary } },
+      xAxis: { type: 'value', axisLabel: { color: colors.text.muted } },
       yAxis: {
         type: 'category',
         data: sorted.map((r) => r.recipeId.split('.').pop() ?? r.recipeId),
-        axisLabel: { color: colors.text.secondary, width: 160, overflow: 'truncate' },
+        axisLabel: { color: colors.text.muted, width: 160, overflow: 'truncate' },
       },
       series: [
         {
@@ -125,9 +125,9 @@ export default function Dashboard() {
       xAxis: {
         type: 'category',
         data: data.timeline.map((t) => t.month),
-        axisLabel: { color: colors.text.secondary, rotate: 45 },
+        axisLabel: { color: colors.text.muted, rotate: 45 },
       },
-      yAxis: { type: 'value', axisLabel: { color: colors.text.secondary } },
+      yAxis: { type: 'value', axisLabel: { color: colors.text.muted } },
       series: [
         {
           name: 'Success',
@@ -159,7 +159,7 @@ export default function Dashboard() {
           radius: ['35%', '65%'],
           roseType: 'area',
           itemStyle: { borderRadius: 8, borderColor: colors.bg.paper, borderWidth: 2 },
-          label: { show: true, color: colors.text.secondary, fontSize: 11 },
+          label: { show: true, color: colors.text.muted, fontSize: 11 },
           data: data.tags.map((t, i) => ({
             value: t.count,
             name: t.tag,

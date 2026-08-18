@@ -53,7 +53,7 @@ function RecipeHeader({ recipe }: { recipe: RecipeReport }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 1 }}>
             <Typography
               variant="h4"
-              sx={{ fontWeight: 700, color: colors.text.primary, fontSize: { xs: '1.5rem', sm: '1.85rem' } }}
+              sx={{ fontWeight: 700, color: colors.text.dark, fontSize: { xs: '1.5rem', sm: '1.85rem' } }}
             >
               {shortRecipeName(recipe.recipeId)}
             </Typography>
@@ -77,8 +77,8 @@ function RecipeHeader({ recipe }: { recipe: RecipeReport }) {
           <Box
             data-testid="stat-total"
             sx={{
-              bgcolor: alpha(colors.primary.main, 0.12),
-              border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+              bgcolor: alpha(colors.primary.dark, 0.12),
+              border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -94,8 +94,8 @@ function RecipeHeader({ recipe }: { recipe: RecipeReport }) {
           <Box
             data-testid="stat-success"
             sx={{
-              bgcolor: alpha(colors.success.main, 0.12),
-              border: `1px solid ${alpha(colors.success.main, 0.3)}`,
+              bgcolor: alpha(colors.success.light, 0.12),
+              border: `1px solid ${alpha(colors.success.light, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -103,16 +103,16 @@ function RecipeHeader({ recipe }: { recipe: RecipeReport }) {
               minWidth: 72,
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.success.main, lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.success.light, lineHeight: 1.2 }}>
               {recipe.successCount}
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: colors.success.main, fontWeight: 500 }}>Success</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: colors.success.light, fontWeight: 500 }}>Success</Typography>
           </Box>
           <Box
             data-testid="stat-failed"
             sx={{
-              bgcolor: alpha(colors.error.main, 0.12),
-              border: `1px solid ${alpha(colors.error.main, 0.3)}`,
+              bgcolor: alpha(colors.error.light, 0.12),
+              border: `1px solid ${alpha(colors.error.light, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -120,10 +120,10 @@ function RecipeHeader({ recipe }: { recipe: RecipeReport }) {
               minWidth: 72,
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.error.main, lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.error.light, lineHeight: 1.2 }}>
               {recipe.failureCount}
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: colors.error.main, fontWeight: 500 }}>Failed</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: colors.error.light, fontWeight: 500 }}>Failed</Typography>
           </Box>
           <Box
             data-testid="stat-rate"
@@ -159,12 +159,12 @@ export default function RecipeDetail() {
       startIcon={<ArrowBackOutlined />}
       onClick={() => navigate('/recipes')}
       sx={{
-        color: colors.text.secondary,
+        color: colors.text.muted,
         textTransform: 'none',
         fontWeight: 500,
         fontSize: '0.9rem',
         pl: 0.5,
-        '&:hover': { color: colors.text.primary, bgcolor: 'transparent' },
+        '&:hover': { color: colors.text.dark, bgcolor: 'transparent' },
       }}
     >
       Back to Recipes

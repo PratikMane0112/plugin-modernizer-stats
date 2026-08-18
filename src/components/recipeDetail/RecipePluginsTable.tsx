@@ -15,7 +15,7 @@ import { colors } from '../../theme';
 import { formatTimestamp } from '../../util/format';
 
 const cellSx = {
-  color: colors.text.secondary,
+  color: colors.text.muted,
   fontSize: '0.85rem',
   borderColor: colors.border.default,
   py: 1.5,
@@ -32,8 +32,8 @@ const headerCellSx = {
 } as const;
 
 function statusConfig(status: string): { label: string; color: string } {
-  if (status === 'success') return { label: '\u2713 Success', color: colors.success.main };
-  if (status === 'fail') return { label: '\u2717 Failed', color: colors.error.main };
+  if (status === 'success') return { label: '\u2713 Success', color: colors.success.light };
+  if (status === 'fail') return { label: '\u2717 Failed', color: colors.error.light };
   return { label: '? Unknown', color: colors.text.muted };
 }
 
@@ -61,7 +61,7 @@ export default function RecipePluginsTable({ recipe }: RecipePluginsTableProps) 
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5 }}>
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
           Affected Plugins ({sorted.length})
         </Typography>
       </Box>
@@ -97,10 +97,10 @@ export default function RecipePluginsTable({ recipe }: RecipePluginsTableProps) 
                   sx={{
                     cursor: 'pointer',
                     '&:hover': { bgcolor: colors.bg.hoverSubtle },
-                    '&:focus-visible': { outline: `2px solid ${colors.primary.main}`, outlineOffset: -2 },
+                    '&:focus-visible': { outline: `2px solid ${colors.primary.dark}`, outlineOffset: -2 },
                   }}
                 >
-                  <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{p.pluginName}</TableCell>
+                  <TableCell sx={{ ...cellSx, color: colors.primary.dark, fontWeight: 500 }}>{p.pluginName}</TableCell>
                   <TableCell sx={cellSx} align="center">
                     <Chip
                       label={label}

@@ -21,7 +21,7 @@ interface RecipeRow {
 }
 
 const cellSx = {
-  color: colors.text.secondary,
+  color: colors.text.muted,
   fontSize: '0.85rem',
   borderColor: colors.border.default,
   py: 1.5,
@@ -76,7 +76,7 @@ export default function RecipeBreakdown({ migrations }: RecipeBreakdownProps) {
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5 }}>
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
           Recipe Breakdown ({recipes.length})
         </Typography>
       </Box>
@@ -103,20 +103,21 @@ export default function RecipeBreakdown({ migrations }: RecipeBreakdownProps) {
             {recipes.map((r) => {
               const hasUnknown = r.applied > r.success + r.fail;
               const statusLabel = r.fail > 0 ? '\u2717 Failed' : hasUnknown ? '? Unknown' : '\u2713 Modernized';
-              const statusColor = r.fail > 0 ? colors.error.main : hasUnknown ? colors.text.muted : colors.success.main;
+              const statusColor =
+                r.fail > 0 ? colors.error.light : hasUnknown ? colors.text.muted : colors.success.light;
               return (
                 <TableRow key={r.fullId} sx={{ '&:hover': { bgcolor: colors.bg.hoverSubtle } }}>
-                  <TableCell sx={{ ...cellSx, color: colors.primary.light, fontWeight: 500 }}>{r.name}</TableCell>
+                  <TableCell sx={{ ...cellSx, color: colors.primary.dark, fontWeight: 500 }}>{r.name}</TableCell>
                   <TableCell sx={cellSx} align="center">
                     {r.applied}
                   </TableCell>
-                  <TableCell sx={{ ...cellSx, color: colors.success.main, fontWeight: 600 }} align="center">
+                  <TableCell sx={{ ...cellSx, color: colors.success.light, fontWeight: 600 }} align="center">
                     {r.success}
                   </TableCell>
                   <TableCell
                     sx={{
                       ...cellSx,
-                      color: r.fail > 0 ? colors.error.main : colors.text.secondary,
+                      color: r.fail > 0 ? colors.error.light : colors.text.muted,
                       fontWeight: r.fail > 0 ? 600 : 400,
                     }}
                     align="center"

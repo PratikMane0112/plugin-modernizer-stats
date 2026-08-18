@@ -34,28 +34,28 @@ export default function MigrationSummaryCards({
         label="Total"
         description="All migrations run"
         icon={<SwapHorizOutlined sx={{ fontSize: ICON_SIZE }} />}
-        color={colors.primary.main}
+        color={colors.primary.dark}
       />
       <StatCard
         value={successCount}
         label="Passed"
         description="Migrations succeeded"
         icon={<CheckCircleOutlined sx={{ fontSize: ICON_SIZE }} />}
-        color={colors.success.main}
+        color={colors.success.light}
       />
       <StatCard
         value={failCount}
         label="Failed"
         description="Migrations failed"
         icon={<CancelOutlined sx={{ fontSize: ICON_SIZE }} />}
-        color={colors.error.main}
+        color={colors.error.light}
       />
       <StatCard
         value={`${successRate}%`}
         label="Success Rate"
         description="Overall pass percentage"
         icon={<PercentOutlined sx={{ fontSize: ICON_SIZE }} />}
-        color={colors.accent.cyan}
+        color={colors.cyan.dark}
       />
     </Box>
   );

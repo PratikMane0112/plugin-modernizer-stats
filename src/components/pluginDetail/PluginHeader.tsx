@@ -14,10 +14,10 @@ import { deriveStatus } from '../../util/pluginStatus';
 import { formatTimestamp } from '../../util/format';
 
 const statusLabelMap: Record<string, { label: string; color: string; icon: string }> = {
-  green: { label: 'Modernized', color: colors.success.main, icon: '\u2713' },
-  blue: { label: 'Partial', color: colors.warning.main, icon: '\u26A0' },
-  yellow: { label: 'Partial', color: colors.warning.main, icon: '\u26A0' },
-  red: { label: 'Failed', color: colors.error.main, icon: '\u2717' },
+  green: { label: 'Modernized', color: colors.success.light, icon: '\u2713' },
+  blue: { label: 'Partial', color: colors.warning.dark, icon: '\u26A0' },
+  yellow: { label: 'Partial', color: colors.warning.dark, icon: '\u26A0' },
+  red: { label: 'Failed', color: colors.error.light, icon: '\u2717' },
   white: { label: 'Unknown', color: colors.text.muted, icon: '?' },
 };
 
@@ -64,7 +64,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 1 }}>
             <Typography
               variant="h4"
-              sx={{ fontWeight: 700, color: colors.text.primary, fontSize: { xs: '1.5rem', sm: '1.85rem' } }}
+              sx={{ fontWeight: 700, color: colors.text.dark, fontSize: { xs: '1.5rem', sm: '1.85rem' } }}
             >
               {plugin.pluginName}
             </Typography>
@@ -109,7 +109,7 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
                 size="small"
                 sx={{
                   bgcolor: alpha(colors.text.muted, 0.15),
-                  color: colors.text.secondary,
+                  color: colors.text.muted,
                   fontSize: '0.8rem',
                   '& .MuiChip-icon': { color: colors.text.muted },
                 }}
@@ -120,9 +120,9 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
                 label={`v${version}`}
                 size="small"
                 sx={{
-                  bgcolor: alpha(colors.primary.main, 0.15),
+                  bgcolor: alpha(colors.primary.dark, 0.15),
                   color: colors.primary.light,
-                  border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+                  border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
                   fontWeight: 600,
                   fontSize: '0.8rem',
                   fontFamily: 'monospace',
@@ -137,14 +137,14 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
-                color: colors.text.secondary,
+                color: colors.text.muted,
                 fontSize: '0.85rem',
               }}
             >
               <CalendarTodayOutlined sx={{ fontSize: 15 }} />
-              <Typography component="span" sx={{ fontSize: '0.85rem', color: colors.text.secondary }}>
+              <Typography component="span" sx={{ fontSize: '0.85rem', color: colors.text.muted }}>
                 Last Updated:{' '}
-                <strong style={{ color: colors.text.primary }}>{formatTimestamp(plugin.latestMigration)}</strong>
+                <strong style={{ color: colors.text.dark }}>{formatTimestamp(plugin.latestMigration)}</strong>
               </Typography>
             </Box>
             <Box
@@ -153,13 +153,13 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
-                color: colors.text.secondary,
+                color: colors.text.muted,
                 fontSize: '0.85rem',
               }}
             >
               <CallMergeOutlined sx={{ fontSize: 16 }} />
-              <Typography component="span" sx={{ fontSize: '0.85rem', color: colors.text.secondary }}>
-                Merged PRs: <strong style={{ color: colors.text.primary }}>{mergedPRs}</strong>
+              <Typography component="span" sx={{ fontSize: '0.85rem', color: colors.text.muted }}>
+                Merged PRs: <strong style={{ color: colors.text.dark }}>{mergedPRs}</strong>
               </Typography>
             </Box>
           </Box>
@@ -170,8 +170,8 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
           <Box
             data-testid="stat-migrations"
             sx={{
-              bgcolor: alpha(colors.primary.main, 0.12),
-              border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+              bgcolor: alpha(colors.primary.dark, 0.12),
+              border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -189,8 +189,8 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
           <Box
             data-testid="stat-success"
             sx={{
-              bgcolor: alpha(colors.success.main, 0.12),
-              border: `1px solid ${alpha(colors.success.main, 0.3)}`,
+              bgcolor: alpha(colors.success.light, 0.12),
+              border: `1px solid ${alpha(colors.success.light, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -198,16 +198,16 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
               minWidth: 72,
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.success.main, lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.success.light, lineHeight: 1.2 }}>
               {plugin.successCount}
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: colors.success.main, fontWeight: 500 }}>Success</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: colors.success.light, fontWeight: 500 }}>Success</Typography>
           </Box>
           <Box
             data-testid="stat-failed"
             sx={{
-              bgcolor: alpha(colors.error.main, 0.12),
-              border: `1px solid ${alpha(colors.error.main, 0.3)}`,
+              bgcolor: alpha(colors.error.light, 0.12),
+              border: `1px solid ${alpha(colors.error.light, 0.3)}`,
               borderRadius: '10px',
               px: 2,
               py: 1,
@@ -215,10 +215,10 @@ export default function PluginHeader({ plugin }: PluginHeaderProps) {
               minWidth: 72,
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.error.main, lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: colors.error.light, lineHeight: 1.2 }}>
               {plugin.failCount}
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: colors.error.main, fontWeight: 500 }}>Failed</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: colors.error.light, fontWeight: 500 }}>Failed</Typography>
           </Box>
         </Box>
       </Box>

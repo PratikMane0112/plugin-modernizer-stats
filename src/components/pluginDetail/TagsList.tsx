@@ -32,7 +32,7 @@ export default function TagsList({ migrations }: TagsListProps) {
         border: `1px solid ${colors.border.default}`,
       }}
     >
-      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 1.5 }}>Tags</Typography>
+      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 1.5 }}>Tags</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         {tags.map((tag) => (
           <Chip
@@ -40,9 +40,9 @@ export default function TagsList({ migrations }: TagsListProps) {
             label={tag}
             size="small"
             sx={{
-              bgcolor: alpha(colors.primary.main, 0.15),
+              bgcolor: alpha(colors.primary.dark, 0.15),
               color: colors.primary.light,
-              border: `1px solid ${alpha(colors.primary.main, 0.3)}`,
+              border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               fontWeight: 500,
               fontSize: '0.8rem',
             }}

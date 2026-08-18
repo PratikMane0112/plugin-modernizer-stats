@@ -20,7 +20,7 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
     ];
 
     if (other > 0) {
-      data.push({ value: other, name: 'Other', itemStyle: { color: colors.text.muted } });
+      data.push({ value: other, name: 'Other', itemStyle: { color: colors.neutral } });
     }
 
     return {
@@ -34,7 +34,7 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
           avoidLabelOverlap: true,
           label: {
             show: true,
-            color: colors.text.secondary,
+            color: colors.text.muted,
             formatter: '{d}%',
           },
           data,
@@ -54,7 +54,7 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
         border: `1px solid ${colors.border.default}`,
       }}
     >
-      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 2 }}>
+      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 2 }}>
         Application Status
       </Typography>
       <ReactECharts option={chartOption} style={{ height: '300px' }} theme="dark" />

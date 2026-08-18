@@ -64,7 +64,7 @@ export default function StatCard({ value, label, description, icon, color, onCli
             sx={{
               fontSize: { xs: '1rem', sm: '1.35rem' },
               fontWeight: 600,
-              color: colors.text.primary,
+              color: colors.text.dark,
               lineHeight: 1.2,
             }}
           >
@@ -78,7 +78,7 @@ export default function StatCard({ value, label, description, icon, color, onCli
           <Typography
             sx={{
               fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              color: colors.text.secondary,
+              color: colors.text.muted,
               lineHeight: 1.3,
               mt: 0.25,
               display: { xs: 'none', sm: 'block' },

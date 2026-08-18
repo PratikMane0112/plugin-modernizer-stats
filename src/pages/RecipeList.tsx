@@ -72,7 +72,7 @@ export default function RecipeList() {
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
         <Typography
           variant="h5"
-          sx={{ fontWeight: 700, color: colors.text.primary, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+          sx={{ fontWeight: 700, color: colors.text.dark, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
           Recipes
         </Typography>
@@ -106,13 +106,13 @@ export default function RecipeList() {
             value={sort}
             onChange={(e: SelectChangeEvent) => setSort(e.target.value as SortKey)}
             sx={{
-              color: colors.text.primary,
+              color: colors.text.dark,
               bgcolor: colors.bg.paper,
               borderRadius: '10px',
               fontSize: { xs: '0.875rem', sm: '1rem' },
               '& .MuiOutlinedInput-notchedOutline': { borderColor: colors.border.default },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colors.border.hover },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colors.primary.main },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colors.primary.dark },
             }}
           >
             <MenuItem value="name">Name A–Z</MenuItem>
