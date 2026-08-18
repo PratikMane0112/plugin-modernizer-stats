@@ -28,7 +28,7 @@ export default function DataFreshnessBanner({ generatedAt }: DataFreshnessBanner
         <AccessTimeOutlined sx={{ fontSize: 16, color: colors.cyan.dark }} />
         <Typography sx={{ fontSize: '0.875rem', color: colors.text.body }}>
           Data generated:{' '}
-          <Box component="span" sx={{ fontWeight: 600, color: colors.text.primary }}>
+          <Box component="span" sx={{ fontWeight: 600, color: colors.text.dark }}>
             {new Date(generatedAt).toLocaleString()}
           </Box>
         </Typography>

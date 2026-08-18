@@ -8,16 +8,16 @@ import type { RateTier } from './util/recipeStatus';
  * ┌───────────────────────┬──────────────┬──────────────┬───────────────────────────────────────────────┐
  * │ Role                  │ Light Mode   │ Dark Mode    │ Dashboard Use Case                            │
  * ├───────────────────────┼──────────────┼──────────────┼───────────────────────────────────────────────┤
- * │ Red (error)           │ #DC2626    │ #EF4444    │ Critical alerts, errors, negative trends      │
- * │ Amber (warning)       │ #D97706    │ #F59E0B    │ Warnings, pending states, mid-tier alerts     │
- * │ Green (success)       │ #16A34A    │ #22C55E    │ Success states, positive trends, completions  │
- * │ Blue (primary)        │ #2563EB    │ #3B82F6    │ Primary actions, links, brand accent          │
- * │ Purple (secondary)    │ #7C3AED    │ #A855F7    │ Secondary series, user roles, highlights      │
- * │ Pink (pink)           │ #DB2777    │ #EC4899    │ Third data series, distinct categories        │
- * │ Orange (orange)       │ #EA580C    │ #F97316    │ Attention grabbers, alternate warnings        │
- * │ Cyan (cyan)           │ #0891B2    │ #06B6D4    │ Info banners, tooltips, neutral charts        │
- * │ Gray (neutral)        │ #4B5563    │ #9CA3AF    │ Subdued data, secondary lines, disabled       │
- * │ Slate (border, text)  │ #1E293B    │ #F1F5F9    │ Dark Slate (borders) / Light Slate (text)     │
+ * │ Red (error)           │ #DC2626     │ #EF4444    │ Critical alerts, errors, negative trends      │
+ * │ Amber (warning)       │ #D97706     │ #F59E0B    │ Warnings, pending states, mid-tier alerts     │
+ * │ Green (success)       │ #16A34A     │ #22C55E    │ Success states, positive trends, completions  │
+ * │ Blue (primary)        │ #2563EB     │ #3B82F6    │ Primary actions, links, brand accent          │
+ * │ Purple (secondary)    │ #7C3AED     │ #A855F7    │ Secondary series, user roles, highlights      │
+ * │ Pink (pink)           │ #DB2777     │ #EC4899    │ Third data series, distinct categories        │
+ * │ Orange (orange)       │ #EA580C     │ #F97316    │ Attention grabbers, alternate warnings        │
+ * │ Cyan (cyan)           │ #0891B2     │ #06B6D4    │ Info banners, tooltips, neutral charts        │
+ * │ Gray (neutral)        │ #4B5563     │ #9CA3AF    │ Subdued data, secondary lines, disabled       │
+ * │ Slate (border, text)  │ #1E293B     │ #F1F5F9    │ Dark Slate (borders) / Light Slate (text)     │
  * └───────────────────────┴──────────────┴──────────────┴───────────────────────────────────────────────┘
  */
 
@@ -34,73 +34,81 @@ export const colors = {
   },
 
   text: {
-    primary: '#F1F5F9', // Slate dark — headings, high-emphasis text
-    secondary: '#94a3b8', // Muted labels, axis text
+    dark: '#F1F5F9', // Slate dark
+    light: '#1E293B', // Slate light
+    muted: '#94a3b8', // Muted labels, axis text
     disabled: '#4B5563', // Gray light — disabled controls
     body: '#cbd5e1', // Default paragraph/body text
-    muted: '#64748b', // Low-emphasis, hints
     emphasis: '#e2e8f0', // Semi-bold callouts
   },
 
   primary: {
-    dark: '#3B82F6', // Blue dark — links, brand accent
-    light: '#60a5fa', // Blue lighter — hover/focus states
+    main: '#1D4ED8', // Blue
+    dark: '#3B82F6', // Blue Dark Mode
+    light: '#2563EB', // Blue Light Mode
   },
 
   success: {
-    dark: '#16A34A', // Green light-mode — positive trends, completions
-    light: '#22C55E', // Green dark-mode — small badges, indicators
+    main: '#15803D', // Green
+    dark: '#22C55E', // Green Dark Mode
+    light: '#16A34A', // Green Light Mode
   },
 
   error: {
-    dark: '#DC2626', // Red light-mode — critical alerts, failures
-    light: '#EF4444', // Red dark-mode — error borders, highlights
+    main: '#B91C1C', // Red
+    dark: '#EF4444', // Red Dark Mode
+    light: '#DC2626', // Red Light Mode
   },
 
   warning: {
-    dark: '#F59E0B', // Amber dark — pending states, mid-tier alerts
-    light: '#fbbf24', // Amber lighter — warning accents
+    main: '#B45309', // Amber
+    dark: '#F59E0B', // Amber Dark Mode
+    light: '#D97706', // Amber Light Mode
   },
 
   secondary: {
-    dark: '#A855F7', // Purple dark — feature highlights, user roles
-    light: '#c084fc', // Purple lighter — secondary data series
+    main: '#6D28D9', // Purple
+    dark: '#A855F7', // Purple Dark Mode
+    light: '#7C3AED', // Purple Light Mode
   },
 
   orange: {
-    dark: '#EA580C', // Orange light-mode — attention grabbers, alt warnings
-    light: '#F97316', // Orange dark-mode — hover/accent states
+    main: '#C2410C', // Orange
+    dark: '#F97316', // Orange Dark Mode
+    light: '#EA580C', // Orange Light Mode
   },
 
   cyan: {
-    dark: '#06B6D4', // Cyan dark — info banners, tooltips
-    light: '#22d3ee', // Cyan lighter — info links, neutral charts
+    main: '#0E7490', // Cyan
+    dark: '#06B6D4', // Cyan Dark Mode
+    light: '#0891B2', // Cyan Light Mode
   },
 
   pink: {
-    dark: '#EC4899', // Pink dark — third data series, categories
-    light: '#f472b6', // Pink lighter — hover/accent states
+    main: '#BE185D', // Pink
+    dark: '#EC4899', // Pink Dark Mode
+    light: '#DB2777', // Pink Light Mode
   },
 
-  neutral: '#9CA3AF', // Gray dark — subdued data, secondary lines
+  neutral: '#9CA3AF', // Gray
 
   chart: {
     tagsPalette: [
-      '#3B82F6', // Blue dark
-      '#16A34A', // Green light-mode
-      '#F59E0B', // Amber dark
-      '#DC2626', // Red light-mode
-      '#A855F7', // Purple dark
-      '#06B6D4', // Cyan dark
-      '#EC4899', // Pink dark
-      '#EA580C', // Orange light-mode
+      '#3B82F6', // Blue Dark Mode
+      '#16A34A', // Green Light Mode
+      '#F59E0B', // Amber Dark Mode
+      '#DC2626', // Red Light Mode
+      '#A855F7', // Purple Dark Mode
+      '#06B6D4', // Cyan Dark Mode
+      '#EC4899', // Pink Dark Mode
+      '#EA580C', // Orange Light Mode
     ],
   },
 } as const;
 
 export const statusColorMap: Record<PluginStatusColor, string> = {
-  green: colors.success.dark,
-  red: colors.error.dark,
+  green: colors.success.light,
+  red: colors.error.light,
   blue: colors.primary.dark,
   yellow: colors.warning.dark,
   white: colors.cyan.dark,
@@ -115,9 +123,9 @@ export const statusDefaultLabels: Record<PluginStatusColor, string> = {
 };
 
 export const rateTierColorMap: Record<RateTier, string> = {
-  high: colors.success.dark,
+  high: colors.success.light,
   medium: colors.warning.dark,
-  low: colors.error.dark,
+  low: colors.error.light,
 };
 
 export const STATUS_CARD_DEFS: StatusCardDef[] = [
@@ -135,28 +143,38 @@ export const theme = createTheme({
       paper: colors.bg.paper,
     },
     primary: {
-      main: colors.primary.dark,
+      // Blue
+      main: colors.primary.main,
       light: colors.primary.light,
+      dark: colors.primary.dark,
     },
     success: {
-      main: colors.success.dark,
+      // Green
+      main: colors.success.main,
       light: colors.success.light,
+      dark: colors.success.dark,
     },
     error: {
-      main: colors.error.dark,
+      // Red
+      main: colors.error.main,
       light: colors.error.light,
+      dark: colors.error.dark,
     },
     warning: {
-      main: colors.warning.dark,
+      // Amber
+      main: colors.warning.main,
       light: colors.warning.light,
+      dark: colors.warning.dark,
     },
     secondary: {
-      main: colors.secondary.dark,
+      // Purple
+      main: colors.secondary.main,
       light: colors.secondary.light,
+      dark: colors.secondary.dark,
     },
     text: {
-      primary: colors.text.primary,
-      secondary: colors.text.secondary,
+      primary: colors.text.dark,
+      secondary: colors.text.muted,
       disabled: colors.text.disabled,
     },
   },
@@ -169,7 +187,7 @@ export const theme = createTheme({
       styleOverrides: {
         body: {
           backgroundColor: colors.bg.default,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)', // Light mode background pattern
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)', // Dark mode background pattern
           backgroundSize: '24px 24px',
         },
       },

@@ -15,8 +15,8 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
     const other = totalApplications - successCount - failureCount;
 
     const data: { value: number; name: string; itemStyle: { color: string } }[] = [
-      { value: successCount, name: 'Success', itemStyle: { color: colors.success.dark } },
-      { value: failureCount, name: 'Failed', itemStyle: { color: colors.error.dark } },
+      { value: successCount, name: 'Success', itemStyle: { color: colors.success.light } },
+      { value: failureCount, name: 'Failed', itemStyle: { color: colors.error.light } },
     ];
 
     if (other > 0) {
@@ -34,7 +34,7 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
           avoidLabelOverlap: true,
           label: {
             show: true,
-            color: colors.text.secondary,
+            color: colors.text.muted,
             formatter: '{d}%',
           },
           data,
@@ -54,7 +54,7 @@ export default function RecipeStatusChart({ recipe }: RecipeStatusChartProps) {
         border: `1px solid ${colors.border.default}`,
       }}
     >
-      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 2 }}>
+      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 2 }}>
         Application Status
       </Typography>
       <ReactECharts option={chartOption} style={{ height: '300px' }} theme="dark" />

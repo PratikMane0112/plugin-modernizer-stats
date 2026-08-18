@@ -67,7 +67,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           }}
         >
           <Typography sx={{ color: colors.warning.light, fontWeight: 600 }}>A new version is available</Typography>
-          <Typography sx={{ color: colors.text.secondary }}>
+          <Typography sx={{ color: colors.text.muted }}>
             The application has been updated. Please reload the page.
           </Typography>
           <Button
@@ -98,7 +98,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             gap: 2,
             p: 4,
             borderRadius: '12px',
-            bgcolor: alpha(colors.error.dark, 0.1),
+            bgcolor: alpha(colors.error.light, 0.1),
             border: `1px solid ${colors.error.light}`,
           }}
         >
@@ -108,10 +108,10 @@ export default class ErrorBoundary extends Component<Props, State> {
             alt="Error"
             sx={{ width: 120, height: 'auto' }}
           />
-          <Typography sx={{ color: colors.text.primary, fontWeight: 600, fontSize: '1.1rem' }}>
+          <Typography sx={{ color: colors.text.dark, fontWeight: 600, fontSize: '1.1rem' }}>
             Unable to load data
           </Typography>
-          <Typography sx={{ color: colors.text.secondary, textAlign: 'center', maxWidth: 400 }}>
+          <Typography sx={{ color: colors.text.muted, textAlign: 'center', maxWidth: 400 }}>
             There was a problem connecting to the server. Please check your internet connection and try again.
           </Typography>
           <Button
@@ -141,7 +141,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           gap: 2,
           p: 4,
           borderRadius: '12px',
-          bgcolor: alpha(colors.error.dark, 0.1),
+          bgcolor: alpha(colors.error.light, 0.1),
           border: `1px solid ${colors.error.light}`,
         }}
       >
@@ -151,10 +151,10 @@ export default class ErrorBoundary extends Component<Props, State> {
           alt="Error"
           sx={{ width: 120, height: 'auto' }}
         />
-        <Typography sx={{ color: colors.text.primary, fontWeight: 600, fontSize: '1.1rem' }}>
+        <Typography sx={{ color: colors.text.dark, fontWeight: 600, fontSize: '1.1rem' }}>
           Something went wrong
         </Typography>
-        <Typography sx={{ color: colors.text.secondary, textAlign: 'center', maxWidth: 400 }}>
+        <Typography sx={{ color: colors.text.muted, textAlign: 'center', maxWidth: 400 }}>
           An unexpected error occurred while rendering this page. Please try again or navigate back to the homepage.
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -178,7 +178,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               window.location.href = import.meta.env.BASE_URL;
             }}
             sx={{
-              color: colors.text.secondary,
+              color: colors.text.muted,
               borderColor: colors.border.default,
               '&:hover': {
                 bgcolor: alpha(colors.primary.dark, 0.1),

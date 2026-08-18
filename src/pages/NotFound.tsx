@@ -31,7 +31,7 @@ export default function NotFound() {
       <Typography
         variant="h4"
         sx={{
-          color: colors.text.primary,
+          color: colors.text.dark,
           fontWeight: 700,
           mb: 2,
           fontSize: { xs: '1.5rem', sm: '2rem' },

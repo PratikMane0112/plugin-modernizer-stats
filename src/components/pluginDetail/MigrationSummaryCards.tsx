@@ -41,14 +41,14 @@ export default function MigrationSummaryCards({
         label="Passed"
         description="Migrations succeeded"
         icon={<CheckCircleOutlined sx={{ fontSize: ICON_SIZE }} />}
-        color={colors.success.dark}
+        color={colors.success.light}
       />
       <StatCard
         value={failCount}
         label="Failed"
         description="Migrations failed"
         icon={<CancelOutlined sx={{ fontSize: ICON_SIZE }} />}
-        color={colors.error.dark}
+        color={colors.error.light}
       />
       <StatCard
         value={`${successRate}%`}

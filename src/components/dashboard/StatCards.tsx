@@ -40,14 +40,14 @@ const StatCard = ({
         sx={{
           fontSize: { xs: '0.75rem', sm: '0.8125rem' },
           fontWeight: 500,
-          color: colors.text.secondary,
+          color: colors.text.muted,
           mb: 0.25,
           lineHeight: 1.3,
         }}
       >
         {title}
       </Typography>
-      <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, fontWeight: 700, color: colors.text.primary }}>
+      <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, fontWeight: 700, color: colors.text.dark }}>
         {value}
       </Typography>
       {subtitle && <Typography sx={{ fontSize: '0.75rem', color: colors.text.muted, mt: 0.25 }}>{subtitle}</Typography>}
@@ -96,19 +96,19 @@ export default function StatCards({ overview }: StatCardsProps) {
           title: 'Total Migrations',
           value: overview.totalMigrations,
           icon: <AccountTreeOutlined />,
-          color: colors.orange.dark,
+          color: colors.orange.light,
         },
         {
           title: 'Successful Migrations',
           value: overview.successfulMigrations,
           icon: <CheckCircleOutlined />,
-          color: colors.success.dark,
+          color: colors.success.light,
         },
         {
           title: 'Failed Migrations',
           value: overview.failedMigrations,
           icon: <CancelOutlined />,
-          color: colors.error.dark,
+          color: colors.error.light,
         },
       ].map((card) => (
         <StatCard key={card.title} {...card} />

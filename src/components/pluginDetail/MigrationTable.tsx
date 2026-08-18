@@ -33,7 +33,7 @@ export default function MigrationTable({ migrations }: MigrationTableProps) {
   return (
     <Box>
       <Box sx={{ mb: 2 }}>
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
           Migration History ({sorted.length})
         </Typography>
       </Box>

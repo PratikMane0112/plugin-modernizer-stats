@@ -60,7 +60,7 @@ export default function PluginList() {
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
         <Typography
           variant="h5"
-          sx={{ fontWeight: 700, color: colors.text.primary, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+          sx={{ fontWeight: 700, color: colors.text.dark, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
           Plugins
         </Typography>

@@ -41,7 +41,7 @@ export default function RecipeSearchBar({
           minWidth: { xs: 0, sm: 200 },
           maxWidth: { xs: '100%', sm: 360 },
           '& .MuiOutlinedInput-root': {
-            color: colors.text.primary,
+            color: colors.text.dark,
             bgcolor: colors.bg.paper,
             borderRadius: '10px',
             fontSize: { xs: '0.875rem', sm: '1rem' },

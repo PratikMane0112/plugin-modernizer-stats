@@ -47,7 +47,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
       <Typography
         sx={{
           flex: 1,
-          color: colors.text.primary,
+          color: colors.text.dark,
           fontSize: { xs: '0.8rem', sm: '0.95rem' },
           fontWeight: 500,
           overflow: 'hidden',
@@ -65,7 +65,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
 
       <Typography
         sx={{
-          color: colors.success.dark,
+          color: colors.success.light,
           fontSize: { xs: '0.8rem', sm: '0.9rem' },
           fontWeight: 600,
           flexShrink: 0,
@@ -81,7 +81,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
 
       <Typography
         sx={{
-          color: colors.text.secondary,
+          color: colors.text.muted,
           fontSize: '0.9rem',
           minWidth: 90,
           textAlign: 'right',
@@ -113,7 +113,7 @@ export default function PluginRow({ plugin, style }: PluginRowProps) {
             rel="noopener noreferrer"
             size="small"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            sx={{ color: colors.text.secondary, '&:hover': { color: colors.text.primary }, p: 0.5 }}
+            sx={{ color: colors.text.muted, '&:hover': { color: colors.text.dark }, p: 0.5 }}
             aria-label={`GitHub repository for ${plugin.pluginName}`}
           >
             <FaGithub size={16} />

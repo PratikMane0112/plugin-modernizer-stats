@@ -34,23 +34,23 @@ export default function MigrationTimeline({ migrations }: MigrationTimelineProps
       xAxis: {
         type: 'category',
         data: months,
-        axisLabel: { color: colors.text.secondary, rotate: 45 },
+        axisLabel: { color: colors.text.muted, rotate: 45 },
       },
-      yAxis: { type: 'value', axisLabel: { color: colors.text.secondary } },
+      yAxis: { type: 'value', axisLabel: { color: colors.text.muted } },
       series: [
         {
           name: 'Success',
           type: 'bar',
           stack: 'total',
           data: successData,
-          itemStyle: { color: colors.success.dark },
+          itemStyle: { color: colors.success.light },
         },
         {
           name: 'Failed',
           type: 'bar',
           stack: 'total',
           data: failData,
-          itemStyle: { color: colors.error.dark },
+          itemStyle: { color: colors.error.light },
         },
       ],
     };
@@ -67,7 +67,7 @@ export default function MigrationTimeline({ migrations }: MigrationTimelineProps
         border: `1px solid ${colors.border.default}`,
       }}
     >
-      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary, mb: 2 }}>
+      <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark, mb: 2 }}>
         Migration Timeline
       </Typography>
       <ReactECharts option={chartOption} style={{ height: '300px' }} theme="dark" />

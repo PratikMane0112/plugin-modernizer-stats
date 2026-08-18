@@ -15,7 +15,7 @@ import { colors } from '../../theme';
 import { formatTimestamp } from '../../util/format';
 
 const cellSx = {
-  color: colors.text.secondary,
+  color: colors.text.muted,
   fontSize: '0.85rem',
   borderColor: colors.border.default,
   py: 1.5,
@@ -50,13 +50,13 @@ export default function RecipeFailuresBreakdown({ recipe }: RecipeFailuresBreakd
       sx={{
         bgcolor: colors.bg.paper,
         borderRadius: '12px',
-        border: `1px solid ${alpha(colors.error.dark, 0.3)}`,
+        border: `1px solid ${alpha(colors.error.light, 0.3)}`,
         overflow: 'hidden',
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
         <WarningAmberOutlined sx={{ fontSize: 20, color: colors.warning.dark }} />
-        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.primary }}>
+        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, color: colors.text.dark }}>
           Failed Plugins ({failed.length})
         </Typography>
       </Box>

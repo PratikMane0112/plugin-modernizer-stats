@@ -42,7 +42,7 @@ export default function RecipeRow({ recipe, style }: RecipeRowProps) {
       <Box sx={{ flex: 1, minWidth: { xs: 80, sm: 120 }, overflow: 'hidden' }}>
         <Typography
           sx={{
-            color: colors.text.primary,
+            color: colors.text.dark,
             fontSize: { xs: '0.8rem', sm: '0.95rem' },
             fontWeight: 500,
             overflow: 'hidden',
@@ -70,7 +70,7 @@ export default function RecipeRow({ recipe, style }: RecipeRowProps) {
       >
         <Typography
           sx={{
-            color: colors.success.dark,
+            color: colors.success.light,
             fontSize: { xs: '0.8rem', sm: '0.9rem' },
             fontWeight: 600,
             whiteSpace: 'nowrap',
@@ -84,7 +84,7 @@ export default function RecipeRow({ recipe, style }: RecipeRowProps) {
 
         <Typography
           sx={{
-            color: colors.error.dark,
+            color: colors.error.light,
             fontSize: { xs: '0.8rem', sm: '0.9rem' },
             fontWeight: 600,
             display: { xs: 'none', sm: 'block' },

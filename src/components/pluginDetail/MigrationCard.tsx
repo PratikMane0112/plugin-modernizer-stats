@@ -13,9 +13,9 @@ import { colors } from '../../theme';
 import { formatTimestamp } from '../../util/format';
 
 const statusColors: Record<string, string> = {
-  merged: colors.success.dark,
+  merged: colors.success.light,
   open: colors.primary.dark,
-  closed: colors.error.dark,
+  closed: colors.error.light,
 };
 
 interface MigrationCardProps {
@@ -37,18 +37,18 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
       {/* Top row: status icon + name + PR badge + date */}
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1 }}>
         {isSuccess ? (
-          <CheckCircleOutlined sx={{ fontSize: 24, color: colors.success.dark, mt: 0.25, flexShrink: 0 }} />
+          <CheckCircleOutlined sx={{ fontSize: 24, color: colors.success.light, mt: 0.25, flexShrink: 0 }} />
         ) : (
-          <CancelOutlined sx={{ fontSize: 24, color: colors.error.dark, mt: 0.25, flexShrink: 0 }} />
+          <CancelOutlined sx={{ fontSize: 24, color: colors.error.light, mt: 0.25, flexShrink: 0 }} />
         )}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 700, color: colors.text.primary, fontSize: '1rem', lineHeight: 1.3 }}>
+          <Typography sx={{ fontWeight: 700, color: colors.text.dark, fontSize: '1rem', lineHeight: 1.3 }}>
             {m.migrationName}
           </Typography>
           <Typography
             sx={{
               fontSize: '0.8rem',
-              color: colors.primary.light,
+              color: colors.primary.dark,
               fontFamily: 'monospace',
               mt: 0.25,
               wordBreak: 'break-all',
@@ -97,7 +97,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
               size="small"
               sx={{
                 bgcolor: alpha(colors.primary.dark, 0.15),
-                color: colors.primary.light,
+                color: colors.primary.dark,
                 border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
                 fontWeight: 500,
                 fontSize: '0.75rem',
@@ -118,7 +118,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
           ml: 4.5,
           mb: 1.5,
           fontSize: '0.8rem',
-          color: colors.text.secondary,
+          color: colors.text.light,
         }}
       >
         {m.pluginVersion && <MetaLabel label="Plugin" value={`v${m.pluginVersion}`} />}
@@ -129,7 +129,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
         {m.defaultBranch && (
           <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <FaCodeBranch size={11} />
-            <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.secondary }}>
+            <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.muted }}>
               {m.defaultBranch}
             </Typography>
             {m.defaultBranchLatestCommitSha && (
@@ -162,7 +162,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: colors.text.primary }}>
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: colors.text.dark }}>
               CI Check Runs
             </Typography>
             {m.checkRunsSummary && (
@@ -172,17 +172,17 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
                 sx={{
                   bgcolor: alpha(
                     m.checkRunsSummary === 'success'
-                      ? colors.success.dark
+                      ? colors.success.light
                       : m.checkRunsSummary === 'failure'
-                        ? colors.error.dark
+                        ? colors.error.light
                         : colors.warning.dark,
                     0.15
                   ),
                   color:
                     m.checkRunsSummary === 'success'
-                      ? colors.success.dark
+                      ? colors.success.light
                       : m.checkRunsSummary === 'failure'
-                        ? colors.error.dark
+                        ? colors.error.light
                         : colors.warning.dark,
                   fontWeight: 600,
                   fontSize: '0.7rem',
@@ -200,7 +200,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
           >
             {Object.entries(m.checkRuns).map(([name, status]) => (
               <Box key={name} sx={{ display: 'contents' }}>
-                <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.secondary }}>
+                <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.muted }}>
                   {name}
                 </Typography>
                 <Typography
@@ -210,9 +210,9 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
                     fontWeight: 600,
                     color:
                       status === 'success'
-                        ? colors.success.dark
+                        ? colors.success.light
                         : status === 'failure'
-                          ? colors.error.dark
+                          ? colors.error.light
                           : colors.warning.dark,
                   }}
                 >
@@ -236,7 +236,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
             startIcon={<FaCodeBranch size={12} />}
             endIcon={<FiExternalLink size={12} />}
             sx={{
-              color: colors.primary.light,
+              color: colors.primary.dark,
               bgcolor: alpha(colors.primary.dark, 0.12),
               border: `1px solid ${alpha(colors.primary.dark, 0.3)}`,
               textTransform: 'none',
@@ -258,7 +258,7 @@ export default function MigrationCard({ migration: m }: MigrationCardProps) {
             size="small"
             sx={{
               bgcolor: alpha(colors.text.muted, 0.1),
-              color: colors.text.secondary,
+              color: colors.text.muted,
               fontFamily: 'monospace',
               fontSize: '0.75rem',
               height: 24,
@@ -284,7 +284,7 @@ function MetaLabel({ label, value, highlight }: { label: string; value: string; 
           sx={{
             height: 20,
             bgcolor: alpha(colors.primary.dark, 0.15),
-            color: colors.primary.light,
+            color: colors.primary.dark,
             fontWeight: 600,
             fontSize: '0.75rem',
             fontFamily: 'monospace',
@@ -292,7 +292,7 @@ function MetaLabel({ label, value, highlight }: { label: string; value: string; 
           }}
         />
       ) : (
-        <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.primary, fontFamily: 'monospace' }}>
+        <Typography component="span" sx={{ fontSize: '0.8rem', color: colors.text.dark, fontFamily: 'monospace' }}>
           {value}
         </Typography>
       )}
